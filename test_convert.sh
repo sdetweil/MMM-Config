@@ -46,6 +46,7 @@ if [ "$config_lastsaved". != "$config_lastchange". -o "$mod_lastsaved". != "$mod
 	node ./buildschema.js $defaults_file >schema2.js
 	echo $config_lastchange>$d/config_lastchange
 fi
-// for testing, launch browser to view form
-'chromium-browser' --app=file://$d/testit.html
+echo completed
+# for testing, launch browser to view form
+# 'chromium-browser' --app=file://$d/testit.html
 exit

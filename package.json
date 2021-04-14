@@ -9,6 +9,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "jsonform": "^2.2.3"
+    "jsonform": "^2.2.3",
+    "qrcode": "^1.4.4"
   }
 }
