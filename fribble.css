@@ -17,7 +17,7 @@
   color: red;
   padding-top: 1em;
 }
-/*
-.expanded {
-	background-color: lightgrey;
- }*/
+
+.expanded div.form-group {
+	margin-left: 2em;
+ }
