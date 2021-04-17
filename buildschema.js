@@ -2,8 +2,8 @@ use:'strict'
 const debug= false
 var t = true
 var f = false
-
-const defines = require(process.argv[2])
+var arg=process.argv[2].replace(/\\/g,"/")
+const defines = require(arg)
 
 const merge = require('lodash.merge');
 
