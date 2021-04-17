@@ -10,6 +10,7 @@ config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
 mod_lastsaved=$(cat $d/modules_lastchange)
 defaults_file=$d/defaults.js
+modules_changed=0
 # if the modules changes
 if [ "$mod_lastsaved". != "$mod_lastchange". ]; then
 	#get to the the modules list
@@ -17,7 +18,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". ]; then
 	# get the list of installed modules, including defaults
 	list=$(find . -type d | grep -v node_modules | awk -F/ '{ print ($2 =="default" && $3 !="") ? "default/"$3 :  ($2 !="default") ? $2: ""}' | uniq )
 	modules=($list)
-	echo "const config = require('$HOME/MagicMirror/config/config.js')" >$defaults_file
+	echo "const config = require('../../config/config.js')" >$defaults_file
 	echo "var defined_config = {"  >>$defaults_file
 	for module in "${modules[@]}"
 	do
@@ -38,12 +39,13 @@ if [ "$mod_lastsaved". != "$mod_lastchange". ]; then
 	echo "}" >>$defaults_file
 	echo "module.exports={defined_config,config};"  >>$defaults_file
 	cd - >/dev/null
+	modules_changed=1
 	echo $mod_lastchange>$d/modules_lastchange
 fi
 # if the config changed since last start or the modules changed
-if [ "$config_lastsaved". != "$config_lastchange". -o "$mod_lastsaved". != "$mod_lastchange". ]; then
+if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./buildschema.js $defaults_file >schema2.js
+	node ./buildschema2.js $defaults_file >schema3.json
 	echo $config_lastchange>$d/config_lastchange
 fi
 echo completed

@@ -9,8 +9,20 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "deep-object-diff": "^1.1.0",
+    "express": "^4.17.1",
     "jsonform": "^2.2.3",
     "lodash": "^4.17.21",
-    "qrcode": "^1.4.4"
+    "lodash.isarray": "^4.0.0",
+    "lodash.isequal": "^4.5.0",
+    "lodash.isobject": "^3.0.2",
+    "lodash.transform": "^4.6.0",
+    "os": "^0.1.1",
+    "path": "^0.12.7",
+    "qrcode": "^1.4.4",
+    "socket.io": "^4.0.1",
+    "socket.io-client": "^4.0.1",
+    "stream": "0.0.2",
+    "util": "^0.12.3"
   }
 }

@@ -47,10 +47,12 @@ JSONForm.fieldTypes['pair'] = {
   // to run the template string
   onBeforeRender: function (data, node) {
   	console.log("in before")
+    data.schemaname= node.name
     if(node.value !== undefined){
       let key
       // remove all the 'object' type delimiters
       data.initvalue=JSON.stringify(node.value).replace(/["|{|}"]/g,'')
+
       node.name=""
       if(Array.isArray(node.value) || typeof node.value =='string'){
         key=  data.initvalue.split(':')
@@ -61,7 +63,6 @@ JSONForm.fieldTypes['pair'] = {
       	data.from = key[0]
       	data.to   = node.value[key[0]]
       }
-      data.schemaname= node.name
     } else {
       data.from = emptyString
       data.to   = emptyString
