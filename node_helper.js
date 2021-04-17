@@ -11,8 +11,8 @@ module.exports = NodeHelper.create({
 config:{},
 	launchit(){
 
-		if(this.config.debug) console.log("execing "+this.config.command)
-		exec(this.config.command, (error, stdout, stderr) => {
+		 console.log("execing "+this.command)
+		exec(this.command, (error, stdout, stderr) => {
 		  if (error) {
 		    console.error(`exec error: ${error}`);
 		    return;
@@ -31,7 +31,8 @@ config:{},
 		//this.expressApp.use("/MMM-Config/review");
 	},
 	start() {
-		this.config.command = __dirname+"/test_convert.sh"
+		this.command = __dirname+"/test_convert."+((os.platform()=='win32')?'cmd':"sh"	)
+		console.log("command ="+this.command);
 		console.log('Starting module helper:' +this.name);
 		this.launchit()
 		this.extraRoutes()
