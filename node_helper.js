@@ -20,7 +20,7 @@ module.exports = NodeHelper.create({
 config:{},
 	launchit(){
 
-		// console.log("execing "+this.command)
+		console.log("execing "+this.command)
 		exec(this.command, (error, stdout, stderr) => {
 		  if (error) {
 		    console.error(`exec error: ${error}`);
@@ -28,7 +28,7 @@ config:{},
 		  }
 		  console.log(`stdout: ${stdout}`);
 		  if(stderr)
-		  	console.error(`stderr: ${stderr}`);
+		  	console.error(`stderr 2: ${stderr}`);
 		});
 	},
 	extraRoutes: function() {
@@ -41,7 +41,7 @@ config:{},
 	},
 
 	startit() {
-		this.command = __dirname+"/test_convert."+((os.platform()=='win32')?'cmd':'sh'	)
+		this.command = __dirname+((os.platform()=='win32')?'\\test_convert.cmd':'/test_convert.sh')
 		console.log("command ="+this.command);
 		console.log('Starting module helper:' +this.name);
 		this.launchit()
@@ -93,6 +93,7 @@ remote_start : function (self) {
 		if (fs.existsSync(configPath)) {
 			try {
 				self.config.data = JSON.parse(fs.readFileSync(configPath, "utf8")) //json'd config file
+				console.log("schema file loaded")
 			//	console.log("have config parsed ="+JSON.stringify(self.config.data))
 			} catch (e) {
  				console.log("config parse error="+e)
@@ -106,23 +107,24 @@ remote_start : function (self) {
 	const server = require('http').createServer(app)
 
 	// Use the remote directory and initilize socket connection
-	this.expressApp.use(express.static( '/review'))
+	//this.expressApp.use(express.static( '/review'))
 	remote.io = require("socket.io")(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
+			  cors: {
+				origin: "*",
+				methods: ["GET", "POST"]
+			  }
+			});
 // Start the server
-	server.listen(8192)
+	server.listen(8200)
 	/**
    * When the connection begins
    */
+    var self = this
 	remote.io.on('connection', (socket) =>{
-		var self = this
+			console.log("connection started")	
 		//console.log("socket connected")
 		socket.emit('connected')
-		console.log("connection started")
+
 	  getFiles(self)
 
 		socket.on('saveConfig', (data) =>{ // used to save the form JSON

@@ -1,4 +1,4 @@
-rem @echo off 
+@echo off 
 Setlocal EnableDelayedExpansion 
 rem
 rem port of unix script
@@ -18,7 +18,7 @@ set config_lastsaved=""
 rem get the contents of the last changed files 
 for /f "delims=" %%x in (%d%modules_lastchanged) do (set modules_lastsaved=%%x)
 for /f "delims=" %%x in (%d%config_lastchanged) do (set config_lastsaved=%%x)
-
+cd %d%
 @rem get the current module and config file last changed dates
 @for /f "tokens=1,2"  %%m in ('dir ..\..\ ^| find "modules" ^| find /v "node"') do (set modules_lastchanged="%%m %%n")  
 @for /f "tokens=1,2"  %%m in ('dir ..\..\config\config.js ^| find "config.js"') do (set config_lastchanged="%%m %%n")
@@ -38,7 +38,7 @@ if %need_to_update_modules% equ 1 (
 rem 
 rem if modules folder change date doesn't match saved
 rem       
-       cd %d%
+       rem cd %d%
        del somefile 2>nul
        rem figure out which token we need from path
        set t=6

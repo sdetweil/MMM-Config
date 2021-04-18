@@ -6,7 +6,7 @@ $(function () {
 	var pos = u.substr(u.lastIndexOf("/") + 1)
 	var server= u.slice(0,u.indexOf(":",5))
 	var socket = io()
-	let port=8192
+	let port=8200
 
 
 	// config vars
@@ -47,7 +47,7 @@ $(function () {
 
 	*/
 
-  const activesocket = io("http://sams:8192", {
+  const activesocket = io(server+":"+port, {
 	  reconnectionDelayMax: 10000
 	});
 	// global socket events
