@@ -40,7 +40,7 @@ config:{},
 		//this.expressApp.use(express.static("/MMM-Config/review"));
 	},
 
-	start() {
+	startit() {
 		this.command = __dirname+"/test_convert."+((os.platform()=='win32')?'cmd':'sh'	)
 		console.log("command ="+this.command);
 		console.log('Starting module helper:' +this.name);
@@ -80,7 +80,6 @@ remote_start : function (self) {
 	const express = require('express')
 	const app = express()
 	const fs = require('fs')
-	const getConfigSchema = require(__dirname+'/schema3.json')
 
 	let config = ""
 	let configDefault = ""
@@ -102,7 +101,7 @@ remote_start : function (self) {
 		//TODO this is async, all of the remote should be async too
 
 	}
-	getFiles(self)
+
 
 	const server = require('http').createServer(app)
 
@@ -123,13 +122,15 @@ remote_start : function (self) {
 		var self = this
 		//console.log("socket connected")
 		socket.emit('connected')
+		console.log("connection started")
+	  getFiles(self)
 
 		socket.on('saveConfig', (data) =>{ // used to save the form JSON
 
 			let cfg = require(__dirname+"/../../config/config.js")
 			//console.log(" loaded data="+JSON.stringify(self.config,' ',2))
 			for ( const m of Object.keys(self.config.data.value)){
-					if(m !== 'config'){
+					if(m !== 'config' && self.config.data.value[m]['disabled']==false){
 						//console.log("comparing "+data[m]+" to "+self.config.data.value[m])
 						let x = diff( self.config.data.value[m],data[m])
 						if(Object.keys(x).length!=1)
@@ -137,7 +138,7 @@ remote_start : function (self) {
 					}
 			}
 
-			if(0){
+			if(1){
 				console.log("saving data from client to "+configPath+"\n"+JSON.stringify(data))
 				for(const p of Object.keys(data['pairs'])){
 						let modified_value = {}

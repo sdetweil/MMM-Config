@@ -46,7 +46,7 @@ JSONForm.fieldTypes['pair'] = {
   // This is where you can complete the data that will be used
   // to run the template string
   onBeforeRender: function (data, node) {
-  	console.log("in before")
+  	//console.log("in before")
     data.schemaname= node.name
     if(node.value !== undefined){
       let key

@@ -204,7 +204,16 @@ function copyprop(dest,source){
 	// merge with defaults
 	for(let m of defines.config.modules){
 		  if(value[m.module] !== undefined){
-		 		value[m.module] = merge(value[m.module],getConfigModule(m,defines.config.modules))
+		  	let x = getConfigModule(m,defines.config.modules)
+		  	// if this module is in config.js
+		  	if(x){
+		  		// merge the values
+		 			value[m.module] = merge(value[m.module],getConfigModule(m,defines.config.modules))
+		 			// if the module didn't specify disabled,
+		 			if(x.disabled == undefined)
+		 				// it defaults to false
+		 				value[m.module]['disabled']=false
+		 		}
 		 	}
 		 	else
 		 		value[m.module]=m

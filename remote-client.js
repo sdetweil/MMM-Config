@@ -79,10 +79,10 @@ $(function () {
 		try {
 			data.configJSON.onSubmitValid = function (values) {
 				let x = pairs
-				if (console && console.log) {
+			/*	if (console && console.log) {
 					console.log('Values extracted from submitted form', values);
 					console.log(JSON.stringify(values, null, 2))
-				}
+				} */
 				values['pairs']=pairs
 
 				activesocket.emit('saveConfig', values)

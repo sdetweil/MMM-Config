@@ -10,9 +10,14 @@ config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
 mod_lastsaved=$(cat $d/modules_lastchange)
 defaults_file=$d/defaults.js
+schema_file_exists=0
 modules_changed=0
+FILE=$d/schema3.json
+if [ -f "$FILE" ]; then
+    schema_file_exists=1
+fi
 # if the modules changes
-if [ "$mod_lastsaved". != "$mod_lastchange". ]; then
+if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then
 	#get to the the modules list
 	cd ~/$base/modules
 	# get the list of installed modules, including defaults
