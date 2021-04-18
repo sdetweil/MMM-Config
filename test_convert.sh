@@ -10,8 +10,8 @@ config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
 mod_lastsaved=$(cat $d/modules_lastchange)
 defaults_file=$d/defaults.js
-schema_file_exists=0
 modules_changed=0
+schema_file_exists=0
 FILE=$d/schema3.json
 if [ -f "$FILE" ]; then
     schema_file_exists=1
@@ -50,7 +50,7 @@ fi
 # if the config changed since last start or the modules changed
 if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./buildschema2.js $defaults_file >schema3.json
+	node ./buildschema2.js $defaults_file >$FILE
 	echo $config_lastchange>$d/config_lastchange
 fi
 echo completed

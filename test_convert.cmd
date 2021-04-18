@@ -1,4 +1,4 @@
-@echo off 
+rem @echo off 
 Setlocal EnableDelayedExpansion 
 rem
 rem port of unix script
@@ -24,8 +24,17 @@ for /f "delims=" %%x in (%d%config_lastchanged) do (set config_lastsaved=%%x)
 @for /f "tokens=1,2"  %%m in ('dir ..\..\config\config.js ^| find "config.js"') do (set config_lastchanged="%%m %%n")
 
 set defaults_file=%d%\defaults.js
-
-if %modules_lastsaved% neq %modules_lastchanged% (
+set schema_file_exists=0
+set FILE=%d%/schema3.json
+if exist %FILE% (
+    set schema_file_exists=1
+)
+set changed=0
+set need_to_update_modules=0
+rem windows bacth has no OR operator
+if %modules_lastsaved% neq %modules_lastchanged% ( set set need_to_update_modules=1)
+if %schema_file_exists% equ 0 (set need_to_update_modules=1)
+if %need_to_update_modules% equ 1 (
 rem 
 rem if modules folder change date doesn't match saved
 rem       
@@ -59,13 +68,14 @@ rem
 	   echo module.exports={defined_config,config};  >>%defaults_file%
 	   rem record that we processed for the modules now
 	   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "modules" ^| find /v "node"`) do echo "%%m %%n" >%d%modules_lastchanged
+	   set changed=1
 )	   
 rem proces for the web page in either modules list or config.js changed
-set changed=0
 if %config_lastsaved% neq %config_lastchanged%  (set changed=1)
 if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
+if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 	if %changed% equ 1 (
-	   node buildschema.js %defaults_file% >schema2.js
+	   node buildschema2.js %defaults_file% >%FILE%
        for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
 	)
 	   
