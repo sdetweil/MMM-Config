@@ -1,0 +1,2 @@
+#!/bin/bash
+rm ./shema3.json 2>/dev/null
