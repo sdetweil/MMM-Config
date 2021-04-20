@@ -199,7 +199,7 @@ process_submit: async function (data, self){
 						let modified_value = {}
 						let v=p.split('.')
 						let j = (v[0] =='config')?data[v[0]][v[1]]: data[v[0]]['config'][v[1]]
-	 					console.log("processing for pair="+p+"  data="+JSON.stringify(j))
+	 					//console.log("processing for pair="+p+"  data="+JSON.stringify(j))
 						// convert the array items to object items
 						for(const item of j){
 							  let property=item.split(':')
