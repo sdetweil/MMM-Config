@@ -4,8 +4,7 @@
   "description": "",
   "main": "MMM-Config.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "positinstall":"./postinstall"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
