@@ -2,6 +2,7 @@ use:'strict'
 const debug= false
 var t = true
 var f = false
+const sort=false
 
 const defines = require(process.argv[2])
 
@@ -134,21 +135,43 @@ for(const module_definition of Object.keys(defines.defined_config)){
 
 }
 
-// sort the form alphabetically, vs as found
-form[0].items[1].items.sort(function (a, b) {
+if(!sort){
+	let xy = []
 
-	// compare titles, function for clarity
-	function testit(x,y){
-		if(a.title.toLowerCase() < b.title.toLowerCase()) { return -1; }
-    if(a.title.toLowerCase() > b.title.toLowerCase()) { return 1; }
-    return 0;
-  }
-  // get the difference
-	let r = testit(a,b)
-	// return results to sort
-	return r
-})
+	let temp =form[0].items[1].items
 
+	defines.config.modules.forEach((m)=>{
+			name=m.module
+			for(let i in temp){
+				if(temp[i].title == name){
+					// watch out, splice returns an array
+					// we want the element of the array
+					xy.push(temp.splice(i,1)[0])
+					break;
+				}
+			}
+	})
+	// save the rest of the items to end of the new array
+	xy.push.apply(xy, temp);
+	// reset the form to the new order
+	form[0].items[1].items=xy
+}
+else {
+	// sort the form alphabetically, vs as found
+	form[0].items[1].items.sort(function (a, b) {
+
+		// compare titles, function for clarity
+		function testit(x,y){
+			if(a.title.toLowerCase() < b.title.toLowerCase()) { return -1; }
+	    if(a.title.toLowerCase() > b.title.toLowerCase()) { return 1; }
+	    return 0;
+	  }
+	  // get the difference
+		let r = testit(a,b)
+		// return results to sort
+		return r
+	})
+}
 // add a push button to submit the form
 form.push(  {
     "type": "submit",
