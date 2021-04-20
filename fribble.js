@@ -86,7 +86,7 @@ JSONForm.fieldTypes['pair'] = {
       // find the other field and save ITS value too
       values[id==RightID?LeftID:RightID] = $(parent).find('#'+(id==RightID?LeftID:RightID)).val()
       // set the field that will be returned on submit
-      $(parent).find('#'+CommonID).val(values[LeftID]+':'+values[RightID])
+      $(parent).find('#'+CommonID).val("{"+values[LeftID]+':'+values[RightID]+"}")
     });
   }
 };

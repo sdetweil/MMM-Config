@@ -189,6 +189,37 @@ function copyprop(dest,source){
 			  }
 		}
 }
+	function find_empty_arrays(obj, stack, hash){
+		if(typeof obj == 'object'){
+			if(Array.isArray(obj)){
+				//console.log(" object is an array, length="+obj.length)
+				for (const o of obj){
+					stack.push("[]")
+					hash=find_empty_arrays(o,stack, hash)
+					stack.pop()
+				}
+				//console.log("adding "+stack.join('.'))
+				let t = stack.join('.')
+				if(t.endsWith(".[]"))
+					t=t.replace(".[]","[]")
+				hash.push(t)
+			}
+			else {
+				if(obj){
+					//console.log(" object is an object, length="+Object.keys(obj).length)
+					for(const x of Object.keys(obj)){
+						//console.log("item ="+x)
+						if(typeof obj[x] == 'object'){
+							stack.push(x)
+							hash=find_empty_arrays(obj[x],stack, hash)
+							stack.pop()
+						}
+					}
+				}
+			}
+		}
+		return hash
+	}
 	// get the module properties from the config.js entry
 	function getConfigModule(m, source){
 		//console.log("looking for "+m.module)
@@ -223,11 +254,17 @@ function copyprop(dest,source){
 	// get the non module parameters from active config.js
 	for(let k of Object.keys(defines.config)){
 		if(k !== 'modules'){
-			base[k]=JSON.parse(JSON.stringify(defines.config[k]))
+			base[k]=clone(defines.config[k])
 		}
 	}
-	let x = value
-	x['config']=base
+	//let x = value
+	value['config']=base
+
+
+	let empty_arrays =find_empty_arrays(value,[],[])
+	//value.empty_arrays=xyz
+
+	//console.log(" empty arrays="+JSON.stringify(xyz,' ',2))
 
 	// fixup the pair variables so they are proper objects for jsonform
 	for(let m of Object.keys(pairVariables)){
@@ -253,24 +290,20 @@ function copyprop(dest,source){
 	}
 
 
-	let combined = { schema:schema, form:form, value:x, pairs:pairVariables}
+
+	let combined = { schema:schema, form:form, value:value, pairs:pairVariables, arrays:empty_arrays}
 	//console.log( "    $('form').jsonForm({")
 	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
-	/*console.log("      ,onSubmit: function (errors, values) {\
-        if (errors) {\
-          $('#res').html('<p>I beg your pardon?</p>');\
-        } else {\
-          $('#res').html('<p>Hello ' + values.name + '.' +\
-            (values.age ? '<br/>You are ' + values.age + '.' : '') +\
-            '</p>');\
-        }\
-      }\
-    });") */
+
+
+  function clone(obj){
+  	return JSON.parse(JSON.stringify(obj))
+  }
 
 	function processModule(schema, form, value, defines, module_name){
 
-		value[module_name]={ "disabled": true, "module": module_name,"position": "middle",config:defines}
+		value[module_name]={ "disabled": true, "module": module_name,"position": "none",config:defines}
 
 		if(debug) console.log("name="+module_name +" properties="+JSON.stringify(defines)+"\n")
 
@@ -278,7 +311,8 @@ function copyprop(dest,source){
 			"module": {type:"string",title:"module", default:module_name, readonly:true},
 			"disabled": {type:"boolean",title:"disabled", default:false},
 			"position": {type:"string",title:"position",
-					"enum": [ "top_bar",
+					"enum": [ "none",
+										"top_bar",
 										"top_left",
 										"top_center",
 										"top_right",
@@ -298,7 +332,7 @@ function copyprop(dest,source){
 			"config": {type:'object',title:"config", properties:{}}
 		}}
 	// make a copy of the template
-	let mform= JSON.parse(JSON.stringify(module_form_template))
+	let mform= clone(module_form_template)
 	mform.title= module_name
 	mform.items.push(module_name+'.'+"disabled")
 	mform.items.push(module_name+'.'+"position")
@@ -334,7 +368,7 @@ function processArrayProperty(schema, form, value, defines, module_name, mform ,
 					  			if(Array.isArray(o)){
 					  				schema[module_name]['properties']['config']['properties'][module_property]={'items':{type:'array',"items":{"type":"string"}}}
 					  				delete vform.key
-					  				let mkey="\""+module_name+"."+"config"+"."+module_property+"\""
+					  				//let mkey="\""+module_name+"."+"config"+"."+module_property+"\""
 					  				vform["items"]={type:"section", items:[]}
 					  				if(debug) console.log("vform="+JSON.stringify(vform))
 					  				vform['items']['items'].push(module_name+"."+"config"+"."+module_property)
@@ -346,7 +380,7 @@ function processArrayProperty(schema, form, value, defines, module_name, mform ,
 					  				//console.log(name+"= object="+JSON.stringify(o))
 					  				schema[module_name]['properties']['config']['properties'][module_property]={'items':{type: "object",properties: {}}}
 					  				//schema[module_name]['properties'][x]['items']['properties']={}
-					  				vform= JSON.parse(JSON.stringify(object_template))
+					  				vform= clone(object_template)
 					  	  		vform.title=module_property
 					  	  		vform.items[0].items=[]
 					  	  		//vform.key=name+"."+x
@@ -381,7 +415,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 		let first_done= false;
 		let pair_object=false
 		// loop thru them (may be only 1)
-		vform = JSON.parse(JSON.stringify(object_template))
+		vform = clone(object_template)
 		vform['type'] ='fieldset'
 		vform['items']=[]
 		vform['title']=module_property
@@ -398,7 +432,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    if(typeof vv === "string" || pair_object==true){
 	    	if(debug) console.log("object with string value")
 	    	pair_object=true
-	    	vform= JSON.parse(JSON.stringify(array_template))
+	    	vform= clone(array_template)
 	     // vform.type='object'
 	  	  vform.title=module_property
 	  	  vform['items']={}
@@ -420,7 +454,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    	if(!Array.isArray(vv)){
 	    		if(debug) console.log("object , but IS NOT array")
 	    		vv = JSON.stringify(vv)
-  	  	  vform= JSON.parse(JSON.stringify(object_template))
+  	  	  vform= clone(object_template)
   	  	  vform['type']='array'
   	  	  vform['title']=module_property
   	  	  mform.items.pop()

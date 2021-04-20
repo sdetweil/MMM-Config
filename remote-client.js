@@ -76,6 +76,7 @@ $(function () {
 	activesocket.on('json', function (data) {
 		data.configJSON =  data
 		let pairs = data.pairs
+		let arrays = data.arrays
 		try {
 			data.configJSON.onSubmitValid = function (values) {
 				let x = pairs
@@ -84,6 +85,7 @@ $(function () {
 					console.log(JSON.stringify(values, null, 2))
 				} */
 				values['pairs']=pairs
+				values['arrays']=arrays
 
 				activesocket.emit('saveConfig', values)
 				$('#outMsg').html("<p><strong>Your Configuration has submitted.</strong></p>")
