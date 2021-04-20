@@ -1,0 +1,1 @@
+@del .\shema3.json 2>nul
