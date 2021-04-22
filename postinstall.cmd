@@ -1,1 +1,1 @@
-@del .\shema3.json 2>nul
+@del .\schema3.json 2>nul

@@ -27,7 +27,7 @@ set defaults_file=%d%\defaults.js
 set schema_file_exists=0
 set FILE=%d%/schema3.json
 if exist %FILE% (
-	if "%1." neq "override" (
+	if "%1." neq "override." (
     	set schema_file_exists=1
     )
 )
