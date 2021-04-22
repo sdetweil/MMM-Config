@@ -27,7 +27,9 @@ set defaults_file=%d%\defaults.js
 set schema_file_exists=0
 set FILE=%d%/schema3.json
 if exist %FILE% (
-    set schema_file_exists=1
+	if "%1." neq "override" (
+    	set schema_file_exists=1
+    )
 )
 set changed=0
 set need_to_update_modules=0

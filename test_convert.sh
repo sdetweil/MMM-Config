@@ -14,7 +14,9 @@ modules_changed=0
 schema_file_exists=0
 FILE=$d/schema3.json
 if [ -f "$FILE" ]; then
-    schema_file_exists=1
+	if [ "$1". != "override." ]; then
+    	schema_file_exists=1
+	fi
 fi
 # if the modules changes
 if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then

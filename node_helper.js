@@ -54,6 +54,7 @@ config:{},
 
 	startit() {
 		this.command = __dirname+((os.platform()=='win32')?'\\test_convert.cmd':'/test_convert.sh')
+		this.command += this.config.force_update? " override": ""
 		console.log("command ="+this.command);
 		console.log('Starting module helper:' +this.name);
 		this.launchit()
