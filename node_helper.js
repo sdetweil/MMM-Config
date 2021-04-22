@@ -320,8 +320,8 @@ process_submit: async function (data, self){
 			let x2 = detailedDiff(x,x1)
 			//console.log("data new to old diff ="+JSON.stringify(x,' ',2)+ "\n\n old to new ="+JSON.stringify(x1,' ',2)+ "\n\n delta to original ="+JSON.stringify(x2,' ',2))
 			//let reg=/(.*[^:])\:.*/gm
-			let xx = JSON.stringify(r, null, 2)
-
+			let xx = JSON.stringify(r, null, 2).replace(/::/g,"==").replace(/f:/g,"~~")
+			//console.log(xx)
 			//console.log("there are "+xx.length+" matches")
 			xx.match(/(.*[^:])\:.*/gm).forEach(match => {
 				let t = match.split(":")
@@ -332,7 +332,7 @@ process_submit: async function (data, self){
 					xx=xx.replace(new RegExp(t[0]+':', 'g'), t[0].replace(/\"/g,"")+':')
 				}
 			})
-			xx=xx.replace(new RegExp('config:'), 'var config =')
+			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/==/g,"::").replace(/~~/g,"f:")
 			fs.writeFile(__dirname +"/config.js", xx.slice(1,-1)+closeString, "utf8", function (err) {
 				if (err) {
 					console.error(err)
