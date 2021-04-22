@@ -1,0 +1,23 @@
+     {  "type": "array",
+        "items": {
+          "type": "object",
+          "title": "Modules",
+          "properties": {
+            "name": {
+              "type": "string",
+              "title": "",
+              "readonly":"true"
+            },
+            "position": {
+              "type": "string",
+              "title": "position",
+              "enum": [ ]
+            },
+            "order": {
+              "type": "string",
+              "title": "order",
+              "enum": [ "*", "1" ,"2", "3","4","5"]
+            }
+          }
+        }
+      }

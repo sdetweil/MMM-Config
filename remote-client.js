@@ -79,7 +79,7 @@ $(function () {
 		let arrays = data.arrays
 		try {
 			data.configJSON.onSubmitValid = function (values) {
-				let x = pairs
+				//let x = pairs
 			/*	if (console && console.log) {
 					console.log('Values extracted from submitted form', values);
 					console.log(JSON.stringify(values, null, 2))

@@ -24,7 +24,6 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	list=$(find . -maxdepth 1 -type d | grep -v default | awk -F/ '{ print ($2 =="default" && $3 !="") ? "default/"$3 :  ($2 !="default") ? $2: ""}' | uniq )
 	list1=$(find ./default -maxdepth 1 -type d | awk -F/ '{ print ($2 =="default" && $3 !="") ? "default/"$3 :  ($2 !="default") ? $2: ""}' | uniq )
 	listf="$list$list1"
-	echo listf = $listf
 	modules=($listf)
 	echo "const config = require('../../config/config.js')" >$defaults_file
 	echo "var defined_config = {"  >>$defaults_file

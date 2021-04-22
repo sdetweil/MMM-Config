@@ -8,6 +8,9 @@ const defines = require(process.argv[2])
 
 const merge = require('lodash.merge');
 
+const fs = require("fs")
+
+
 var schema = {}
 var form = [
 						{
@@ -35,6 +38,9 @@ var form = [
 			         ]
 			       }
 	         ]
+const module_position_schema= JSON.parse(fs.readFileSync(__dirname+"/module_positions_schema.json",'utf8'))
+const module_position_form= JSON.parse(fs.readFileSync(__dirname+"/module_positions_form.json",'utf8'))
+const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
 const module_form_template= {
 							              "type": "fieldset",
 							              "title": "modulename",
@@ -173,6 +179,7 @@ else {
 	})
 }
 // add a push button to submit the form
+form.push(module_position_form)
 form.push(  {
     "type": "submit",
     "title": "OK Go - This Too Shall Pass"
@@ -254,24 +261,99 @@ function copyprop(dest,source){
 		}
 		return null
 	}
+
+	let positions =[]
+	let layout_order={}
+	module_positions.forEach((position)=>{
+		module_position_schema.items.properties.position.enum.push(position)
+		layout_order[position]=[]
+	})
+	schema['positions']=module_position_schema
 	// loop thru the active config.js
 	// merge with defaults
 	for(let m of defines.config.modules){
+		  // if we have data in the value section
 		  if(value[m.module] !== undefined){
+		  	if(debug) console.log(" have module info ="+m.module+"="+JSON.stringify(value[m.module],' ',2))
 		  	let x = getConfigModule(m,defines.config.modules)
 		  	// if this module is in config.js
 		  	if(x){
-		  		// merge the values
-		 			value[m.module] = merge(value[m.module],getConfigModule(m,defines.config.modules))
-		 			// if the module didn't specify disabled,
 		 			if(x.disabled == undefined)
 		 				// it defaults to false
-		 				value[m.module]['disabled']=false
+		 				x.disabled=false
+		  		if(debug) console.log(" have module info in config.js ="+x.module+"="+JSON.stringify(x,' ',2))
+		  		// merge the values
+		 			let tt = merge(value[m.module],x) //getConfigModule(m,defines.config.modules))
+		 			if(debug) console.log(" tt="+JSON.stringify(tt,' ',2))
+		 			// if the module didn't specify disabled,
+		 			if(tt.disabled == undefined)
+		 				// it defaults to false
+		 				tt.disabled=false
+		 			if(tt.order == undefined ){
+		 				tt.order='*'
+		 			}
+		 			if(tt.position == undefined ){
+		 				tt.position='none'
+		 			}
+		 			//layout_order[tt.position].push(tt)
+		 			value[m.module]=tt
+		 			/*let mp=(value[m.module].position !== undefined)?value[m.module].position:'none'
+		 			let order=(value[m.module].order !== undefined)?value[m.module].order:'*') */
+		 			positions.push({name:m.module,position:tt.position,order:tt.order})
+		 		} else {
+		 				if(debug)  console.log("DO NOT have module info in config.js ="+m.module)
 		 		}
 		 	}
-		 	else
+		 	else{
+		 		if(debug) console.log("DO NOT have module info ="+m.module)
+		 		//value[m.module]=m
+		 		if(m.position == undefined ){
+		 			m.position='none'
+		 		}
+		 		if(m.order == undefined ){
+		 			m.order='*'
+		 		}
 		 		value[m.module]=m
+		 		positions.push({name:m.module,position:m.position,order:m.order})
+		 		//layout_order[m.position].push(m)
+		 	}
 	}
+function isNumeric(str){
+    return /^\d+$/.test(str);
+}
+	// sort the modules in position by order
+	module_positions.forEach((position)=>{
+	// sort the form alphabetically, vs as found
+	  layout_order[position].sort(function (a, b) {
+
+			// compare titles, function for clarity
+			function testit(x,y){
+				if(isNumeric(a.border) &&  isNumeric(b.border) ){
+					if(a.order < b.order) { return -1; }
+			    if(a.order > b.order) { return 1; }
+			  } else {
+			  	if(isNumeric(a.order)  && !isNumeric(b.order)) {return 1;}
+			  	if(!isNumeric(a.order)  && isNumeric(b.order)) {return -1;}
+			  }
+		    return 0;
+		  }
+		  // get the difference
+			let r = testit(a,b)
+			// return results to sort
+			return r
+		})
+	})
+	// now that modules are sorted
+	// add the info to the value section
+	module_positions.forEach((position)=>{
+		layout_order[position].forEach((m)=>{
+			value[m.module]=m
+			positions.push({name:m.module,position:m.position, order:m.order})
+		})
+	})
+
+	value['positions']=positions
+	//form.push({"validate":"false"})
 
 	let base= {}
 	// get the non module parameters from active config.js
@@ -314,7 +396,7 @@ function copyprop(dest,source){
 
 
 
-	let combined = { schema:schema, form:form, value:value, pairs:pairVariables, arrays:empty_arrays}
+	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays}
 	//console.log( "    $('form').jsonForm({")
 	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
@@ -326,39 +408,26 @@ function copyprop(dest,source){
 
 	function processModule(schema, form, value, defines, module_name){
 
-		value[module_name]={ "disabled": true, "module": module_name,"position": "none",config:defines}
+		value[module_name]={ "disabled": true, "module": module_name,"position": "none",order:"*", config:defines}
 
 		if(debug) console.log("name="+module_name +" properties="+JSON.stringify(defines)+"\n")
 
 		schema[module_name]= { type:'object',title:"properties for "+module_name, properties:{
 			"module": {type:"string",title:"module", default:module_name, readonly:true},
 			"disabled": {type:"boolean",title:"disabled", default:false},
-			"position": {type:"string",title:"position",
-					"enum": [ "none",
-										"top_bar",
-										"top_left",
-										"top_center",
-										"top_right",
-										"upper_third",
-										"middle",
-										"center",
-										"lower_third",
-										"bottom_bar",
-										"bottom_left",
-										"bottom_center",
-										"bottom_right",
-										"fullscreen_below",
-										"fullscreen_above"
-									]
+			"position": {type:"string",title:"module position",
+					"readonly": "true"
 				},
 			"classes": {type:"string",title:"classes", default:""},
+			"order": {type:"string",title:"order", default:"*"},
 			"config": {type:'object',title:"config", properties:{}}
 		}}
 	// make a copy of the template
 	let mform= clone(module_form_template)
 	mform.title= module_name
 	mform.items.push(module_name+'.'+"disabled")
-	mform.items.push(module_name+'.'+"position")
+	mform.items.push({ key:module_name+'.'+"position", description:"use Module Positions section below to set or change"})
+	mform.items.push({key:module_name+'.'+"order", type:"hidden"})
 
   processModuleProperties(schema, form, value, defines, module_name, mform)
 

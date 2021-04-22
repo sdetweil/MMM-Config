@@ -11,7 +11,7 @@
   "dependencies": {
     "deep-object-diff": "^1.1.0",
     "express": "^4.17.1",
-    "jsonform": "^2.2.3",
+    "jsonform": "git://github.com/sdetweil/jsonform.git",
     "lodash": "^4.17.21",
     "lodash.isarray": "^4.0.0",
     "lodash.isequal": "^4.5.0",

@@ -17,6 +17,7 @@ const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
 const fs = require('fs')
 const configPath = __dirname + '/schema3.json'
+const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
 const closeString = ";\n\
 \n\
 /*************** DO NOT EDIT THE LINE BELOW ***************/\n\
@@ -133,18 +134,18 @@ clean_diff: function(diff){
 
 	let a = Object.keys(object.added).length
 	  if(a >0)
-	  	console.log("a="+a+" "+JSON.stringify(Object.keys(object.added),' ',2))
+	  	if(debug) console.log("a="+a+" "+JSON.stringify(Object.keys(object.added),' ',2))
 	let d = Object.keys(object.deleted).length
 	  if(d >0){
-	  	console.log("d="+d+" "+JSON.stringify(Object.keys(object.deleted),' ',2))
+	  	if(debug) console.log("d="+d+" "+JSON.stringify(Object.keys(object.deleted),' ',2))
 	  	Object.keys(object.deleted).forEach((k)=>{
 	  			 console.log("d="+k+" "+JSON.stringify(object.deleted[k],' ',2))
 	  	})
 	  }
 	let u = Object.keys(object.updated).length
 	  if(u >0)
-	  	console.log("u="+u+" "+JSON.stringify(Object.keys(object.updated),' ',2))
-	console.log("a="+a+" d="+d+" u="+u)
+	  	if(debug) console.log("u="+u+" "+JSON.stringify(Object.keys(object.updated),' ',2))
+	if(debug)console.log("a="+a+" d="+d+" u="+u)
   return (a+d+u) === 0
 },
 isNumeric :function(n) {
@@ -163,7 +164,7 @@ mergeModule(config, data){
 	  										}), {});*/
 },
 
-process_submit: async function (data, self){
+process_submit: async function (data, self) {
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
 			if(1) {
@@ -276,6 +277,12 @@ process_submit: async function (data, self){
 				}
 			}
 
+let layout_order={}
+for(let m of module_positions){
+	layout_order[m]=[]
+}
+
+
 			// setup the final data to write out
 			let r = {}
 			r['config']=data['config']
@@ -286,16 +293,17 @@ process_submit: async function (data, self){
 			for(let m of Object.keys(data)){
 				// don't copy config info
 				if(m !== 'config' && data[m].disabled === false ){
-					if(data[m].position==='none')
-						delete data[m].position
 					// default is what the form has
 					let mx = data[m]
-					if(debug) console.log("looking for modules="+m.module+" in config.js , have data="+JSON.stringify(mx,' ',2))
+					if(debug) console.log("looking for modules="+m+" in config.js , have form data="+JSON.stringify(mx,' ',2))
 					// find the config.js entry, if present
-					let my=this.getConfigModule(m, cfg.config.modules)
+					let mc=this.getConfigModule(m, cfg.config.modules)
+					if(debug) console.log("looking for modules="+m+" in config.js , have config data="+JSON.stringify(mc,' ',2))
+					if(mc.order === undefined)
+						mc.order=mx.order
 					// if present, merge from the form
-					if(my){
-						mx=this.mergeModule(my,data[m])
+					if(mc){
+						mx=this.mergeModule(mc,data[m])
 
 						//console.log("merging "+mx.module+"="+JSON.stringify(mx,' ',2))
 					}
@@ -305,14 +313,52 @@ process_submit: async function (data, self){
 						for(let x of Object.keys(mx)){
 							t[x]=mx[x]
 	   				}
-						r['config']['modules'].push(t)
+	   				if(t.position=== undefined)
+	   					t.position = 'none'
+	   				layout_order[t.position].push(t)
+						//r['config']['modules'].push(t)
 					}
-
 					//console.log("deleting data."+m+" data.config="+JSON.stringify(data['config'],' ',2))
 				  //delete data[m]
+				} else {
+					if(m!=config){
+						if(debug) console.log(" module disabled="+m)
+					}
 				}
 			}
+			var self = this
+			// sort the modules in position by order
+			module_positions.forEach((position)=>{
+			// sort the form alphabetically, vs as found
+			  //console.log("pre  sort for position="+position+" there are "+layout_order[position].length+" entries")
+			  layout_order[position].sort((a, b) =>{
 
+					// compare titles, function for clarity
+					function testit(x,y){
+						if(self.isNumeric(a.border) &&  self.isNumeric(b.border) ){
+							if(a.order < b.order) { return -1; }
+					    if(a.order > b.order) { return 1; }
+					  } else {
+					  	if(self.isNumeric(a.order)  && !self.isNumeric(b.order)) {return -1;}
+					  	if(!self.isNumeric(a.order)  && self.isNumeric(b.order)) {return 1;}
+					  }
+				    return 0;
+				  }
+				  // get the difference
+					let r = testit(a,b)
+					// return results to sort
+					return r
+				})
+			  // now that modules are sorted
+
+				//console.log("post sort for position="+position+" there are "+layout_order[position].length+" entries")
+				layout_order[position].forEach((m)=>{
+					//console.log("processing for module ="+m.module)
+					if(m.position === 'none')
+						delete  m.position
+					r['config']['modules'].push(m)
+				})
+			})
 
 		//	console.log(" config = "+JSON.stringify(cfg,' ',2))
 			let x = detailedDiff(r['config'], cfg.config)
@@ -350,7 +396,7 @@ remote_start : function (self) {
 
 
 	function getFiles(self) {
-		console.log("path="+configPath)
+		if(debug) console.log("path="+configPath)
 
 		if (fs.existsSync(configPath)) {
 			try {

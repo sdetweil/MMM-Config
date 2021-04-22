@@ -78,15 +78,20 @@ Module.register("MMM-Config", {
 
 		// if user supplied message text in its module config, use it
 		if(this.config.hasOwnProperty("url")){
-			// using text from module config block in config.js
-			//wrapper.innerText = this.config.message;
-			var canvas=document.createElement('canvas')
-			canvas.className='qr';
-			QRCode.toCanvas(canvas, this.config.url, function (error) {
-			    if (error) Log.error(error)
-			    if(this.config.debug) Log.log('success!');
-			  })
-			wrapper.appendChild(canvas)
+			if(config.address === "0.0.0.0" && config.ipWhitelist === []){
+				// using text from module config block in config.js
+				//wrapper.innerText = this.config.message;
+				var canvas=document.createElement('canvas')
+				canvas.className='qr';
+				QRCode.toCanvas(canvas, this.config.url, function (error) {
+				    if (error) Log.error(error)
+				    if(this.config.debug) Log.log('success!');
+				  })
+				wrapper.appendChild(canvas)
+			} else {
+				wrapper.innerHTML = "<p>"+this.name+" cannot use QR code,<br>address is set to localhost, <br>or<br>ipWhitelist prevents outside system access <br>use this url on the MagicMirror system <br>"+this.config.url
+
+			}
 		}
 		return wrapper
 	},

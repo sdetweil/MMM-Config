@@ -1,0 +1,37 @@
+   {
+      "title":"Module Positions",
+      "type":"fieldset",
+      "_comment":"put this content at the bottom of list of config controls",
+      "expandable":true,
+      "order":100,
+      "items": [
+        {
+          "type":"tabarray",
+          "items":[
+            {
+              "type":"section",
+              "legend":"{{value}}",
+              "items":[
+                {
+                "description":"Module name",
+                "key":"positions[].name",
+                "valueInLegend": true,
+                "read-only":"true",
+                "notitle": true
+                },
+                {
+                "key":"positions[].position",
+                "description":"module position in MagicMirror regions",
+                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1);  var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
+                },
+                {
+                "key":"positions[].order",
+                "description":"position order in MagicMirror region, 1 is 1st, 2 is second, and so on, * is don't care",
+                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1);  var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
