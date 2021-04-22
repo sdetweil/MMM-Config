@@ -25,6 +25,8 @@ if (typeof module !== \"undefined\") {module.exports = config;}"
 // add require of other javascripot components here
 // var xxx = require('yyy') here
 
+let debug = false
+
 module.exports = NodeHelper.create({
 config:{},
 	launchit(){
@@ -110,16 +112,22 @@ reformat_array:function (data){
 		}
 },
 object_from_key: function (object, key){
+	if(debug) console.log("key = "+key)
 	if(key.includes('.')){
 		let r = key.split('.')
 		let left = r.shift()
-		return this.object_from_key(object[left],r.join('.'))
+		if(object[left] != undefined)
+		  return this.object_from_key(object[left],r.join('.'))
+		else
+			key = left
 	}
+	if(debug) console.log("object from key="+JSON.stringify(object))
 	//console.log("checking item "+key+" in "+JSON.stringify(object, ' ',2))
-	if(object[key] === undefined)
+	if(object[key] === undefined)   //----------mykle
 		object[key]= JSON.parse(JSON.stringify([ "fribble" ]))
 	return {object: object, key:key }
 },
+
 clean_diff: function(diff){
 	let object = diff // JSON.parse(JSON.stringify(diff))
 
@@ -159,36 +167,50 @@ process_submit: async function (data, self){
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
 			if(1) {
-				//console.log("arrays="+JSON.stringify(data.arrays,' ',2))
+				if(debug) console.log("arrays="+JSON.stringify(data.arrays,' ',2))
 				for(const p of data.arrays){
 					let t=p
 					while(t.includes(".."))
 						t=t.replace("..",'.')
-					//console.log("processing for "+p+" cleanup="+t)
+					if(debug) console.log("processing for "+p+" cleanup="+t)
 					let nested=false
 					if(p.endsWith('[]')){
 						nested=true
 						t=p.slice(0,-2)
 					}
 					let v = t.split('.')
-					//console.log("processing for "+p+" parts="+JSON.stringify(v))
+					if(debug) console.log("processing for "+p+" parts="+JSON.stringify(v))
 					//  MMM-GooglePhotos.config.albums"
+					let rr = data[v[0]]
 					let o = this.object_from_key(data,t)
-					//console.log("object="+JSON.stringify(o,' ',2))
+					if(debug) console.log("object="+JSON.stringify(o,' ',2))
 						if(_.isEqual(o.object[o.key], [ "fribble" ])){
-							//console.log("items equal")
-								if(nested){
-									o.object[o.key] = [[]]
-									//console.log("set nested")
+							if(debug) console.log("items equal key="+o.key)
+							if(!t.endsWith(o.key)){
+								if(o.key === 'config'){
+								 	if(debug) console.log("setting object="+JSON.stringify(o.object)+" key="+o.key )
+									o.object[o.key] = {}
+									if(debug) console.log("done  setting object="+JSON.stringify(o.object)+" key="+o.key )
+									o.object=o.object[o.key]
+									if(debug) console.log("done 1 setting object="+JSON.stringify(o.object)+" key="+o.key )
+									// get last entry
+									o.key = v.slice(-1)
+									if(debug) console.log("done 2 setting object="+JSON.stringify(o.object)+" key="+o.key )
 								}
-								else{
-									o.object[o.key]= []
-									//console.log("set NOT nested")
-								}
+							}
+							if(nested){
+								o.object[o.key] = [[]]
+								//console.log("set nested")
+							}
+							else{
+								o.object[o.key]= []
+								//console.log("set NOT nested")
+							}
 						} else {
 							// present but NOT an array
 							this.reformat_array(o.object)
 						}
+						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
 				}
 				delete data.arrays
 			}
@@ -268,17 +290,24 @@ process_submit: async function (data, self){
 						delete data[m].position
 					// default is what the form has
 					let mx = data[m]
+					if(debug) console.log("looking for modules="+m.module+" in config.js , have data="+JSON.stringify(mx,' ',2))
 					// find the config.js entry, if present
-					mx=this.getConfigModule(m, cfg.config.modules)
+					let my=this.getConfigModule(m, cfg.config.modules)
 					// if present, merge from the form
-					if(mx){
-						mx=this.mergeModule(mx,data[m])
-						mx.module=m
-						//console.log("merging "+mx.module+"="+JSON.stringify(mx,' ',2))
+					if(my){
+						mx=this.mergeModule(my,data[m])
 
+						//console.log("merging "+mx.module+"="+JSON.stringify(mx,' ',2))
 					}
 					// update the results
-					r['config']['modules'].push(mx)
+					if(mx){
+						let t = { module:m }
+						for(let x of Object.keys(mx)){
+							t[x]=mx[x]
+	   				}
+						r['config']['modules'].push(t)
+					}
+
 					//console.log("deleting data."+m+" data.config="+JSON.stringify(data['config'],' ',2))
 				  //delete data[m]
 				}
@@ -325,6 +354,19 @@ remote_start : function (self) {
 
 		if (fs.existsSync(configPath)) {
 			try {
+
+			/*	self.config.data=JSON.parse(fs.readFileSync(configPath, "utf8"), function (key, value) {
+										if (typeof value === "string" && (value.startsWith("function") || value.includes("=>")) && value.endsWith("}")) {
+											console.log("parsed function = "+value)
+											value = new Function(value)
+											//value = eval('('+ value +')');
+											console.log("function="+JSON.stringify(value))
+											return value;
+										}
+										return value;
+									}); */
+
+
 				self.config.data = JSON.parse(fs.readFileSync(configPath, "utf8")) //json'd config file
 				console.log("schema file loaded")
 			//	console.log("have config parsed ="+JSON.stringify(self.config.data))
@@ -353,7 +395,7 @@ remote_start : function (self) {
    */
     var self = this
 	remote.io.on('connection', (socket) =>{
-			console.log("connection started")	
+			console.log("connection started")
 		//console.log("socket connected")
 		socket.emit('connected')
 
