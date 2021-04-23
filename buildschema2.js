@@ -263,10 +263,10 @@ function copyprop(dest,source){
 	}
 
 	let positions =[]
-	let layout_order={}
+	//let layout_order={}
 	module_positions.forEach((position)=>{
 		module_position_schema.items.properties.position.enum.push(position)
-		layout_order[position]=[]
+		//layout_order[position]=[]
 	})
 	schema['positions']=module_position_schema
 	// loop thru the active config.js
@@ -295,6 +295,7 @@ function copyprop(dest,source){
 		 			if(tt.position == undefined ){
 		 				tt.position='none'
 		 			}
+		 			tt.position=tt.position.replace(' ','_')
 		 			//layout_order[tt.position].push(tt)
 		 			value[m.module]=tt
 		 			/*let mp=(value[m.module].position !== undefined)?value[m.module].position:'none'
@@ -310,6 +311,7 @@ function copyprop(dest,source){
 		 		if(m.position == undefined ){
 		 			m.position='none'
 		 		}
+		 		m.position=m.position.replace(' ','_')
 		 		if(m.order == undefined ){
 		 			m.order='*'
 		 		}
@@ -318,39 +320,7 @@ function copyprop(dest,source){
 		 		//layout_order[m.position].push(m)
 		 	}
 	}
-function isNumeric(str){
-    return /^\d+$/.test(str);
-}
-	// sort the modules in position by order
-	module_positions.forEach((position)=>{
-	// sort the form alphabetically, vs as found
-	  layout_order[position].sort(function (a, b) {
 
-			// compare titles, function for clarity
-			function testit(x,y){
-				if(isNumeric(a.border) &&  isNumeric(b.border) ){
-					if(a.order < b.order) { return -1; }
-			    if(a.order > b.order) { return 1; }
-			  } else {
-			  	if(isNumeric(a.order)  && !isNumeric(b.order)) {return 1;}
-			  	if(!isNumeric(a.order)  && isNumeric(b.order)) {return -1;}
-			  }
-		    return 0;
-		  }
-		  // get the difference
-			let r = testit(a,b)
-			// return results to sort
-			return r
-		})
-	})
-	// now that modules are sorted
-	// add the info to the value section
-	module_positions.forEach((position)=>{
-		layout_order[position].forEach((m)=>{
-			value[m.module]=m
-			positions.push({name:m.module,position:m.position, order:m.order})
-		})
-	})
 
 	value['positions']=positions
 	//form.push({"validate":"false"})

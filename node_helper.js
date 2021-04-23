@@ -316,6 +316,7 @@ for(let m of module_positions){
 	   				}
 	   				if(t.position=== undefined)
 	   					t.position = 'none'
+	   				t.position=t.position.replace(' ','_')
 	   				layout_order[t.position].push(t)
 						//r['config']['modules'].push(t)
 					}
