@@ -80,7 +80,7 @@ config:{},
 			this.hostname = os.hostname()
 
 			this.config.url ='http://'+
-			(this.config.address=="0.0.0.0"?this.hostname:"localhost")+":"+this.config.port
+			(this.config.address=="0.0.0.0"?this.hostname:this.config.address)+":"+this.config.port
 
 			if(this.config.showQR){
 				this.sendSocketNotification("qr_url", this.config.url+"/modules/"+this.name+"/review")
