@@ -42,11 +42,16 @@ var form = [
 //console.log(interfaces)
 
 for(let interface of Object.keys(interfaces)){
-	let address = interfaces[interface][0].address
-	if(address ==="127.0.0.1")
-		address="localhost"
-	if(debug)console.log(" interface = "+address)
-	networkInterfaces.push(address)
+	for( let info in interfaces[interface]){
+		if(interfaces[interface][info].family ==='IPv4'){
+			let address = interfaces[interface][info].address
+			if(address ==="127.0.0.1")
+				address="localhost"
+			if(debug)console.log(" interface = "+address)
+			networkInterfaces.push(address)
+		break;
+		}
+	}
 }
 networkInterfaces.splice(1,0,"0.0.0.0")
 //console.log("networkInterfaces="+JSON.stringify(networkInterfaces))
