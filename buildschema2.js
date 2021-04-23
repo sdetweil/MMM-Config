@@ -182,7 +182,8 @@ else {
 form.push(module_position_form)
 form.push(  {
     "type": "submit",
-    "title": "OK Go - This Too Shall Pass"
+    "title": "Save, Create config",
+    "id":"submit_button"
   } )
 
 // merge properties from defined and configured together
@@ -295,6 +296,7 @@ function copyprop(dest,source){
 		 			if(tt.position == undefined ){
 		 				tt.position='none'
 		 			}
+		 			// watch out for spaces in position names
 		 			tt.position=tt.position.replace(' ','_')
 		 			//layout_order[tt.position].push(tt)
 		 			value[m.module]=tt

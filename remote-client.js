@@ -12,19 +12,6 @@ $(function () {
 	// config vars
 	var timeoutID
 
-	/*
-
-	   _____ _ _      _         _______ _
-	  / ____| (_)    | |       / / ____| |
-	 | |    | |_  ___| | __   / / |    | |__   __ _ _ __   __ _  ___
-	 | |    | | |/ __| |/ /  / /| |    | '_ \ / _` | '_ \ / _` |/ _ \
-	 | |____| | | (__|   <  / / | |____| | | | (_| | | | | (_| |  __/
-	  \_____|_|_|\___|_|\_\/_/   \_____|_| |_|\__,_|_| |_|\__, |\___|
-														   __/ |
-														  |___/
-
-	*/
-
 	// watch out in case the libraries don't load
 	if(location.href.split("/").slice(-1) =='config.html'){
 		if(typeof JSONForm !== 'object'){
@@ -34,29 +21,14 @@ $(function () {
 		}
 	}
 
-	/*
-
-	   _____            _        _     ______               _
-	  / ____|          | |      | |   |  ____|             | |
-	 | (___   ___   ___| | _____| |_  | |____   _____ _ __ | |_ ___
-	  \___ \ / _ \ / __| |/ / _ \ __| |  __\ \ / / _ \ '_ \| __/ __|
-	  ____) | (_) | (__|   <  __/ |_  | |___\ V /  __/ | | | |_\__ \
-	 |_____/ \___/ \___|_|\_\___|\__| |______\_/ \___|_| |_|\__|___/
-
-
-
-	*/
+	// socket
 
   const activesocket = io(server+":"+port, {
 	  reconnectionDelayMax: 10000
 	});
 	// global socket events
 	activesocket.on('connected', function () {
-	/*	$connectionBar.removeClass('disconnected').addClass('connected')
-		$connectionText.html('Connected!')
-		$.get('nav.html', function (data) {
-			$navBar.html(data)
-		}) */
+
 		switch (pos) {
 		case "config.html":
 			config_init()
@@ -67,31 +39,27 @@ $(function () {
 	})
 
 	activesocket.on('disconnect', function () {
-		//$connectionBar.removeClass('connected').addClass('disconnected')
-		//$connectionText.html('Disconnected :(')
+		// don't know what to do on disconnect
+		$('#outmessage').html("<p><strong>MagicMirror is not running</strong></p>")
+		hideElm('#submit_button')
 		;
 	})
 
 	// config socket events
 	activesocket.on('json', function (data) {
-		data.configJSON =  data
+		//data.configJSON =  data
 		let pairs = data.pairs
 		let arrays = data.arrays
+		$('#outmessage').text("")
 		try {
-			data.configJSON.onSubmitValid = function (values) {
-				//let x = pairs
-			/*	if (console && console.log) {
-					console.log('Values extracted from submitted form', values);
-					console.log(JSON.stringify(values, null, 2))
-				} */
+			data.onSubmitValid = function (values) {
 				values['pairs']=pairs
 				values['arrays']=arrays
 
 				activesocket.emit('saveConfig', values)
-				$('#outMsg').html("<p><strong>Your Configuration has submitted.</strong></p>")
-				showElm('#out', 1)
+				$('#outmessage').html("<p><strong>Your Configuration has been submitted.</strong></p>")
 			};
-			data.configJSON.onSubmit = function (errors,values) {
+			data.onSubmit = function (errors,values) {
 				if (errors) {
 					console.log('Validation errors 1', errors, values);
 					let buildInner = ""
@@ -103,19 +71,16 @@ $(function () {
 							"</p>"
 					})
 					$('#outMsg').html(buildInner)
-					showElm('#out', 1)
 					console.log('Validation errors 2', values);
 					return false;
 				}
 				return true;
 			};
-			/*data.configJSON.form.some(function (rootItm, rootIdx) {
-				if (!rootItm.title) { return false }
-			})*/
 
-			//$('#result').html('<form id="result-form" class="form-vertical"></form>');
-			$('#result-form').html("<div></div>")
-			$('#result-form').jsonForm(data.configJSON);
+			// replace any form from last connection
+			$('#result').html('<form id="result-form" class="form-vertical"></form>');
+			// insert the new form
+			$('#result-form').jsonForm(data);
 
 		}
 		catch (e) {
@@ -132,7 +97,6 @@ $(function () {
 			msg = "I Could not save your configuration. Don't give me that look, I'm just as sad about it as you are."
 		}
 		$('#outMsg').html("<p><strong>" + msg + "</strong></p>")
-		showElm('#out', 1)
 	})
 
 	/*
