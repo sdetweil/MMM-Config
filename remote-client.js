@@ -96,7 +96,7 @@ $(function () {
 		if (!msg) {
 			msg = "I Could not save your configuration. Don't give me that look, I'm just as sad about it as you are."
 		}
-		$('#outMsg').html("<p><strong>" + msg + "</strong></p>")
+		$('#outmessage').html("<p><strong>" + msg + "</strong></p>")
 	})
 
 	/*

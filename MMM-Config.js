@@ -79,7 +79,7 @@ Module.register("MMM-Config", {
 
 		// if user supplied message text in its module config, use it
 		if(this.config.hasOwnProperty("url")){
-			if(config.address === "0.0.0.0" && ( config.ipWhitelist && config.ipWhitelist.length == 0)) {
+			if(config.address != "localhost" && ( config.ipWhitelist && config.ipWhitelist.length == 0)) {
 				// using text from module config block in config.js
 				//wrapper.innerText = this.config.message;
 				var canvas=document.createElement('canvas')

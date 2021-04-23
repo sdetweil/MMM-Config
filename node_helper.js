@@ -165,7 +165,7 @@ mergeModule(config, data){
 	  										}), {});*/
 },
 
-process_submit: async function (data, self) {
+process_submit: async function (data, self, socket) {
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
 			if(1) {
@@ -287,6 +287,10 @@ for(let m of module_positions){
 			// setup the final data to write out
 			let r = {}
 			r['config']=data['config']
+			if(r['config']['address'].includes('-')){
+				console.log("removing text from address="+r['config']['address'])
+				r['config']['address']= r['config']['address'].split(' ')[0]
+			}
 			r['config']['modules']=[]
 			// loop thru the form data (has all modules)
 			// copy the modules over inside the modules block
@@ -385,6 +389,9 @@ for(let m of module_positions){
 				if (err) {
 					console.error(err)
 				}
+				else {
+					socket.emit("saved","config.js created successfully")
+				}
 			})
 
 },
@@ -451,7 +458,7 @@ remote_start : function (self) {
 
 		socket.on('saveConfig', (data) =>{ // used to save the form JSON
 
-				this.process_submit(data, self)
+				this.process_submit(data, self, socket)
 		})
 
 		socket.on('getForm', () => {

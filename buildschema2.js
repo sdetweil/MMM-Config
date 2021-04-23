@@ -7,9 +7,10 @@ const sort=false
 const defines = require(process.argv[2])
 
 const merge = require('lodash.merge');
+const interfaces= require('os').networkInterfaces()
 
 const fs = require("fs")
-
+const networkInterfaces=[]
 
 var schema = {}
 var form = [
@@ -38,6 +39,19 @@ var form = [
 			         ]
 			       }
 	         ]
+//console.log(interfaces)
+
+for(let interface of Object.keys(interfaces)){
+	let address = interfaces[interface][0].address
+	if(address ==="127.0.0.1")
+		address="localhost"
+	if(debug)console.log(" interface = "+address)
+	networkInterfaces.push(address)
+}
+networkInterfaces.splice(1,0,"0.0.0.0")
+//console.log("networkInterfaces="+JSON.stringify(networkInterfaces))
+
+
 const module_position_schema= JSON.parse(fs.readFileSync(__dirname+"/module_positions_schema.json",'utf8'))
 const module_position_form= JSON.parse(fs.readFileSync(__dirname+"/module_positions_form.json",'utf8'))
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
@@ -93,7 +107,13 @@ for(const setting of Object.keys(defines.config)){
 		 	 schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
 		 }
 	 }else {
-	 	schema['config']['properties'][setting] = {type:t, title: setting  }
+	 		if(setting=='address'){
+	 	   	 let as={ type: "string",title: "address",enum:networkInterfaces}
+	 	   	 schema['config']['properties'][setting]=as
+	 	  }
+	 	  else{
+	 			schema['config']['properties'][setting] = {type:t, title: setting  }
+	 		}
 	 }
 	 switch(t){
 	 	  case 'array':
@@ -123,9 +143,26 @@ for(const setting of Object.keys(defines.config)){
 	                })
 
 	 	  default:
+	 	  if(setting ==='address'){
+	 	  	let tm = {}
+	 	  	networkInterfaces.forEach((interface)=>{
+	 	  		switch(interface){
+	 	  			case "0.0.0.0":
+	 	  				tm[interface]= interface+" - application access from any machine that can access network"
+	 	  			break;
+	 	  			case "localhost":
+	 	  			  tm[interface]= interface+" - application access only from same machine"
+	 	  			break;
+	 	  			default:
+	 	  			 tm[interface]= interface +" - application access only from machine on same network"
+	 	  			}
+	 	  	})
+	 	  	form[0].items[0].items.push( {key:'config.'+setting, titleMap:tm})
+	 	  }else{
 	 	   form[0].items[0].items.push('config.'+setting)
+	 	  }
 	 }
-}
+	}
 
 // loop thru all the modules discovered on this system
 for(const module_definition of Object.keys(defines.defined_config)){
@@ -334,6 +371,7 @@ function copyprop(dest,source){
 			base[k]=clone(defines.config[k])
 		}
 	}
+
 	//let x = value
 	value['config']=base
 
