@@ -42,16 +42,10 @@ rem if modules folder change date doesn't match saved
 rem
        rem cd %d%
        del somefile 2>nul
-       rem figure out which token we need from path
-       set t=6
-       if "%d:~0,14%"=="C:\MagicMirror" (
-		 set t=4
-		)
-		echo !t! >nul
 	   rem get all the modules installed
-       for /f "tokens=%t% delims=\ usebackq" %%i in (`dir  .. /s/b/ad * ^| find /v "default"`) do @echo %%i >>somefile
+       for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
 	   rem get all the default modules
-	   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\default /b/ad * ^| find /V ".git" ^| find /V "node_modules"`) do @echo default\%%i >>somefile
+	   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo default\%%i >>somefile
 	   rem make a sorted unique list
        type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
 	   rem delete the work file
