@@ -407,8 +407,9 @@ for(let m of module_positions){
 			})
 			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/==/g,"::").replace(/~~/g,"f:")
 
-			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6)
-			fs.renameSync(oc, __dirname+ "/../../config/config.js"+"."+d)
+			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6).replace(/:/g,'.')
+			let targetpath=/*(os.platform()=='win32')?"/config/config.js":*/__dirname.split(path.sep).slice(0,-2).join(path.sep)+ "/config/config.js"
+			fs.renameSync(oc, targetpath+"."+d)
 			fs.writeFile(oc, xx.slice(1,-1)+closeString, "utf8", (err) => {
 				if (err) {
 					console.error(err)
