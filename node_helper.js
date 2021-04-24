@@ -16,6 +16,7 @@ const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
 const fs = require('fs')
+const oc =__dirname.split(path.sep).slice(0,-2).join(path.sep)+"/config/config.js"
 const configPath = __dirname + '/schema3.json'
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
 const closeString = ";\n\
@@ -25,8 +26,8 @@ if (typeof module !== \"undefined\") {module.exports = config;}"
 
 // add require of other javascripot components here
 // var xxx = require('yyy') here
-
 let debug = false
+
 
 module.exports = NodeHelper.create({
 config:{},
@@ -53,6 +54,16 @@ config:{},
 	},
 
 	startit() {
+		if(this.config.restart.length && this.config.restart.toLowerCase() === 'static'){
+			  let ep = (__dirname.split(path.sep).slice(0,-2).join(path.sep) +"/node_modules/.bin/electron")+((os.platform()=='win32')?'.cmd':'')
+			  console.log("electron path="+ep)
+				require('electron-reload')(oc, {
+				  electron: ep,
+				  argv: [__dirname.split(path.sep).slice(0,-2).join(path.sep)+"/js/electron.js"],
+				  forceHardReset: true,
+				  hardResetMethod: 'exit'
+				});
+		}
 		this.command = __dirname+((os.platform()=='win32')?'\\test_convert.cmd':'/test_convert.sh')
 		this.command += this.config.force_update? " override": ""
 		console.log("command ="+this.command);
@@ -60,6 +71,7 @@ config:{},
 		this.launchit()
 		this.extraRoutes()
 		this.remote_start(this)
+
 	},
 
 	getConfig: function(req,res){
@@ -310,6 +322,10 @@ for(let m of module_positions){
 							if(debug) console.log("existing config does NOT have order set, copying from form ="+mx.order)
 							mc.order=mx.order
 						}
+						if(mc.position === undefined){
+							if(debug) console.log("existing config does NOT have order set, copying from form ="+mx.order)
+							mc.position=mx.position
+						}
 
 						mx=this.mergeModule(mc,mx)
 
@@ -390,12 +406,20 @@ for(let m of module_positions){
 				}
 			})
 			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/==/g,"::").replace(/~~/g,"f:")
-			fs.writeFile(__dirname +"/config.js", xx.slice(1,-1)+closeString, "utf8", function (err) {
+
+			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6)
+			fs.renameSync(oc, __dirname+ "/../../config/config.js"+"."+d)
+			fs.writeFile(oc, xx.slice(1,-1)+closeString, "utf8", (err) => {
 				if (err) {
 					console.error(err)
 				}
 				else {
 					socket.emit("saved","config.js created successfully")
+					if(self.config.restart.length) {
+						if(self.config.restart.toLowerCase().startsWith("pm2:")){
+							exec("pm2 restart "+ self.config.restart.split(':')[1])
+						}
+					}
 				}
 			})
 

@@ -15,7 +15,8 @@ Module.register("MMM-Config", {
 	// and replaced if the same thing is provided in config
 	defaults: {
 		showQR: true,
-		force_update: true
+		force_update: true,
+		restart:""
 	},
 
 	init: function(){
