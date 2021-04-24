@@ -27,7 +27,7 @@
                 {
                 "key":"positions[].order",
                 "description":"position order in MagicMirror region, 1 is 1st, 2 is second, and so on, * is don't care",
-                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1);  var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
+                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1); var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
                 }
               ]
             }

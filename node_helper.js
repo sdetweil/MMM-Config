@@ -304,22 +304,27 @@ for(let m of module_positions){
 					// find the config.js entry, if present
 					let mc=this.getConfigModule(m, cfg.config.modules)
 					if(debug) console.log("looking for modules="+m+" in config.js , have config data="+JSON.stringify(mc,' ',2))
-					if(mc.order === undefined)
-						mc.order=mx.order
 					// if present, merge from the form
 					if(mc){
-						mx=this.mergeModule(mc,data[m])
+						if(mc.order === undefined){
+							if(debug) console.log("existing config does NOT have order set, copying from form ="+mx.order)
+							mc.order=mx.order
+						}
 
-						//console.log("merging "+mx.module+"="+JSON.stringify(mx,' ',2))
+						mx=this.mergeModule(mc,mx)
+
+						if(debug) console.log("merged "+mx.module+"="+JSON.stringify(mx,' ',2))
 					}
 					// update the results
 					if(mx){
 						let t = { module:m }
 						for(let x of Object.keys(mx)){
 							t[x]=mx[x]
+							if(debug) console.log("copied for key="+x)
 	   				}
 	   				if(t.position=== undefined)
 	   					t.position = 'none'
+
 	   				t.position=t.position.replace(' ','_')
 	   				layout_order[t.position].push(t)
 						//r['config']['modules'].push(t)

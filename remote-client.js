@@ -11,6 +11,7 @@ $(function () {
 
 	// config vars
 	var timeoutID
+	var timerHandle
 
 	// watch out in case the libraries don't load
 	if(location.href.split("/").slice(-1) =='config.html'){
@@ -42,6 +43,8 @@ $(function () {
 		// don't know what to do on disconnect
 		$('#outmessage').html("<p><strong>MagicMirror is not running</strong></p>")
 		hideElm('#submit_button')
+		if(timerHandle)
+			clearTimeout(timerHandle)
 		;
 	})
 
@@ -95,6 +98,13 @@ $(function () {
 	activesocket.on("saved", function (msg) {
 		if (!msg) {
 			msg = "I Could not save your configuration. Don't give me that look, I'm just as sad about it as you are."
+		}
+		if(msg.includes("successfully")){
+			timer_handle=setTimeout(()=>{
+						config_init()
+						timerHandle=null;
+					},
+				20000)
 		}
 		$('#outmessage').html("<p><strong>" + msg + "</strong></p>")
 	})
