@@ -1,6 +1,7 @@
    {
       "title":"Module Positions",
       "type":"fieldset",
+      "htmlClass": "MMM-Config",
       "_comment":"put this content at the bottom of list of config controls",
       "expandable":true,
       "order":100,

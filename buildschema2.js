@@ -145,16 +145,29 @@ form.push(  {
   } )
 
 
-
-	let positions =[]
 	//let layout_order={}
 	module_positions.forEach((position)=>{
 		module_position_schema.items.properties.position.enum.push(position)
 		//layout_order[position]=[]
 	})
 	schema['positions']=module_position_schema
+
+
+	let positions =[]
+	let position_hash = {}
+	// loop thru the form data
+	// save position info for all modules
+	Object.keys(value).forEach((key)=>{
+		switch(key){
+			case 'config':
+			break;
+			default:
+			   position_hash[key]={name:key,position:value[key].position,order:value[key].order}
+		}
+	})
 	// loop thru the active config.js
 	// merge with defaults
+	// overlay position info with other
 	for(let m of defines.config.modules){
 		  // if we have data in the value section
 		  if(value[m.module] !== undefined){
@@ -185,9 +198,10 @@ form.push(  {
 		 			value[m.module]=tt
 		 			/*let mp=(value[m.module].position !== undefined)?value[m.module].position:'none'
 		 			let order=(value[m.module].order !== undefined)?value[m.module].order:'*') */
-		 			positions.push({name:m.module,position:tt.position,order:tt.order})
+		 			position_hash[m.module]={name:m.module,position:tt.position,order:tt.order}
 		 		} else {
 		 				if(debug)  console.log("DO NOT have module info in config.js ="+m.module)
+		 				position_hash[m.module]={name:m.module,position:"none".position,order:"*"}
 		 		}
 		 	}
 		 	else{
@@ -201,11 +215,26 @@ form.push(  {
 		 			m.order='*'
 		 		}
 		 		value[m.module]=m
-		 		positions.push({name:m.module,position:m.position,order:m.order})
-		 		//layout_order[m.position].push(m)
+		 		position_hash[m.module]={name:m.module,position:m.position,order:m.order}
 		 	}
 	}
+  Object.keys(position_hash).forEach((p)=>{
+  	positions.push(position_hash[p])
+  })
 
+  positions.sort(function (a, b) {
+
+		// compare titles, function for clarity
+		function testit(x,y){
+			if(a.name.toLowerCase() < b.name.toLowerCase()) { return -1; }
+	    if(a.name.toLowerCase() > b.name.toLowerCase()) { return 1; }
+	    return 0;
+	  }
+	  // get the difference
+		let r = testit(a,b)
+		// return results to sort
+		return r
+	})
 
 	value['positions']=positions
 	//form.push({"validate":"false"})
@@ -223,9 +252,6 @@ form.push(  {
 
 
 	let empty_arrays =find_empty_arrays(value,[],[])
-	//value.empty_arrays=xyz
-
-	//console.log(" empty arrays="+JSON.stringify(xyz,' ',2))
 
 	// fixup the pair variables so they are proper objects for jsonform
 	for(let m of Object.keys(pairVariables)){
@@ -257,127 +283,127 @@ form.push(  {
 	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
 
-function copyConfig(defines, schema, form){
-	schema['config']={ type:'object',title:"properties for MagicMirror base",properties:{}}
-	schema['config']['properties'] = {}
-	// copy the current non modules stuff from config.js
-	for(const setting of Object.keys(defines.config)){
-		if(setting=='modules')
-			break;
-		 let dtype
-		 let t = typeof defines.config[setting]
-		 if(t =='object'){
-			 if (Array.isArray( defines.config[setting])){
-			 	  t = 'array'
-			 	  dtype ='string'
-			 	  if(defines.config[setting].length){
-			 	    dtype = typeof defines.config[setting][0]
-			 	    if( Array.isArray(defines.config[setting][0]))
-			 	   	 dtype='array'
+	function copyConfig(defines, schema, form){
+		schema['config']={ type:'object',title:"properties for MagicMirror base",properties:{}}
+		schema['config']['properties'] = {}
+		// copy the current non modules stuff from config.js
+		for(const setting of Object.keys(defines.config)){
+			if(setting=='modules')
+				break;
+			 let dtype
+			 let t = typeof defines.config[setting]
+			 if(t =='object'){
+				 if (Array.isArray( defines.config[setting])){
+				 	  t = 'array'
+				 	  dtype ='string'
+				 	  if(defines.config[setting].length){
+				 	    dtype = typeof defines.config[setting][0]
+				 	    if( Array.isArray(defines.config[setting][0]))
+				 	   	 dtype='array'
+				 	  }
+				 	  schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
+				 } else {
+				 	 dtype = typeof Object.keys(defines.config[setting])[0]
+				 	 if(dtype=='string'){
+				 	 	pairVariables['config'+'.'+setting]=1
+				 	 	t='array'
+				 	 	dtype='pair'
+				 	 }
+				 	 schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
+				 }
+			 }else {
+			 		if(setting=='address'){
+			 	   	 let as={ type: "string",title: "address",enum:networkInterfaces}
+			 	   	 schema['config']['properties'][setting]=as
 			 	  }
-			 	  schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
-			 } else {
-			 	 dtype = typeof Object.keys(defines.config[setting])[0]
-			 	 if(dtype=='string'){
-			 	 	pairVariables['config'+'.'+setting]=1
-			 	 	t='array'
-			 	 	dtype='pair'
-			 	 }
-			 	 schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
+			 	  else{
+			 			schema['config']['properties'][setting] = {type:t, title: setting  }
+			 		}
 			 }
-		 }else {
-		 		if(setting=='address'){
-		 	   	 let as={ type: "string",title: "address",enum:networkInterfaces}
-		 	   	 schema['config']['properties'][setting]=as
-		 	  }
-		 	  else{
-		 			schema['config']['properties'][setting] = {type:t, title: setting  }
-		 		}
-		 }
-		 switch(t){
-		 	  case 'array':
+			 switch(t){
+			 	  case 'array':
 
-			 	          form[0].items[0].items.push( {
-		                  "type": "array",
-		                  "title": setting,
-		                  "items": [
-		                    {
-		                      "key": "config."+setting+"[]",
-		                      "title": setting +" {{idx}}"
-		                    }
-		                  ]
-		                })
+				 	          form[0].items[0].items.push( {
+			                  "type": "array",
+			                  "title": setting,
+			                  "items": [
+			                    {
+			                      "key": "config."+setting+"[]",
+			                      "title": setting +" {{idx}}"
+			                    }
+			                  ]
+			                })
 
-		 	  break;
-		 	  case 'object':
-		 	  		 	    form[0].items[0].items.push( {
-		                  "type": "array",
-		                  "title": setting,
-		                  "items": [
-		                    {
-		                      "key": "config."+setting+"[]",
-		                      "title": setting +" {{idx}}"
-		                    }
-		                  ]
-		                })
+			 	  break;
+			 	  case 'object':
+			 	  		 	    form[0].items[0].items.push( {
+			                  "type": "array",
+			                  "title": setting,
+			                  "items": [
+			                    {
+			                      "key": "config."+setting+"[]",
+			                      "title": setting +" {{idx}}"
+			                    }
+			                  ]
+			                })
 
-		 	  default:
-		 	  if(setting ==='address'){
-		 	  	let tm = {}
-		 	  	networkInterfaces.forEach((interface)=>{
-		 	  		switch(interface){
-		 	  			case "0.0.0.0":
-		 	  				tm[interface]= interface+" - application access from any machine that can access network"
-		 	  			break;
-		 	  			case "localhost":
-		 	  			  tm[interface]= interface+" - application access only from same machine"
-		 	  			break;
-		 	  			default:
-		 	  			 tm[interface]= interface +" - application access only from machine on same network"
-		 	  			}
-		 	  	})
-		 	  	form[0].items[0].items.push( {key:'config.'+setting, titleMap:tm})
-		 	  }else{
-		 	   form[0].items[0].items.push('config.'+setting)
-		 	  }
-		 }
-		}
-}
+			 	  default:
+			 	  if(setting ==='address'){
+			 	  	let tm = {}
+			 	  	networkInterfaces.forEach((interface)=>{
+			 	  		switch(interface){
+			 	  			case "0.0.0.0":
+			 	  				tm[interface]= interface+" - application access from any machine that can access network"
+			 	  			break;
+			 	  			case "localhost":
+			 	  			  tm[interface]= interface+" - application access only from same machine"
+			 	  			break;
+			 	  			default:
+			 	  			 tm[interface]= interface +" - application access only from machine on same network"
+			 	  			}
+			 	  	})
+			 	  	form[0].items[0].items.push( {key:'config.'+setting, titleMap:tm})
+			 	  }else{
+			 	   form[0].items[0].items.push('config.'+setting)
+			 	  }
+			 }
+			}
+	}
 
-// merge properties from defined and configured together
-function copyprop(dest,source){
-	  if(debug) console.log(" copying from "+JSON.stringify(source,' ',2)+ " to "+dest)
-		for(let mp of Object.keys(source.properties)){
-			if(debug) console.log("copying for "+mp)
-			  if(source.properties[mp].type =='object'){
-			  	if(debug)console.log(" props="+JSON.stringify(source.properties[mp],' ',2)+"  has properties="+source.properties[mp].hasOwnProperty('properties'))
+	// merge properties from defined and configured together
+	function copyprop(dest,source){
+		  if(debug) console.log(" copying from "+JSON.stringify(source,' ',2)+ " to "+dest)
+			for(let mp of Object.keys(source.properties)){
+				if(debug) console.log("copying for "+mp)
+				  if(source.properties[mp].type =='object'){
+				  	if(debug)console.log(" props="+JSON.stringify(source.properties[mp],' ',2)+"  has properties="+source.properties[mp].hasOwnProperty('properties'))
 
-			  	if(source.properties[mp].hasOwnProperty('properties')){
-			  		if(debug) console.log(" handling properties for "+mp)
-				  	dest[mp]={}
-				  	copyprop(dest[mp],source.properties[mp])
-			  	}
-			  	else{
-			  		 if(debug) console.log("props are "+Object.keys(source.properties[mp]))
-			  			dest[mp]={}
-			  			for(let cp of Object.keys(source.properties[mp])){
-			  				dest[mp][cp]=source.properties[mp][cp]
-			  			}
-			  	}
-			  }
-			  else{
-			  	if(debug) console.log("dest="+JSON.stringify(dest)+ " properties="+ dest['properties'] )
-			  	if(dest['properties'] == undefined){
-			  		//dest['properties']={}
-			  		if(debug)	console.log("set properties "+JSON.stringify(dest))
-			  	}
-			  	if(dest[mp] == 'undefined'){
-			  		dest[mp]={}
-			  	}
-					dest[mp]=(source.properties[mp].default != undefined)? source.properties[mp].default:source.properties[mp].value
-			  }
-		}
-}
+				  	if(source.properties[mp].hasOwnProperty('properties')){
+				  		if(debug) console.log(" handling properties for "+mp)
+					  	dest[mp]={}
+					  	copyprop(dest[mp],source.properties[mp])
+				  	}
+				  	else{
+				  		 if(debug) console.log("props are "+Object.keys(source.properties[mp]))
+				  			dest[mp]={}
+				  			for(let cp of Object.keys(source.properties[mp])){
+				  				dest[mp][cp]=source.properties[mp][cp]
+				  			}
+				  	}
+				  }
+				  else{
+				  	if(debug) console.log("dest="+JSON.stringify(dest)+ " properties="+ dest['properties'] )
+				  	if(dest['properties'] == undefined){
+				  		//dest['properties']={}
+				  		if(debug)	console.log("set properties "+JSON.stringify(dest))
+				  	}
+				  	if(dest[mp] == 'undefined'){
+				  		dest[mp]={}
+				  	}
+						dest[mp]=(source.properties[mp].default != undefined)? source.properties[mp].default:source.properties[mp].value
+				  }
+			}
+	}
 	function find_empty_arrays(obj, stack, hash){
 		if(typeof obj == 'object'){
 			if(Array.isArray(obj)){

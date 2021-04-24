@@ -21,3 +21,16 @@
 .expanded div.form-group {
 	margin-left: 2em;
  }
+
+.MMM-Config .btn {
+  display:none;
+}
+
+.MMM-Config  a.draggable {
+     /* all: revert */
+}
+
+
+.MMM-Config  li.ui-sortable-helper {
+
+}

@@ -165,16 +165,7 @@ isNumeric :function(n) {
     return !isNaN(parseFloat(n)) && isFinite(n);
 },
 mergeModule(config, data){
-	//return Object.assign({}, data, config, data)
 	return _.assign(config , _.pick(data, _.keys(config)));
-	/*return  Object.keys(data)					// if the key is in config
-	  .reduce((a, key) => ({ ...a, [key]: config[key]?
-	  																								//if it doesn't match the form data
-	  																								// use the form data
-	  																							((config[key]!==data[key])? data[key]: config[key]
-	  																								:
-	  																								|| config[key]
-	  										}), {});*/
 },
 
 process_submit: async function (data, self, socket) {
@@ -290,19 +281,21 @@ process_submit: async function (data, self, socket) {
 				}
 			}
 
-let layout_order={}
-for(let m of module_positions){
-	layout_order[m]=[]
-}
+			// iniitialize the hash for the layout positions
+
+			let layout_order={}
+			for(let m of module_positions){
+				layout_order[m]=[]
+			}
 
 
 			// setup the final data to write out
 			let r = {}
 			r['config']=data['config']
-			if(r['config']['address'].includes('-')){
-				console.log("removing text from address="+r['config']['address'])
+			/*if(r['config']['address'].includes('-')){
+				if(debug) console.log("removing text from address="+r['config']['address'])
 				r['config']['address']= r['config']['address'].split(' ')[0]
-			}
+			}*/
 			r['config']['modules']=[]
 			// loop thru the form data (has all modules)
 			// copy the modules over inside the modules block
