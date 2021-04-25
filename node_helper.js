@@ -7,11 +7,7 @@ const stream = require('stream')
 const _ = require('lodash')
 const remote = new stream.Writable()
 const { inspect } = require('util')
-const transform = require('lodash.transform')
-const isEqual = require('lodash.isequal')
-const isArray = require('lodash.isarray')
-const isObject = require('lodash.isobject')
-//const isDate = require('lodash.isdate')
+
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
@@ -19,14 +15,7 @@ const fs = require('fs')
 const oc =__dirname.split(path.sep).slice(0,-2).join(path.sep)+"/config/config.js"
 const configPath = __dirname + '/schema3.json'
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
-const webhandler= (evt, node) => {
-			  let selection=$(evt.target).val();
-			  let id=$(evt.target).attr('id').split('.').slice(-1);
-			  let module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value');
-			  let idtofind='jsonform-1-elt-'+module_name+'.'+id;
-			  let input=document.getElementById(idtofind);
-			  input.value=selection
-			}
+const checking_diff=false;
 const closeString = ";\n\
 \n\
 /*************** DO NOT EDIT THE LINE BELOW ***************/\n\
@@ -39,6 +28,8 @@ let debug = false
 
 module.exports = NodeHelper.create({
 config:{},
+
+	// collect the data in background
 	launchit(){
 
 		console.log("execing "+this.command)
@@ -52,17 +43,18 @@ config:{},
 		  	console.error(`stderr 2: ${stderr}`);
 		});
 	},
+	// add express routes to allow invoking the form
 	extraRoutes: function() {
-		var self = this;
-		this.expressApp.get("/modules/MMM-Config/review", function(req, res) {
-			self.getConfig(req, res);
+		this.expressApp.get("/modules/MMM-Config/review", (req, res) =>{
+			// redirect to config form
+			res.redirect(this.config.url+"/modules/"+this.name+"/config.html")
 		});
-
-		//this.expressApp.use(express.static("/MMM-Config/review"));
 	},
-
+	// module startup after receiving MM ready
 	startit() {
+		// if restart is enabled, for npm start invoked MM
 		if(this.config.restart.length && this.config.restart.toLowerCase() === 'static'){
+			  // setup the handler
 			  let ep = (__dirname.split(path.sep).slice(0,-2).join(path.sep) +"/node_modules/.bin/electron")+((os.platform()=='win32')?'.cmd':'')
 			  console.log("electron path="+ep)
 				require('electron-reload')(oc, {
@@ -80,11 +72,6 @@ config:{},
 		this.extraRoutes()
 		this.remote_start(this)
 
-	},
-
-	getConfig: function(req,res){
-		console.log("returning url="+this.config.url+"/modules/"+this.name+"/config.html")
-		res.redirect(this.config.url+"/modules/"+this.name+"/config.html")
 	},
 
 	// handle messages from our module// each notification indicates a different messages
@@ -110,9 +97,7 @@ config:{},
 
 	// get the module properties from the config.js entry
 	getConfigModule: 	function(m, source){
-
-		//console.log("source="+ JSON.stringify(source))
-
+		// module name is not a direct key
 		for (let x of source){
 
 			if(x.module == m){
@@ -259,12 +244,6 @@ process_submit: async function (data, self, socket) {
 				Object.keys(cfg.defined_config).forEach((module_define)=>{
 					  // take off the 'defines' suffix
 						let module_name=module_define.slice(0,module_define.lastIndexOf('_')).replace(/_/g,'-')
-						//cfg.defined_config[module_define]['module']=module_name
-						//cfg.defined_config[module_define]['position']=data.value[module_name]['position']
-						//cfg.defined_config[module_define]['disabled']= data.value[module_name]['disabled']
-						// compare the returned data to the defines, should remove all the attributes that are the same
-						//console.log("module data="+JSON.stringify(data[module_name],' ',2))
-						//let diff = this.difference(cfg.defined_config[module_define],data[module_name].config)
 
 						let diff = detailedDiff(cfg.defined_config[module_define],data[module_name].config)
 
@@ -289,6 +268,16 @@ process_submit: async function (data, self, socket) {
 				}
 			}
 
+
+
+
+			// setup the final data to write out
+			let r = {}
+			// save the config info
+			r['config']=data['config']
+			// move invididuale modules entries into modules array for config.js
+			r['config']['modules']=[]
+
 			// iniitialize the hash for the layout positions
 
 			let layout_order={}
@@ -296,18 +285,8 @@ process_submit: async function (data, self, socket) {
 				layout_order[m]=[]
 			}
 
-
-			// setup the final data to write out
-			let r = {}
-			r['config']=data['config']
-			/*if(r['config']['address'].includes('-')){
-				if(debug) console.log("removing text from address="+r['config']['address'])
-				r['config']['address']= r['config']['address'].split(' ')[0]
-			}*/
-			r['config']['modules']=[]
 			// loop thru the form data (has all modules)
-			// copy the modules over inside the modules block
-			// only enabled modules, new ones start put disabled
+			// copy the modules into their position sections
 			for(let m of Object.keys(data)){
 				// don't copy config info
 				if(m !== 'config' && data[m].disabled === false ){
@@ -378,20 +357,23 @@ process_submit: async function (data, self, socket) {
 					return r
 				})
 			  // now that modules are sorted
-
-				//console.log("post sort for position="+position+" there are "+layout_order[position].length+" entries")
+			  // loop thru the positions
 				layout_order[position].forEach((m)=>{
-					//console.log("processing for module ="+m.module)
+					// remove position:none as it doesn't exist,
+					// position not present is the same as none specified
 					if(m.position === 'none')
 						delete  m.position
+					// add module to config.js modules list
 					r['config']['modules'].push(m)
 				})
 			})
 
 		//	console.log(" config = "+JSON.stringify(cfg,' ',2))
-			let x = detailedDiff(r['config'], cfg.config)
-			let x1 = detailedDiff(cfg.config,r['config'])
-			let x2 = detailedDiff(x,x1)
+		  if(checking_diff) {
+				let x = detailedDiff(r['config'], cfg.config)
+				let x1 = detailedDiff(cfg.config,r['config'])
+				let x2 = detailedDiff(x,x1)
+			}
 			//console.log("data new to old diff ="+JSON.stringify(x,' ',2)+ "\n\n old to new ="+JSON.stringify(x1,' ',2)+ "\n\n delta to original ="+JSON.stringify(x2,' ',2))
 			//let reg=/(.*[^:])\:.*/gm
 			let xx = JSON.stringify(r, null, 2).replace(/::/g,"==").replace(/f:/g,"~~")
@@ -440,28 +422,12 @@ remote_start : function (self) {
 
 		if (fs.existsSync(configPath)) {
 			try {
-				if(1){
-					 const require_from_string = require('require-from-string')
-				   self.config.data=JSON.parse(fs.readFileSync(configPath, "utf8"), function (key, value) {
-										if (typeof value === "string" && value==="function") {
-											console.log("parsed function = "+value)
-											value = webhandler
-											console.log("handler='"+value+"'")
-										}
-										return value;
-									});
-				}
-				else {
-					self.config.data = JSON.parse(fs.readFileSync(configPath, "utf8")) //json'd config file
-				}
-				console.log("schema file loaded")
-			//	console.log("have config parsed ="+JSON.stringify(self.config.data))
+				// read in the text file
+				self.config.data = fs.readFileSync(configPath, "utf8")
 			} catch (e) {
  				console.log("config parse error="+e)
 			}
 		}
-		//TODO this is async, all of the remote should be async too
-
 	}
 
 	function handleConnection(self,socket, type){
@@ -478,8 +444,8 @@ remote_start : function (self) {
 
 		socket.on('getForm', () => {
 			//console.log("sending config to client "+JSON.stringify(this.config))
-			  if(debug) console.log("sending "+JSON.stringify(self.config.data))
-				socket.emit("json", self.config.data )
+			  //if(debug) console.log("sending "+JSON.stringify(self.config.data))
+				socket.emit("json", "'"+self.config.data+"'")
 		})
 
 	}
@@ -514,225 +480,6 @@ remote_start : function (self) {
 		remote.emit('disconnected')
 	})// end - disconnect
 }, // end - start,
-
-
-
-/**
- * Find difference between two objects
- * @param  {object} origObj - Source object to compare newObj against
- * @param  {object} newObj  - New object with potential changes
- * @return {object} differences
- */
-difference: function(origObj, newObj) {
-	function changes(newObj, origObj) {
-		let arrayIndexCounter = 0
-			return transform(newObj, function (result, value, key) {
-			if (!_.isEqual(value, origObj[key])) {
-				let resultKey = _.isArray(origObj) ? arrayIndexCounter++ : key
-				result[resultKey] = (_.isObject(value) && _.isObject(origObj[key])) ? _.isDate(value) ? value : changes(value, origObj[key]) : value
-			}
-		});
-	};
-	return changes(newObj, origObj);
-},
-
-difference2: function (object, base) {
-	function changes(object, base) {
-		return _.transform(object, function(result, value, key) {
-			if (!_.isEqual(value, base[key])) {
-				result[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
-			}
-		});
-	}
-	return changes(object, base);
-},
-
-/*!
- * Find the differences between two objects and push to a new object
- * (c) 2019 Chris Ferdinandi & Jascha Brinkmann, MIT License, https://gomakethings.com & https://twitter.com/jaschaio
- * @param  {Object} obj1 The original object
- * @param  {Object} obj2 The object to compare against it
- * @return {Object}      An object of differences between the two
- */
- diffo : function (obj1, obj2) {
- 		var self = this
-    // Make sure an object to compare is provided
-    if (!obj2 || Object.prototype.toString.call(obj2) !== '[object Object]') {
-        return obj1;
-    }
-
-    //
-    // Variables
-    //
-
-    var diffs = {};
-    var key;
-
-
-    //
-    // Methods
-    //
-
-    /**
-     * Check if two arrays are equal
-     * @param  {Array}   arr1 The first array
-     * @param  {Array}   arr2 The second array
-     * @return {Boolean}      If true, both arrays are equal
-     */
-    var arraysMatch = function (arr1, arr2) {
-
-        // Check if the arrays are the same length
-        if (arr1.length !== arr2.length) return false;
-
-        // Check if all items exist and are in the same order
-        for (var i = 0; i < arr1.length; i++) {
-            if (arr1[i] !== arr2[i]) return false;
-        }
-
-        // Otherwise, return true
-        return true;
-
-    };
-
-    /**
-     * Compare two items and push non-matches to object
-     * @param  {*}      item1 The first item
-     * @param  {*}      item2 The second item
-     * @param  {String} key   The key in our object
-     */
-    var compare = function (item1, item2, key) {
-
-        // Get the object type
-        var type1 = Object.prototype.toString.call(item1);
-        var type2 = Object.prototype.toString.call(item2);
-
-        // If type2 is undefined it has been removed
-        if (type2 === '[object Undefined]') {
-            diffs[key] = null;
-            return;
-        }
-
-        // If items are different types
-        if (type1 !== type2) {
-            diffs[key] = item2;
-            return;
-        }
-
-        // If an object, compare recursively
-        if (type1 === '[object Object]') {
-            var objDiff = self.diff(item1, item2);
-            if (Object.keys(objDiff).length > 0) {
-                diffs[key] = objDiff;
-            }
-            return;
-        }
-
-        // If an array, compare
-        if (type1 === '[object Array]') {
-            if (!arraysMatch(item1, item2)) {
-                diffs[key] = item2;
-            }
-            return;
-        }
-
-        // Else if it's a function, convert to a string and compare
-        // Otherwise, just compare
-        if (type1 === '[object Function]') {
-            if (item1.toString() !== item2.toString()) {
-                diffs[key] = item2;
-            }
-        } else {
-            if (item1 !== item2 ) {
-                diffs[key] = item2;
-            }
-        }
-
-    };
-
-
-    //
-    // Compare our objects
-    //
-
-    // Loop through the first object
-    for (key in obj1) {
-        if (obj1.hasOwnProperty(key)) {
-            compare(obj1[key], obj2[key], key);
-        }
-    }
-
-    // Loop through the second object and find missing items
-    for (key in obj2) {
-        if (obj2.hasOwnProperty(key)) {
-            if (!obj1[key] && obj1[key] !== obj2[key] ) {
-                diffs[key] = obj2[key];
-            }
-        }
-    }
-
-    // Return the object of differences
-    return diffs;
-
-},
- objectDiff: function (object, base) {
-  function changes(object, base) {
-    const accumulator = {};
-    Object.keys(base).forEach((key) => {
-      if (object[key] === undefined) {
-        accumulator[`-${key}`] = base[key];
-      }
-    });
-    return _.transform(
-      object,
-      (accumulator, value, key) => {
-        if (base[key] === undefined) {
-          accumulator[`+${key}`] = value;
-        } else if (!_.isEqual(value, base[key])) {
-          accumulator[key] = (_.isObject(value) && _.isObject(base[key])) ? changes(value, base[key]) : value;
-        }
-      },
-      accumulator
-    );
-  }
-  return changes(object, base);
-},
-
-deepDiff: function (fromObject, toObject) {
-    const changes = {};
-
-    const buildPath = (path, obj, key) =>
-        _.isUndefined(path) ? key : `${path}.${key}`;
-
-    const walk = (fromObject, toObject, path) => {
-        for (const key of _.keys(fromObject)) {
-            const currentPath = buildPath(path, fromObject, key);
-            if (!_.has(toObject, key)) {
-                changes[currentPath] = {from: _.get(fromObject, key)};
-            }
-        }
-
-        for (const [key, to] of _.entries(toObject)) {
-            const currentPath = buildPath(path, toObject, key);
-            if (!_.has(fromObject, key)) {
-                changes[currentPath] = {to};
-            } else {
-                const from = _.get(fromObject, key);
-                if (!_.isEqual(from, to)) {
-                    if (_.isObjectLike(to) && _.isObjectLike(from)) {
-                        walk(from, to, currentPath);
-                    } else {
-                        changes[currentPath] = {from, to};
-                    }
-                }
-            }
-        }
-    };
-
-    walk(fromObject, toObject);
-
-    return changes;
-}
-
 
 
 });

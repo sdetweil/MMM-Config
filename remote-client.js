@@ -22,6 +22,28 @@ $(function () {
 		}
 	}
 
+	function parseData(data){
+		return JSON.parse(
+
+	   		data,
+
+	   		function (key, value) {
+				if (typeof value === "string"){
+					// only handle specified field sin jsonform
+					switch(key){
+					  case 'onChange':
+					  case 'onClick':
+					  case 'onKeyUp':
+					  		// get the function from the string
+					  		// parens mean don't EXECUTE the function, just get its value
+								value = eval("(" + value + ")");
+						break;
+						}
+				}
+				return value;
+			}
+		);
+	}
 	// socket
 
   const activesocket = io(server+":"+port, {
@@ -49,8 +71,9 @@ $(function () {
 	})
 
 	// config socket events
-	activesocket.on('json', function (data) {
+	activesocket.on('json', function (incoming_json) {
 		//data.configJSON =  data
+		let data = parseData(incoming_json.slice(1,-1))
 		let pairs = data.pairs
 		let arrays = data.arrays
 		$('#outmessage').text("")
