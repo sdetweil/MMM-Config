@@ -16,8 +16,18 @@ Module.register("MMM-Config", {
 	defaults: {
 		showQR: true,
 		force_update: true,
-		restart:""
+		restart:"" 
+		
 	},
+	
+	getTranslations: function() {
+        return {
+            en: "translations/en.json",
+			es: "translations/es.json",
+			da: "translations/da.json",
+			de: "translations/de.json" 	
+        };
+		},
 
 	init: function(){
 		Log.log(this.name + " is in init!");
@@ -25,8 +35,12 @@ Module.register("MMM-Config", {
 
 	start: function(){
 		Log.log(this.name + " is starting!");
+		this.config.lang = this.config.lang || config.language; //automatically overrides and sets language :)
 	},
 
+    getStyles: function() { 
+    return ['MMM-Config.css']; 
+    },
 
 	// return list of other functional scripts to use, if any (like require in node_helper)
 	getScripts: function() {
@@ -91,7 +105,8 @@ Module.register("MMM-Config", {
 				  })
 				wrapper.appendChild(canvas)
 			} else {
-				wrapper.innerHTML = "<p>"+this.name+" cannot use QR code,<br>address is set to localhost, <br>or<br>ipWhitelist prevents outside system access <br>use this url on the MagicMirror system <br>"+this.config.url
+				wrapper.classList.add("text");
+				wrapper.innerHTML =  this.translate("QR_ERROR_MESSAGE");
 
 			}
 		}

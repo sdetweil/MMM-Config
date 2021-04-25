@@ -1,0 +1,9 @@
+
+.MMM-Config .text {
+	width: 200px;
+	padding: 10px;
+	text-align: center;
+	font-size: .5em;
+	color: white;
+	line-height: 95%;
+}
