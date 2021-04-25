@@ -1,3 +1,3 @@
 {
 "QR_ERROR_MESSAGE":"<p> MMM-Config no puede usar <br> <font color = yellow> código QR <br> </font> porque la dirección está configurada en localhost, <br> o <br> ipWhitelist impide el acceso externo al sistema. Use esta URL en el Sistema MagicMirror <br> <font color = yellow> http://localhost:8080/modules/MMM-Config/review </font> <br> Para evitar ver este mensaje, establezca la opción de configuración en falso para el código QR"
-} 
+}
