@@ -41,7 +41,8 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		if [ -e $nm.js ]; then
 		   node $d/dumpdefaults.js $nm.js >>$defaults_file
 		else
-			echo "// file $nm.js does NOT exists"
+			#echo "// file $nm.js does NOT exist"
+			:
 		fi
 		cd - >/dev/null
 	done

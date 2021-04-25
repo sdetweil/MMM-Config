@@ -236,9 +236,6 @@ form.push(  {
 		return r
 	})
 
-	value['positions']=positions
-	//form.push({"validate":"false"})
-
 	let base= {}
 	// get the non module parameters from active config.js
 	for(let k of Object.keys(defines.config)){
@@ -252,6 +249,8 @@ form.push(  {
 
 
 	let empty_arrays =find_empty_arrays(value,[],[])
+
+	value['positions']=positions
 
 	// fixup the pair variables so they are proper objects for jsonform
 	for(let m of Object.keys(pairVariables)){
