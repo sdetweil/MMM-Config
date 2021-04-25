@@ -19,6 +19,14 @@ const fs = require('fs')
 const oc =__dirname.split(path.sep).slice(0,-2).join(path.sep)+"/config/config.js"
 const configPath = __dirname + '/schema3.json'
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
+const webhandler= (evt, node) => {
+			  let selection=$(evt.target).val();
+			  let id=$(evt.target).attr('id').split('.').slice(-1);
+			  let module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value');
+			  let idtofind='jsonform-1-elt-'+module_name+'.'+id;
+			  let input=document.getElementById(idtofind);
+			  input.value=selection
+			}
 const closeString = ";\n\
 \n\
 /*************** DO NOT EDIT THE LINE BELOW ***************/\n\
@@ -432,20 +440,20 @@ remote_start : function (self) {
 
 		if (fs.existsSync(configPath)) {
 			try {
-
-			/*	self.config.data=JSON.parse(fs.readFileSync(configPath, "utf8"), function (key, value) {
-										if (typeof value === "string" && (value.startsWith("function") || value.includes("=>")) && value.endsWith("}")) {
+				if(1){
+					 const require_from_string = require('require-from-string')
+				   self.config.data=JSON.parse(fs.readFileSync(configPath, "utf8"), function (key, value) {
+										if (typeof value === "string" && value==="function") {
 											console.log("parsed function = "+value)
-											value = new Function(value)
-											//value = eval('('+ value +')');
-											console.log("function="+JSON.stringify(value))
-											return value;
+											value = webhandler
+											console.log("handler='"+value+"'")
 										}
 										return value;
-									}); */
-
-
-				self.config.data = JSON.parse(fs.readFileSync(configPath, "utf8")) //json'd config file
+									});
+				}
+				else {
+					self.config.data = JSON.parse(fs.readFileSync(configPath, "utf8")) //json'd config file
+				}
 				console.log("schema file loaded")
 			//	console.log("have config parsed ="+JSON.stringify(self.config.data))
 			} catch (e) {
@@ -453,6 +461,26 @@ remote_start : function (self) {
 			}
 		}
 		//TODO this is async, all of the remote should be async too
+
+	}
+
+	function handleConnection(self,socket, type){
+		if(debug) console.log("connection started = "+type)
+		//console.log("socket connected")
+		socket.emit('connected')
+		if(type==='connect')
+	     getFiles(self)
+
+		socket.on('saveConfig', (data) =>{ // used to save the form JSON
+
+				self.process_submit(data, self, socket)
+		})
+
+		socket.on('getForm', () => {
+			//console.log("sending config to client "+JSON.stringify(this.config))
+			  if(debug) console.log("sending "+JSON.stringify(self.config.data))
+				socket.emit("json", self.config.data )
+		})
 
 	}
 
@@ -473,25 +501,11 @@ remote_start : function (self) {
    */
     var self = this
 	remote.io.on('connection', (socket) =>{
-			console.log("connection started")
-		//console.log("socket connected")
-		socket.emit('connected')
-
-	  getFiles(self)
-
-		socket.on('saveConfig', (data) =>{ // used to save the form JSON
-
-				this.process_submit(data, self, socket)
-		})
-
-		socket.on('getForm', () => {
-			//console.log("sending config to client "+JSON.stringify(this.config))
-			//  console.log("sending "+JSON.stringify(this.config.data))
-				socket.emit("json", this.config.data )
-		})
-
+		handleConnection(self, socket, 'connect')
 	}) // end - connection
-
+	remote.io.on('reconnect', (socket) =>{
+		handleConnection(self, socketm, 'reconnect')
+	})
 /**
    * When a remote disconnects
    */

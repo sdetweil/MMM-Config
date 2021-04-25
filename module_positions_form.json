@@ -23,12 +23,12 @@
                 {
                 "key":"positions[].position",
                 "description":"module position in MagicMirror regions",
-                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1);  var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
+                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); let v=$(evt.target).attr('id'); var id=v.split('.').slice(-1);let prefix=v.split('-').slice(0,-1).join('-'); var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind=prefix+'-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
                 },
                 {
                 "key":"positions[].order",
                 "description":"position order in MagicMirror region, 1 is 1st, 2 is second, and so on, * is don't care",
-                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); var id=$(evt.target).attr('id').split('.').slice(-1); var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind='jsonform-1-elt-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
+                "onChange": "(evt, node) => {  var selection=$(evt.target).val(); let v=$(evt.target).attr('id'); var id=v.split('.').slice(-1);let prefix=v.split('-').slice(0,-1).join('-'); var module_name = node.el.parentElement.firstChild.firstChild.firstChild.getAttribute('value'); let idtofind=prefix+'-'+module_name+'.'+id; let input=document.getElementById(idtofind); input.value=selection}"
                 }
               ]
             }
