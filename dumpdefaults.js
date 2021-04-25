@@ -126,13 +126,17 @@ function process_main(lines, name ){
 
 			let index=0
 			// if the line has comment on it, AFTER the important part
-			if((index=line.indexOf("//")>-1)){
+			if((index=line.indexOf("//"))>-1){
+				if(debug) console.log("found comment line="+line +" index="+index)
 				// get the comment part
 				comment = line.slice(index)
 				// and the info part
 				line = line.slice(0,index)
+				if(debug) console.log(" remaining line="+line)
+				index = -1
 			}
 			// count any open braces
+			if(debug) console.log(" checking line="+line)
 			while((index=line.indexOf(startChar,index+1))>=0){
 				indent++
 			  if(debug) console.log("counting up index="+ indent)
@@ -155,7 +159,7 @@ function process_main(lines, name ){
 				prefix="\t\t"
 			if(debug){
 				console.log("line="+line)
-				console.log("line "+ i + "=" + line.replace(/{/g," {\n")) //.replace(/}/g,"\n}\n")
+				console.log("line "+ index + "=" + line.replace(/{/g," {\n")) //.replace(/}/g,"\n}\n")
 			}
 			// get the line content with braces turned into newlines
 			let x = prefix+line.replace(/{/g," {\n"+prefix).replace(/}/g,"\n"+prefix+"}\n")
