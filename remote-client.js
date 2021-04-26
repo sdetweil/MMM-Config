@@ -12,6 +12,7 @@ $(function () {
 	// config vars
 	var timeoutID
 	var timerHandle
+	var wasDisconnected =false
 
 	// watch out in case the libraries don't load
 	if(location.href.split("/").slice(-1) =='config.html'){
@@ -66,7 +67,7 @@ $(function () {
 		$('#outmessage').html("<p><strong>MagicMirror is not running</strong></p>")
 		$('#result').html('<form id="result-form" class="form-vertical"></form>');
 		//hideElm('#submit_button')
-
+		wasDisconnected =true
 		if(timerHandle)
 			clearTimeout(timerHandle)
 		;
@@ -175,8 +176,12 @@ $(function () {
 	}
 
 	function config_init() {
-		activesocket.emit('getForm', true)
-		$('#outmessage').html("<div></div>")
+		if(wasDisconnected )
+			window.location.reload(true);
+		else{
+			activesocket.emit('getForm', true)
+			$('#outmessage').html("<div></div>")
+		}
 	}
 
 	// config functions
