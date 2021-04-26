@@ -157,9 +157,10 @@ function process_main(lines, name ){
 			// if this is a minified line with content
 			if(line[0] == line.trim()[0] && line.trim().length>0 && counter !=0)
 				prefix="\t\t"
+
 			if(debug){
-				console.log("line="+line)
-				console.log("line "+ index + "=" + line.replace(/{/g," {\n")) //.replace(/}/g,"\n}\n")
+				console.log("line='"+line+"'")
+				console.log("line "+ index + "=" + line.replace(/{/g," {\n"))
 			}
 			// get the line content with braces turned into newlines
 			let x = prefix+line.replace(/{/g," {\n"+prefix).replace(/}/g,"\n"+prefix+"}\n")
@@ -168,9 +169,25 @@ function process_main(lines, name ){
 			// if there are any newlines now
 			if(x.indexOf("\n")>-1){
 				// split
-				for(let f of x.split("\n") )
+				let r= x.split("\n")
+				if(r.slice(-1) ==','){
+					  if(debug) console.log("dangling comma")
+						r[r.length-2]=r[r.length-2]+','
+					r.pop()
+				}
+				for(let f of r)
+
+					if(f.trim().length){
+						if(debug) console.log("line part after newline split is '"+f.trim()+"'")
 					// and save those as separate lines
-					cache.push(f)
+						if(f.trim().startsWith(endChar)){
+							prefix="\t\t"
+							f=prefix+f
+							if(debug) console.log("line with prefix='"+f+"'")
+						}
+						cache.push(f)
+
+					}
 			}
 			// no newlines
 			else{
