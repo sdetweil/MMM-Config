@@ -82,6 +82,7 @@ config:{},
 		if (notification === "CONFIG") {
 			// save payload config info
 			this.config=payload
+			debug=this.config.debug
 			this.startit()
 
 			this.hostname = os.hostname()
@@ -118,20 +119,26 @@ reformat_array:function (data){
 			data=d
 		}
 },
-object_from_key: function (object, key){
+object_from_key: function (object, key, type){
 	if(debug) console.log("key = "+key)
-	if(key.includes('.')){
+	if(key && key.includes('.')){
 		let r = key.split('.')
 		let left = r.shift()
-		if(object[left] != undefined)
-		  return this.object_from_key(object[left],r.join('.'))
+		if(debug) console.log("object["+left+"]="+JSON.stringify(object[left]))
+		if(type === 'array' || r.length > 1 || object[left] !== undefined){
+			if(object[left] != undefined ){
+			  return this.object_from_key(object[left],r.join('.'), type)
+			}
+			else
+				key = left
+		}
 		else
 			key = left
 	}
-	if(debug) console.log("object from key="+JSON.stringify(object))
+	if(debug) console.log(type+" object from key="+JSON.stringify(object))
 	//console.log("checking item "+key+" in "+JSON.stringify(object, ' ',2))
 	if(object[key] === undefined)   //----------mykle
-		object[key]= JSON.parse(JSON.stringify([ "fribble" ]))
+		object[key]= JSON.parse(type==='array'? JSON.stringify([ "fribble" ]):JSON.stringify({ "fribble":null }))
 	return {object: object, key:key }
 },
 
@@ -165,7 +172,28 @@ process_submit: async function (data, self, socket) {
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
 			if(1) {
-				if(debug) console.log("arrays="+JSON.stringify(data.arrays,' ',2))
+				if(debug) console.log("potential empty objects="+JSON.stringify(data.objects,' ',2))
+					for(const p of data.objects){
+						let t=p
+						while(t.includes(".."))
+							t=t.replace("..",'.')
+						if(debug) console.log("processing for "+p+" cleanup="+t)
+
+						let v = t.split('.')
+						if(debug) console.log("processing for "+p+" parts="+JSON.stringify(v))
+						//   "MMM-AlexaControl.config.devices.devices",
+						let rr = data[v[0]]
+						let o = this.object_from_key(data,t, 'object')
+						if(debug) console.log("object="+JSON.stringify(o,' ',2))
+						if(_.isEqual(o.object[o.key], { "fribble":null })){
+							if(debug) console.log("reset missing object")
+							o.object[o.key]={}
+						}
+						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
+					}
+
+				if(debug) console.log("potential arrays="+JSON.stringify(data.arrays,' ',2))
+
 				for(const p of data.arrays){
 					let t=p
 					while(t.includes(".."))
@@ -180,20 +208,20 @@ process_submit: async function (data, self, socket) {
 					if(debug) console.log("processing for "+p+" parts="+JSON.stringify(v))
 					//  MMM-GooglePhotos.config.albums"
 					let rr = data[v[0]]
-					let o = this.object_from_key(data,t)
-					if(debug) console.log("object="+JSON.stringify(o,' ',2))
+					let o = this.object_from_key(data,t,'array')
+					if(debug) console.log("array="+JSON.stringify(o,' ',2))
 						if(_.isEqual(o.object[o.key], [ "fribble" ])){
 							if(debug) console.log("items equal key="+o.key)
 							if(!t.endsWith(o.key)){
 								if(o.key === 'config'){
-								 	if(debug) console.log("setting object="+JSON.stringify(o.object)+" key="+o.key )
+								 	if(debug) console.log("setting array="+JSON.stringify(o.object)+" key="+o.key )
 									o.object[o.key] = {}
-									if(debug) console.log("done  setting object="+JSON.stringify(o.object)+" key="+o.key )
+									if(debug) console.log("done  setting array="+JSON.stringify(o.object)+" key="+o.key )
 									o.object=o.object[o.key]
-									if(debug) console.log("done 1 setting object="+JSON.stringify(o.object)+" key="+o.key )
+									if(debug) console.log("done 1 setting array="+JSON.stringify(o.object)+" key="+o.key )
 									// get last entry
 									o.key = v.slice(-1)
-									if(debug) console.log("done 2 setting object="+JSON.stringify(o.object)+" key="+o.key )
+									if(debug) console.log("done 2 setting array="+JSON.stringify(o.object)+" key="+o.key )
 								}
 							}
 							if(nested){
@@ -208,7 +236,7 @@ process_submit: async function (data, self, socket) {
 							// present but NOT an array
 							this.reformat_array(o.object)
 						}
-						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
+						if(debug) console.log("done 3 setting array="+JSON.stringify(rr) )
 				}
 				delete data.arrays
 			}

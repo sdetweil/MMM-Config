@@ -57,7 +57,7 @@ function readeFile(fn){
   return lines
 }
 // we have a minified file, make it readable
- function processMini(lines){
+function processMinified(lines){
 	let xlines=[]
 	// if there are more than a few lines
 	if(lines.length <10){
@@ -92,7 +92,7 @@ function getFileContents(fn){
 	let lines=readeFile(fn)
 
 	if(lines.length<10)
-		lines=processMini(lines)
+		lines=processMinified(lines)
 	return lines
 }
 function process_main(lines, name ){

@@ -16,16 +16,16 @@ Module.register("MMM-Config", {
 	defaults: {
 		showQR: true,
 		force_update: true,
-		restart:"" 
-		
+		restart:"" ,
+		debug: false
 	},
-	
+
 	getTranslations: function() {
         return {
             en: "translations/en.json",
 			es: "translations/es.json",
 			da: "translations/da.json",
-			de: "translations/de.json" 	
+			de: "translations/de.json"
         };
 		},
 
@@ -38,8 +38,8 @@ Module.register("MMM-Config", {
 		this.config.lang = this.config.lang || config.language; //automatically overrides and sets language :)
 	},
 
-    getStyles: function() { 
-    return ['MMM-Config.css']; 
+    getStyles: function() {
+    return ['MMM-Config.css'];
     },
 
 	// return list of other functional scripts to use, if any (like require in node_helper)

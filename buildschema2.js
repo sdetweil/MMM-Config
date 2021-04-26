@@ -81,7 +81,7 @@ var pairVariables = {}
 
 let value={}
 
-
+let empty_objects=[]
 
 copyConfig(defines,schema,form);
 
@@ -275,9 +275,7 @@ form.push(  {
 				module_properies.config[varname]=t
 	}
 
-
-
-	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays}
+	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects}
 	//console.log( "    $('form').jsonForm({")
 	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
@@ -406,7 +404,7 @@ form.push(  {
 	function find_empty_arrays(obj, stack, hash){
 		if(typeof obj == 'object'){
 			if(Array.isArray(obj)){
-				//console.log(" object is an array, length="+obj.length)
+				if(debug) console.log(" object is an array, length="+obj.length)
 				for (const o of obj){
 					stack.push("[]")
 					hash=find_empty_arrays(o,stack, hash)
@@ -420,7 +418,7 @@ form.push(  {
 			}
 			else {
 				if(obj){
-					//console.log(" object is an object, length="+Object.keys(obj).length)
+					if(debug) console.log(" object is an object, length="+Object.keys(obj).length)
 					for(const x of Object.keys(obj)){
 						//console.log("item ="+x)
 						if(typeof obj[x] == 'object'){
@@ -544,7 +542,7 @@ function processArrayProperty(schema, form, value, defines, module_name, mform ,
 function processObjectProperty(schema, form, value, defines, module_name, mform, module_property){
   let type= 'object'
 	if(debug) console.log("\t\t"+module_property +" is an object")
-	schema[module_name]['properties']['config']['properties'][module_property]={title:module_property,properties:{}}
+	schema[module_name]['properties']['config']['properties'][module_property]={title:module_property,type:"object",properties:{}}
   // if there is some value for this property
 	if(defines !=null ){
 		let first_done= false;
@@ -559,6 +557,8 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	  	if(debug) console.log("\t\t\t object item "+o+" = "+defines[o])
 	  	// get its value
 	    let vv = defines[o]
+
+	    if(debug) console.log("variable="+o+" value="+JSON.stringify(vv))
 
 	  	let value_type= (vv==null ?"string": typeof vv)
 	  	// get its value
@@ -599,6 +599,9 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    		value_type='array'
 	    		if(debug) console.log("object , but IS array")
 	    		schema[module_name]['properties']['config']['properties'][module_property]['properties'][o] ={type:value_type,title:o, items: {"type":"string"}}
+	    	  // save the potential missing object
+	    	  if(JSON.stringify(vv)==='[]')
+	    			empty_objects.push(module_name+".config."+module_property)
       		if(vform != undefined){
 	  	  		let xform= { title:o, type:"array", items:[]}
 	  	  			xform.items.push({

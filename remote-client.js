@@ -64,7 +64,9 @@ $(function () {
 	activesocket.on('disconnect', function () {
 		// don't know what to do on disconnect
 		$('#outmessage').html("<p><strong>MagicMirror is not running</strong></p>")
-		hideElm('#submit_button')
+		$('#result').html('<form id="result-form" class="form-vertical"></form>');
+		//hideElm('#submit_button')
+
 		if(timerHandle)
 			clearTimeout(timerHandle)
 		;
@@ -74,13 +76,17 @@ $(function () {
 	activesocket.on('json', function (incoming_json) {
 		//data.configJSON =  data
 		let data = parseData(incoming_json.slice(1,-1))
+		// free the memory
+		incoming_json=null
 		let pairs = data.pairs
 		let arrays = data.arrays
+		let objects = data.objects
 		$('#outmessage').text("")
 		try {
 			data.onSubmitValid = function (values) {
 				values['pairs']=pairs
 				values['arrays']=arrays
+				values['objects']=objects
 
 				activesocket.emit('saveConfig', values)
 				$('#outmessage').html("<p><strong>Your Configuration has been submitted.</strong></p>")
@@ -127,7 +133,7 @@ $(function () {
 						config_init()
 						timerHandle=null;
 					},
-				20000)
+				10000)
 		}
 		$('#outmessage').html("<p><strong>" + msg + "</strong></p>")
 	})
@@ -170,6 +176,7 @@ $(function () {
 
 	function config_init() {
 		activesocket.emit('getForm', true)
+		$('#outmessage').html("<div></div>")
 	}
 
 	// config functions
