@@ -23,9 +23,9 @@ Module.register("MMM-Config", {
 	getTranslations: function() {
         return {
             en: "translations/en.json",
-			es: "translations/es.json",
-			da: "translations/da.json",
-			de: "translations/de.json"
+						es: "translations/es.json",
+						da: "translations/da.json",
+						de: "translations/de.json"
         };
 		},
 

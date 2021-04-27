@@ -34,3 +34,22 @@
 .MMM-Config  li.ui-sortable-helper {
 
 }
+
+.mblue {
+  color:blue;
+}
+
+.mred {
+  color:red;
+}
+
+/*    field label color */
+.module_name_class  legend {
+
+}
+.module_enabled legend {
+  color: blue;
+}
+.module_disabled  legend {
+  color: red;
+}

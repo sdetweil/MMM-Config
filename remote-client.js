@@ -30,7 +30,7 @@ $(function () {
 
 	   		function (key, value) {
 				if (typeof value === "string"){
-					// only handle specified field sin jsonform
+					// only handle specified fields in jsonform
 					switch(key){
 					  case 'onChange':
 					  case 'onClick':
@@ -85,6 +85,7 @@ $(function () {
 		$('#outmessage').text("")
 		try {
 			data.onSubmitValid = function (values) {
+				// restore the fixup data from the incoming
 				values['pairs']=pairs
 				values['arrays']=arrays
 				values['objects']=objects

@@ -63,6 +63,7 @@ const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions
 const module_form_template= {
 							              "type": "fieldset",
 							              "title": "modulename",
+							              "htmlClass":"module_name_class",
 							              "expandable": true,
 							              "items": []
 }
@@ -275,13 +276,19 @@ form.push(  {
 				module_properies.config[varname]=t
 	}
 
+	// set the enabled style for the modules
+	form[0].items[1].items.forEach((m)=>{
+			if(debug)	console.log("module ="+m.title+ " value data ="+ value[m.title].disabled)
+				m.htmlClass=((value[m.title].disabled != undefined && value[m.title].disabled==true )?"module_disabled":"module_enabled")+' module_name_class'
+	})
+
 	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects}
 	//console.log( "    $('form').jsonForm({")
 	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
 
 	function copyConfig(defines, schema, form){
-		schema['config']={ type:'object',title:"properties for MagicMirror base",properties:{}}
+		schema['config']={ type:'object',title:"properties for MagicMirror base", properties:{}}
 		schema['config']['properties'] = {}
 		// copy the current non modules stuff from config.js
 		for(const setting of Object.keys(defines.config)){
@@ -466,7 +473,8 @@ form.push(  {
 	// make a copy of the template
 	let mform= clone(module_form_template)
 	mform.title= module_name
-	mform.items.push(module_name+'.'+"disabled")
+	mform.items.push({ key:module_name+'.'+"disabled", "onChange":
+		"(evt,node)=>{var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('.module_name_class');parent.find('legend').css('color',selection?'red':'blue')}"})
 	mform.items.push({ key:module_name+'.'+"position", description:"use Module Positions section below to set or change"})
 	mform.items.push({key:module_name+'.'+"order", type:"hidden"})
 
