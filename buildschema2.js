@@ -1,10 +1,13 @@
 use:'strict'
-const debug= false
+let debug= false
 var t = true
 var f = false
 const sort=false
 
 const defines = require(process.argv[2])
+
+if(process.argv.length>3 && process.argv[3] ==='debug')
+	debug=true
 
 const merge = require('lodash.merge');
 const interfaces= require('os').networkInterfaces()
@@ -83,6 +86,7 @@ var pairVariables = {}
 let value={}
 
 let empty_objects=[]
+let mangled_names={}
 
 copyConfig(defines,schema,form);
 
@@ -173,6 +177,7 @@ form.push(  {
 		  // if we have data in the value section
 		  if(value[m.module] !== undefined){
 		  	if(debug) console.log(" have module info ="+m.module+"="+JSON.stringify(value[m.module],' ',2))
+		  	value[m.module]=JSON.parse(JSON.stringify(value[m.module]).replace(/"\.*/g,"\""))
 		  	let x = getConfigModule(m,defines.config.modules)
 		  	// if this module is in config.js
 		  	if(x){
@@ -282,9 +287,11 @@ form.push(  {
 				m.htmlClass=((value[m.title].disabled != undefined && value[m.title].disabled==true )?"module_disabled":"module_enabled")+' module_name_class'
 	})
 
-	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects}
+	value = JSON.parse(JSON.stringify(value).replace(/"\.*/g,"\""))
+
+	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects, mangled_names:mangled_names}
 	//console.log( "    $('form').jsonForm({")
-	let cc = JSON.stringify(combined,' ',2).slice(1,-1).replace(/"\.*/g,"\"")
+	let cc = JSON.stringify(combined,' ',2).slice(1,-1)//.replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
 
 	function copyConfig(defines, schema, form){
@@ -411,17 +418,25 @@ form.push(  {
 	function find_empty_arrays(obj, stack, hash){
 		if(typeof obj == 'object'){
 			if(Array.isArray(obj)){
-				if(debug) console.log(" object is an array, length="+obj.length)
-				for (const o of obj){
+				if(debug) console.log(" object is an array, length="+Object.keys(obj).length)
+				for (const o of Object.keys(obj)){
 					stack.push("[]")
 					hash=find_empty_arrays(o,stack, hash)
 					stack.pop()
 				}
-				//console.log("adding "+stack.join('.'))
-				let t = stack.join('.')
-				if(t.endsWith(".[]"))
-					t=t.replace(".[]","[]")
-				hash.push(t)
+					//console.log("adding "+stack.join('.'))
+					let last = stack.slice(-1).toString()
+					if(last.startsWith('.')){
+						if(debug) console.log("last="+last+" startsWith .")
+						stack.pop()
+						last=last.replace(/\./g,'')
+						stack.push(last)
+					}
+					let t = stack.join('.')
+					if(debug) console.log(" array name="+t)
+					if(t.endsWith(".[]"))
+						t=t.replace(".[]","[]")
+					hash.push(t)
 			}
 			else {
 				if(obj){
@@ -595,7 +610,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    }
 	    else if(value_type === 'object'){
 	    	if(!Array.isArray(vv)){
-	    		if(debug) console.log("object , but IS NOT array")
+	    		if(debug) console.log("object "+o+", but IS NOT array")
 	    		vv = JSON.stringify(vv)
   	  	  vform= clone(object_template)
   	  	  vform['type']='array'
@@ -605,18 +620,22 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    	}
 	    	else{
 	    		value_type='array'
-	    		if(debug) console.log("object , but IS array")
-	    		schema[module_name]['properties']['config']['properties'][module_property]['properties'][o] ={type:value_type,title:o, items: {"type":"string"}}
+	    		if(debug) console.log("object "+o+", but IS array")
+	    		let to = trimit(o,'.')
+	    		schema[module_name]['properties']['config']['properties'][module_property]['properties'][to] ={type:value_type,title:o, items: {"type":"string"}}
+	    	  if(debug) console.log("property schema="+JSON.stringify(schema[module_name]['properties']['config']['properties'][module_property]['properties'],' ',2))
 	    	  // save the potential missing object
 	    	  if(JSON.stringify(vv)==='[]')
 	    			empty_objects.push(module_name+".config."+module_property)
+	    		if(to !== o)
+	    			mangled_names[module_name+'.config.'+module_property+'.'+to]=o
       		if(vform != undefined){
 	  	  		let xform= { title:o, type:"array", items:[]}
 	  	  			xform.items.push({
 	  	  						title:(module_property.endsWith('s')?module_property.slice(0,-1):module_property)+" {{idx}}",
-	  	  						key: module_name+'.config.'+module_property+"."+trimit(o,'\.')+"[]"
+	  	  						key: module_name+'.config.'+module_property+"."+to+"[]"
 	  	  					})
-	  	  		if(debug) console.log("vform="+JSON.stringify(vform))
+	  	  		if(debug) console.log("xform="+JSON.stringify(xform))
 	  	  		vform['items'].push(xform)
 	  	  		mform.items.pop()
 	  	  		mform.items.push(vform)
@@ -625,12 +644,15 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    } else {
 	       if( value_type != "string" )
   	    	if(debug) console.log(" module="+module_name+" properties="+module_property+" name="+o+" value="+vv+ " " + JSON.stringify(schema[module_name]['properties']['config']['properties'],' ',2))
-  	  		schema[module_name]['properties']['config']['properties'][module_property]['properties'][o] ={type:value_type, value: vv}
+  	    	let to = trimit(o,'.')
+  	  		schema[module_name]['properties']['config']['properties'][module_property]['properties'][to] ={type:value_type, value: vv}
+	    		if(to !== o)
+	    			mangled_names[module_name+'.config.'+module_property+'.'+to]=o
   	  	  if(vform != undefined){
 	  	  		let xform= {}
 	  	  		xform['title']=o
-	  	  		xform['key']= module_name+'.config.'+module_property+"."+trimit(o,'\.')
-	  	  		if(debug) console.log("vform="+JSON.stringify(vform))
+	  	  		xform['key']= module_name+'.config.'+module_property+"."+to
+	  	  		if(debug) console.log("xform="+JSON.stringify(xform))
 	  	  		vform['items'].push(xform)
 	  	  		mform.items.pop()
 	  	  		mform.items.push(vform)

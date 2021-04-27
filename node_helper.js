@@ -6,7 +6,6 @@ const os = require('os')
 const stream = require('stream')
 const _ = require('lodash')
 const remote = new stream.Writable()
-const { inspect } = require('util')
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
@@ -123,7 +122,7 @@ object_from_key: function (object, key, type){
 	if(debug) console.log("key = "+key)
 	if(key && key.includes('.')){
 		let r = key.split('.')
-		let left = r.shift()
+		let left = r.shift().replace(/' '/g,'.')
 		if(debug) console.log("object["+left+"]="+JSON.stringify(object[left]))
 		if(type === 'array' || r.length > 1 || object[left] !== undefined){
 			if(object[left] != undefined ){
@@ -166,6 +165,21 @@ isNumeric :function(n) {
 },
 mergeModule(config, data){
 	return _.assign(config , _.pick(data, _.keys(config)));
+},
+
+fixobject_name: function(object, key,newname){
+	  if(debug) console.log("splitting key="+key)
+		let x = key.split('.')
+		if(debug) console.log("processing mangled_names, part="+JSON.stringify(x))
+		if(x.length==1){
+			object[newname]=object[x[0]]
+			delete object[x[0]]
+		}
+		else{
+			let l=x.shift()
+			this.fixobject_name(object[l],x.join('.'), newname )
+		}
+
 },
 
 process_submit: async function (data, self, socket) {
@@ -266,6 +280,11 @@ process_submit: async function (data, self, socket) {
 							data[v[0]]['config'][v[1]]=modified_value
 					}
 				delete data.pairs
+			}
+			if(1){
+				for(let n of Object.keys(data.mangled_names)){
+					this.fixobject_name(data, n, data.mangled_names[n])
+				}
 			}
 			if(0){  // calculate diff   form input with form output
 				// loop thru the defines
