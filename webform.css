@@ -22,34 +22,29 @@
 	margin-left: 2em;
  }
 
-.MMM-Config .btn {
+.webform .btn {
   display:none;
 }
 
-.MMM-Config  a.draggable {
+.webform a.draggable {
      /* all: revert */
 }
 
-
-.MMM-Config  li.ui-sortable-helper {
-
+.webform ul.ui-sortable {
+   /* all: revert2 */
 }
 
-.mblue {
-  color:blue;
-}
-
-.mred {
-  color:red;
-}
-
-/*    field label color */
-.module_name_class  legend {
-
-}
-.module_enabled legend {
-  color: blue;
-}
+/* used to set the initial state of the modules */
 .module_disabled  legend {
   color: red;
+}
+.module_enabled   legend {
+  color: blue;
+}
+
+div ~ fieldset >legend {
+    color: #333 !important;
+}
+div ~ fieldset  {
+    margin-left: 2em;
 }

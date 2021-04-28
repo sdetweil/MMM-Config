@@ -57,22 +57,35 @@ for(let interface of Object.keys(interfaces)){
 	}
 }
 networkInterfaces.splice(1,0,"0.0.0.0")
-//console.log("networkInterfaces="+JSON.stringify(networkInterfaces))
-
+if( debug) console.log("networkInterfaces="+JSON.stringify(networkInterfaces))
+function getColor(cssfile,name){
+	for(let line=0 ; line< cssfile.length; line++){
+		//console.log(name+" found on line="+line+" = "+cssfile[line])
+		if(cssfile[line].includes(name)){
+			//console.log(name+" found on line="+cssfile[r])
+			return cssfile[line+1].split(':')[1].replace(';','').trim()
+		}
+	}
+	return ""
+}
 
 const module_position_schema= JSON.parse(fs.readFileSync(__dirname+"/module_positions_schema.json",'utf8'))
 const module_position_form= JSON.parse(fs.readFileSync(__dirname+"/module_positions_form.json",'utf8'))
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
+const cssfile = fs.readFileSync(__dirname+"/webform.css",'utf8').split('\n')
+let module_enabled_color = getColor(cssfile,'module_enabled')
+let module_disabled_color = getColor(cssfile,'module_disabled')
+
 const module_form_template= {
 							              "type": "fieldset",
 							              "title": "modulename",
-							              "htmlClass":"module_name_class",
+							              //"htmlClass":"module_name_class",
 							              "expandable": true,
 							              "items": []
 }
 
 var array_template= { "type": "array",
-					"title": "variablename"
+					"title": "name"
 				}
 var object_template= { "type":"array", "title":"foo", items: [ { "type": "fieldset","items":  [] } ]}/**/
 
@@ -284,7 +297,7 @@ form.push(  {
 	// set the enabled style for the modules
 	form[0].items[1].items.forEach((m)=>{
 			if(debug)	console.log("module ="+m.title+ " value data ="+ value[m.title].disabled)
-				m.htmlClass=((value[m.title].disabled != undefined && value[m.title].disabled==true )?"module_disabled":"module_enabled")+' module_name_class'
+				m.htmlClass=((value[m.title].disabled != undefined && value[m.title].disabled==true )?"module_disabled":"module_enabled") // +' module_name_class'
 	})
 
 	value = JSON.parse(JSON.stringify(value).replace(/"\.*/g,"\""))
@@ -489,7 +502,7 @@ form.push(  {
 	let mform= clone(module_form_template)
 	mform.title= module_name
 	mform.items.push({ key:module_name+'.'+"disabled", "onChange":
-		"(evt,node)=>{var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('.module_name_class');parent.find('legend').css('color',selection?'red':'blue')}"})
+		"(evt,node)=>{var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('fieldset');parent.find('legend').first().css('color',selection?'"+module_disabled_color+"':'"+module_enabled_color+"')}"})
 	mform.items.push({ key:module_name+'.'+"position", description:"use Module Positions section below to set or change"})
 	mform.items.push({key:module_name+'.'+"order", type:"hidden"})
 
@@ -581,11 +594,11 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	  	// get its value
 	    let vv = defines[o]
 
-	    if(debug) console.log("variable="+o+" value="+JSON.stringify(vv))
+	    if(debug) console.log("\t\t\t variable="+o+" value="+JSON.stringify(vv))
 
 	  	let value_type= (vv==null ?"string": typeof vv)
 	  	// get its value
-	  	if(debug) console.log("variable="+o+" type="+typeof vv+" value_type="+value_type)
+	  	if(debug) console.log("\t\t\t variable="+o+" type="+typeof vv+" value_type="+value_type)
 
 	    if(typeof vv === "string" || pair_object==true){
 	    	if(debug) console.log("object with string value")
@@ -610,11 +623,36 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    }
 	    else if(value_type === 'object'){
 	    	if(!Array.isArray(vv)){
-	    		if(debug) console.log("object "+o+", but IS NOT array")
+	    		if(debug) console.log("\t\t\t object "+o+", but IS NOT array") //srd
 	    		vv = JSON.stringify(vv)
-  	  	  vform= clone(object_template)
-  	  	  vform['type']='array'
-  	  	  vform['title']=module_property
+
+	    	// need to add item to vform above
+	    	// need to add to the schema as well
+	    	  schema[module_name]['properties']['config']['properties'][module_property]['properties'][o]= {type:'object', title:o, properties:{}}
+	    	  let xform
+	    	  if(vv === '{}'){
+		    	  xform= clone(array_template)
+	  	  	  xform['title']=o
+	  	  	  xform['items']=[]
+	  	  	  xform['items'].push(
+	  	  	  				{
+                       key:"MMM-CalendarExt2.config.defaultSet.calendar",
+                       type:"pair"
+             			  }
+	  	  	  	)
+	    	  }
+	    	  else{
+	  	  	  xform= clone(object_template)
+	  	  	  xform['type']='fieldset'
+	  	  	  xform['title']=o
+	  	  	  // empty object, can't tell what they might be. pick string
+	  	  	  /*if(vv='{}')
+	  	  	  	xform.items[0].type='array'*/
+	  	  	  //let xform="key:"+module_name+'.config.'+module_property +'.'+o// +'[]'
+	  	  	}
+  	  	  //vform["type"]='section'
+
+  	  	  vform.items.push(xform)
   	  	  mform.items.pop()
   	  	  mform.items.push(vform)
 	    	}
