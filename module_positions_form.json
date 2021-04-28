@@ -8,6 +8,7 @@
       "items": [
         {
           "type":"tabarray",
+          "draggable":"false",
           "items":[
             {
               "type":"section",

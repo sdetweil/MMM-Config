@@ -26,8 +26,8 @@
   display:none;
 }
 
-.webform a.draggable {
-     /* all: revert */
+.webform li.active > a.draggable  {
+     /*all: revert */
 }
 
 .webform ul.ui-sortable {
