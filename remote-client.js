@@ -72,6 +72,22 @@ $(function () {
 			clearTimeout(timerHandle)
 		;
 	})
+	/*activesocket.on('connect_error',(err)=>{
+		console.log("connection error="+JSON.stringify(err))
+	})
+	activesocket.on('connect_timeout', ()=>{
+		console.log("connection timeout error="+JSON.stringify(err))
+	})
+	activesocket.on('reconnect_error',()=>{
+			console.log("reconnection error="+JSON.stringify(err))
+	})
+	activesocket.on('reconnect_failed',()=>{
+		console.log("reconnect failed error="+JSON.stringify(err))
+
+	})
+	activesocket.on('connection_refused',()=>{
+		console.log("connect refused error="+JSON.stringify(err))
+	})*/
 
 	// config socket events
 	activesocket.on('json', function (incoming_json) {

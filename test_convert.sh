@@ -55,7 +55,7 @@ fi
 # if the config changed since last start or the modules changed
 if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./buildschema2.js $defaults_file >$FILE
+	node ./buildschema3.js $defaults_file >$FILE
 	echo $config_lastchange>$d/config_lastchange
 fi
 echo completed

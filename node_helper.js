@@ -181,12 +181,66 @@ fixobject_name: function(object, key,newname){
 		}
 
 },
+tohandler: function(key, value){
+	if (typeof value === 'function') {
+  	return value + ''; // implicitly `toString` it
+		}
+	return value;
+},
 
+fromhandler: function(key,value){
+	if(value
+		&& (typeof value =='string')
+		&& (value.startsWith("(") || value.startsWith("function("))
+		&& value.endsWith("}")
+		){
+		return eval('('+value+')')
+	}
+	return value
+},
+clone: function(input){
+	return JSON.parse(JSON.stringify(input))
+},
+getpair: function(datasource,key, self){
+	if(debug) console.log("getpair key="+key)
+	let left=key
+	if(key.includes('.')){
+		let v = key.split('.')
+		left= v.shift()
+		if(v.length){
+			if (datasource[left]===undefined)
+				datasource[left]=self.clone({})
+			if(debug) console.log("getpair remaining key="+v.join('.'))
+			return self.getpair(datasource[left],v.join('.'),self)
+		}
+	}
+	if (datasource[left]==undefined)
+		datasource[left]=self.clone({})
+	return datasource[left]
+},
+setpair: function(datasource,key, self, value){
+	if(debug) console.log("setpair key="+key)
+	let left=key
+	if(key.includes('.')){
+		let v = key.split('.')
+		left= v.shift()
+		if(v.length){
+			if (datasource[left]===undefined)
+				datasource[left]=self.clone({})
+			if(debug) console.log("getpair remaining key="+v.join('.'))
+			return self.setpair(datasource[left],v.join('.'),self, value)
+		}
+	}
+	if(debug) console.log("setpair setting value="+JSON.stringify(value,self.tohandler,2))
+	datasource[left]=self.clone(value)
+	return datasource[left]
+},
+// handle form submission from web browser
 process_submit: async function (data, self, socket) {
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
 			if(1) {
-				if(debug) console.log("potential empty objects="+JSON.stringify(data.objects,' ',2))
+				if(debug) console.log("potential empty objects="+JSON.stringify(data.objects,self.tohandler,2))
 					for(const p of data.objects){
 						let t=p
 						while(t.includes(".."))
@@ -206,7 +260,7 @@ process_submit: async function (data, self, socket) {
 						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
 					}
 
-				if(debug) console.log("potential arrays="+JSON.stringify(data.arrays,' ',2))
+				if(debug) console.log("potential arrays="+JSON.stringify(data.arrays,self.tohandler,2))
 
 				for(const p of data.arrays){
 					let t=p
@@ -256,28 +310,35 @@ process_submit: async function (data, self, socket) {
 			}
 			// cleanup the pairs
 			if(1){
-				//console.log("saving data from client to "+configPath+"\n"+JSON.stringify(data))
+
+				if(debug) console.log("potential pairs=\n"+JSON.stringify(data.pairs,self.tohandler,2))
 				for(const p of Object.keys(data['pairs'])){
+
 						let modified_value = {}
-						let v=p.split('.')
-						let j = (v[0] =='config')?data[v[0]][v[1]]: data[v[0]]['config'][v[1]]
-	 					//console.log("processing for pair="+p+"  data="+JSON.stringify(j))
+
+						let j = self.getpair(data,p,self)
+
+						if(debug) console.log("data 1="+JSON.stringify(j,self.tohandler,2))
+
+						if(j===JSON.stringify({},self.tohandler))
+							j=[]
+
+	 					if(debug) console.log("  data 2="+JSON.stringify(j,self.tohandler,2))
 						// convert the array items to object items
-						for(const item of j){
-							  let property=item.split(':')
-							  if(property[1]=="true")
-							  	 property[1]=true
-							  if(property[1]=="false")
-							  	 property[1]=false
-							  if(this.isNumeric(property[1]))
-							  	property[1]=parseFloat(property[1])
-								modified_value[property[0]]=property[1]
+						if(j.length){
+							for(const item of j){
+								  let property=item.split(':')
+								  if(property[1]=="true")
+								  	 property[1]=true
+								  if(property[1]=="false")
+								  	 property[1]=false
+								  if(this.isNumeric(property[1]))
+								  	property[1]=parseFloat(property[1])
+									modified_value[property[0]]=property[1]
+							}
+							j=self.setpair(data,p,self,modified_value)
+							if(debug) console.log("pair reset="+JSON.stringify(j,self.tohandler,2))
 						}
-						if(v[0] ==='config'){
-							data[v[0]][v[1]]=modified_value
-						}
-						else
-							data[v[0]]['config'][v[1]]=modified_value
 					}
 				delete data.pairs
 			}
@@ -336,13 +397,13 @@ process_submit: async function (data, self, socket) {
 			// copy the modules into their position sections
 			for(let m of Object.keys(data)){
 				// don't copy config info
-				if(m !== 'config' && data[m].disabled === false ){
+				if(m !== 'config' && data[m].inconfig === '1' ){
 					// default is what the form has
 					let mx = data[m]
-					if(debug) console.log("looking for modules="+m+" in config.js , have form data="+JSON.stringify(mx,' ',2))
+					if(debug) console.log("looking for modules="+m+" in config.js , have form data="+JSON.stringify(mx,self.tohandler,2))
 					// find the config.js entry, if present
 					let mc=this.getConfigModule(m, cfg.config.modules)
-					if(debug) console.log("looking for modules="+m+" in config.js , have config data="+JSON.stringify(mc,' ',2))
+					if(debug) console.log("looking for modules="+m+" in config.js , have config data="+JSON.stringify(mc,self.tohandler,2))
 					// if present, merge from the form
 					if(mc){
 						if(mc.order === undefined){
@@ -354,9 +415,9 @@ process_submit: async function (data, self, socket) {
 							mc.position=mx.position
 						}
 
-						mx=this.mergeModule(mc,mx)
+						mx=self.mergeModule(mc,mx)
 
-						if(debug) console.log("merged "+mx.module+"="+JSON.stringify(mx,' ',2))
+						if(debug) console.log("merged "+mx.module+"="+JSON.stringify(mx,self.tohandler,2))
 					}
 					// update the results
 					if(mx){
@@ -426,11 +487,14 @@ process_submit: async function (data, self, socket) {
 			let xx = JSON.stringify(r, null, 2).replace(/::/g,"==").replace(/f:/g,"~~")
 			//console.log(xx)
 			//console.log("there are "+xx.length+" matches")
-			xx.match(/(.*[^:])\:.*/gm).forEach(match => {
+
+			// old = (.*[^:])\:.*
+			xx.match(/(.*?)":/gm).forEach(match => {
+				if(debug) console.log(" quote around leading symbol test="+match)
 				let t = match.split(":")
 				t[0]=t[0].trimStart()
 				//console.log("match="+match + " keyword="+t[0])
-				if(!t[0].includes(" ") && !t[0].slice(1).match(/^\d/) && !t[0].startsWith('".') && !t[0].startsWith('"-')){ //} && !t[0].match(/^\d/)){
+				if(!t[0].includes(" ") && !t[0].slice(1).match(/^\d/) && !t[0].startsWith('".') && !t[0].startsWith('"-')){
 					//console.log("match 2="+match + " keyword="+t[0])
 					xx=xx.replace(new RegExp(t[0]+':', 'g'), t[0].replace(/\"/g,"")+':')
 				}
@@ -438,7 +502,7 @@ process_submit: async function (data, self, socket) {
 			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/==/g,"::").replace(/~~/g,"f:")
 
 			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6).replace(/:/g,'.')
-			let targetpath=/*(os.platform()=='win32')?"/config/config.js":*/__dirname.split(path.sep).slice(0,-2).join(path.sep)+ "/config/config.js"
+			let targetpath=__dirname.split(path.sep).slice(0,-2).join(path.sep)+ "/config/config.js"
 			fs.renameSync(oc, targetpath+"."+d)
 			fs.writeFile(oc, xx.slice(1,-1)+closeString, "utf8", (err) => {
 				if (err) {

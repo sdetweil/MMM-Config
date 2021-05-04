@@ -4,7 +4,9 @@ var t = true
 var f = false
 const sort=false
 
+const path = require('path')
 const defines = require(process.argv[2])
+
 
 if(process.argv.length>3 && process.argv[3] ==='debug')
 	debug=true
@@ -14,6 +16,7 @@ const interfaces= require('os').networkInterfaces()
 
 const fs = require("fs")
 const networkInterfaces=[]
+const languages=[]
 
 var schema = {}
 var form = [
@@ -69,6 +72,16 @@ function getColor(cssfile,name){
 	return ""
 }
 
+let fp=path.join(__dirname.split(path.sep).slice(0,-2).join(path.sep), 'translations')
+if(debug)console.log("listing languages from "+fp)
+// get the language list
+fs.readdirSync(fp).forEach(file => {
+        //console.log(file);
+        languages.push(file.split('.')[0])
+});
+
+
+
 const module_position_schema= JSON.parse(fs.readFileSync(__dirname+"/module_positions_schema.json",'utf8'))
 const module_position_form= JSON.parse(fs.readFileSync(__dirname+"/module_positions_form.json",'utf8'))
 const module_positions = JSON.parse(fs.readFileSync(__dirname+"/module_positions.json",'utf8'))
@@ -100,18 +113,17 @@ let value={}
 
 let empty_objects=[]
 let mangled_names={}
-
 copyConfig(defines,schema,form);
 
 // loop thru all the modules discovered on this system
 for(const module_definition of Object.keys(defines.defined_config)){
 
-	if(debug) console.log("key="+module_definition)
+	if(debug) console.log("\nkey="+module_definition)
 	// get the module name from the definition
 
 	let module_name=module_definition.slice(0,module_definition.lastIndexOf('_')).replace(/_/g,'-')
 
-  if(debug) console.log("properties="+JSON.stringify(defines.defined_config[module_definition])+"\n")
+  if(debug) console.log("properties="+JSON.stringify(defines.defined_config[module_definition],tohandler)+"\n")
   // process for this module
 	processModule(schema, form, value, defines.defined_config[module_definition], module_name)
 
@@ -189,18 +201,18 @@ form.push(  {
 	for(let m of defines.config.modules){
 		  // if we have data in the value section
 		  if(value[m.module] !== undefined){
-		  	if(debug) console.log(" have module info ="+m.module+"="+JSON.stringify(value[m.module],' ',2))
-		  	value[m.module]=JSON.parse(JSON.stringify(value[m.module]).replace(/"\.*/g,"\""))
+		  	if(debug) console.log(" have module info ="+m.module+"="+JSON.stringify(value[m.module],tohandler,2))
+		  	value[m.module]=JSON.parse(JSON.stringify(value[m.module],tohandler).replace(/"\.*/g,"\""))
 		  	let x = getConfigModule(m,defines.config.modules)
 		  	// if this module is in config.js
 		  	if(x){
 		 			if(x.disabled == undefined)
 		 				// it defaults to false
 		 				x.disabled=false
-		  		if(debug) console.log(" have module info in config.js ="+x.module+"="+JSON.stringify(x,' ',2))
+		  		if(debug) console.log(" have module info in config.js ="+x.module+"="+JSON.stringify(x,tohandler,2))
 		  		// merge the values
-		 			let tt = merge(value[m.module],x) //getConfigModule(m,defines.config.modules))
-		 			if(debug) console.log(" tt="+JSON.stringify(tt,' ',2))
+		 			let tt = merge(value[m.module],x)
+		 			if(debug) console.log(" tt="+JSON.stringify(tt,tohandler,2))
 		 			// if the module didn't specify disabled,
 		 			if(tt.disabled == undefined)
 		 				// it defaults to false
@@ -300,12 +312,30 @@ form.push(  {
 				m.htmlClass=((value[m.title].disabled != undefined && value[m.title].disabled==true )?"module_disabled":"module_enabled") // +' module_name_class'
 	})
 
-	value = JSON.parse(JSON.stringify(value).replace(/"\.*/g,"\""))
+	value = JSON.parse(JSON.stringify(value,tohandler).replace(/"\.*/g,"\""),fromhandler )
 
 	let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects, mangled_names:mangled_names}
 	//console.log( "    $('form').jsonForm({")
-	let cc = JSON.stringify(combined,' ',2).slice(1,-1)//.replace(/"\.*/g,"\"")
+	let cc = JSON.stringify(combined,tohandler,2).slice(1,-1)//.replace(/"\.*/g,"\"")
 	console.log('{'+cc+'}')
+
+	function tohandler(key, value){
+		if (typeof value === 'function') {
+    	return value + ''; // implicitly `toString` it
+ 		}
+  	return value;
+	}
+
+	function fromhandler(key,value){
+			if(value
+				&& (typeof value =='string')
+				&& (value.startsWith("(") || value.startsWith("function("))
+				&& value.endsWith("}")
+				){
+				return eval('('+value+')')
+			}
+			return value
+	}
 
 	function copyConfig(defines, schema, form){
 		schema['config']={ type:'object',title:"properties for MagicMirror base", properties:{}}
@@ -318,14 +348,19 @@ form.push(  {
 			 let t = typeof defines.config[setting]
 			 if(t =='object'){
 				 if (Array.isArray( defines.config[setting])){
-				 	  t = 'array'
-				 	  dtype ='string'
-				 	  if(defines.config[setting].length){
-				 	    dtype = typeof defines.config[setting][0]
-				 	    if( Array.isArray(defines.config[setting][0]))
-				 	   	 dtype='array'
+				 	  if(setting ==='logLevel'){
+				 	  	t='string'
+				 	  	schema['config']['properties'][setting] = { type: "array",title: setting, "items": { type: "string",enum:["INFO","LOG","WARN","ERROR","DEBUG"]}}
+				 	  } else {
+					 	  t = 'array'
+					 	  dtype ='string'
+					 	  if(defines.config[setting].length){
+					 	    dtype = typeof defines.config[setting][0]
+					 	    if( Array.isArray(defines.config[setting][0]))
+					 	   	 dtype='array'
+					 	  }
+				 	  	schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
 				 	  }
-				 	  schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
 				 } else {
 				 	 dtype = typeof Object.keys(defines.config[setting])[0]
 				 	 if(dtype=='string'){
@@ -336,13 +371,30 @@ form.push(  {
 				 	 schema['config']['properties'][setting] = {type:t, title: setting, items: { type: dtype } }
 				 }
 			 }else {
-			 		if(setting=='address'){
-			 	   	 let as={ type: "string",title: "address",enum:networkInterfaces}
-			 	   	 schema['config']['properties'][setting]=as
-			 	  }
-			 	  else{
-			 			schema['config']['properties'][setting] = {type:t, title: setting  }
-			 		}
+			 		let as= {type:t, title: setting  }
+			 		switch(setting){
+				 		case 'address':
+				 	   	 as={ type: "string",title: setting,enum:networkInterfaces}
+				 	   	 break
+				 	  case 'language':
+				 	   	 as={ type: "string",title: setting,enum:languages}
+							 break;
+				 	  case 'timeFormat':
+				 	   	 as={ type: "string",title: setting,enum:[12,24]}
+				 	   	 break;
+				 	  case 'units':
+				 	  	 as={ type: "string",title: setting,enum:['imperial','metric']}
+				 	   	 break;
+				 	  case 'serverOnly':
+				 	  	 as={ type: "string",title: setting,enum:['false','true','local']}
+				 	  	break;
+				 	  case 'logLevel':
+				 	  	as={ type: "array",title: setting, "items": { type: "string",enum:["INFO","LOG","WARN","ERROR","DEBUG"]}}
+				 	  	break
+				 	 	default:
+
+				 	  }
+				 	schema['config']['properties'][setting]=as
 			 }
 			 switch(t){
 			 	  case 'array':
@@ -372,35 +424,38 @@ form.push(  {
 			                })
 
 			 	  default:
-			 	  if(setting ==='address'){
-			 	  	let tm = {}
-			 	  	networkInterfaces.forEach((interface)=>{
-			 	  		switch(interface){
-			 	  			case "0.0.0.0":
-			 	  				tm[interface]= interface+" - application access from any machine that can access network"
-			 	  			break;
-			 	  			case "localhost":
-			 	  			  tm[interface]= interface+" - application access only from same machine"
-			 	  			break;
-			 	  			default:
-			 	  			 tm[interface]= interface +" - application access only from machine on same network"
-			 	  			}
-			 	  	})
-			 	  	form[0].items[0].items.push( {key:'config.'+setting, titleMap:tm})
-			 	  }else{
-			 	   form[0].items[0].items.push('config.'+setting)
-			 	  }
-			 }
+				 	  if(setting ==='address'){
+				 	  	let tm = {}
+				 	  	networkInterfaces.forEach((interface)=>{
+				 	  		switch(interface){
+				 	  			case "0.0.0.0":
+				 	  				tm[interface]= interface+" - application access from any machine that can access network"
+				 	  			break;
+				 	  			case "localhost":
+				 	  			  tm[interface]= interface+" - application access only from same machine"
+				 	  			break;
+				 	  			default:
+				 	  			 tm[interface]= interface +" - application access only from machine on same network"
+				 	  			}
+				 	  	})
+				 	  	form[0].items[0].items.push( {key:'config.'+setting, titleMap:tm})
+				 	  }else if(setting === 'logLevel'){
+				 	  	form[0].items[0].items.push( {key:'config.'+setting,type:'checkboxes'})
+				 	  }else
+				 	  {
+				 	   form[0].items[0].items.push('config.'+setting)
+				 	  }
+				  }
 			}
 	}
 
 	// merge properties from defined and configured together
 	function copyprop(dest,source){
-		  if(debug) console.log(" copying from "+JSON.stringify(source,' ',2)+ " to "+dest)
+		  if(debug) console.log(" copying from "+JSON.stringify(source,tohandler,2)+ " to "+dest)
 			for(let mp of Object.keys(source.properties)){
 				if(debug) console.log("copying for "+mp)
 				  if(source.properties[mp].type =='object'){
-				  	if(debug)console.log(" props="+JSON.stringify(source.properties[mp],' ',2)+"  has properties="+source.properties[mp].hasOwnProperty('properties'))
+				  	if(debug)console.log(" props="+JSON.stringify(source.properties[mp],tohandler,2)+"  has properties="+source.properties[mp].hasOwnProperty('properties'))
 
 				  	if(source.properties[mp].hasOwnProperty('properties')){
 				  		if(debug) console.log(" handling properties for "+mp)
@@ -416,10 +471,10 @@ form.push(  {
 				  	}
 				  }
 				  else{
-				  	if(debug) console.log("dest="+JSON.stringify(dest)+ " properties="+ dest['properties'] )
+				  	if(debug) console.log("dest="+JSON.stringify(dest,tohandler)+ " properties="+ dest['properties'] )
 				  	if(dest['properties'] == undefined){
 				  		//dest['properties']={}
-				  		if(debug)	console.log("set properties "+JSON.stringify(dest))
+				  		if(debug)	console.log("set properties "+JSON.stringify(dest,tohandler))
 				  	}
 				  	if(dest[mp] == 'undefined'){
 				  		dest[mp]={}
@@ -479,14 +534,14 @@ form.push(  {
 		return null
 	}
   function clone(obj){
-  	return JSON.parse(JSON.stringify(obj))
+  	return JSON.parse(JSON.stringify(obj,tohandler),fromhandler)
   }
 
 	function processModule(schema, form, value, defines, module_name){
 
 		value[module_name]={ "disabled": true, "module": module_name,"position": "none",order:"*", config:defines}
 
-		if(debug) console.log("name="+module_name +" properties="+JSON.stringify(defines)+"\n")
+		if(debug) console.log("name="+module_name +" properties="+JSON.stringify(defines,tohandler)+"\n")
 
 		schema[module_name]= { type:'object',title:"properties for "+module_name, properties:{
 			"module": {type:"string",title:"module", default:module_name, readonly:true},
@@ -504,6 +559,7 @@ form.push(  {
 	mform.items.push({ key:module_name+'.'+"disabled", "onChange":
 		"(evt,node)=>{var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('fieldset');parent.find('legend').first().css('color',selection?'"+module_disabled_color+"':'"+module_enabled_color+"')}"})
 	mform.items.push({ key:module_name+'.'+"position", description:"use Module Positions section below to set or change"})
+	mform.items.push({key:module_name+'.'+"classes"})
 	mform.items.push({key:module_name+'.'+"order", type:"hidden"})
 
   processModuleProperties(schema, form, value, defines, module_name, mform)
@@ -517,7 +573,7 @@ function processArrayProperty(schema, form, value, defines, module_name, mform ,
 
 				     	let type='array'
 
-				    	schema[module_name]['properties']['config']['properties'][module_property]={'items':{type:'string'}}
+				    	schema[module_name]['properties']['config']['properties'][module_property]={'items':{type:'array',"items":{"type":"string"}}}
 				  	  // if the array is not null
 
 				  	  let vform={
@@ -568,6 +624,9 @@ function processArrayProperty(schema, form, value, defines, module_name, mform ,
 					  				schema[module_name]['properties']['config']['properties'][module_property]={'items':{'type':'number'}}
 					  		}
 					  	}
+					  	else {
+						  	if(debug) console.log(" no additional definition for array property="+module_property)
+						  }
 							mform.items.pop()
 							if(debug)
 								console.log('form='+JSON.stringify(vform))
@@ -588,13 +647,14 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 		vform['type'] ='fieldset'
 		vform['items']=[]
 		vform['title']=module_property
+		let count = 0
 		for( const o of Object.keys(defines)){
-
+			count++
 	  	if(debug) console.log("\t\t\t object item "+o+" = "+defines[o])
 	  	// get its value
 	    let vv = defines[o]
 
-	    if(debug) console.log("\t\t\t variable="+o+" value="+JSON.stringify(vv))
+	    if(debug) console.log("\t\t\t variable="+o+" value="+JSON.stringify(vv,tohandler))
 
 	  	let value_type= (vv==null ?"string": typeof vv)
 	  	// get its value
@@ -624,7 +684,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    else if(value_type === 'object'){
 	    	if(!Array.isArray(vv)){
 	    		if(debug) console.log("\t\t\t object "+o+", but IS NOT array") //srd
-	    		vv = JSON.stringify(vv)
+	    		vv = JSON.stringify(vv,tohandler)
 
 	    	// need to add item to vform above
 	    	// need to add to the schema as well
@@ -636,7 +696,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	  	  	  xform['items']=[]
 	  	  	  xform['items'].push(
 	  	  	  				{
-                       key:"MMM-CalendarExt2.config.defaultSet.calendar",
+                       key:module_name+'.config.'+module_property+'.'+o,
                        type:"pair"
              			  }
 	  	  	  	)
@@ -661,7 +721,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    		if(debug) console.log("object "+o+", but IS array")
 	    		let to = trimit(o,'.')
 	    		schema[module_name]['properties']['config']['properties'][module_property]['properties'][to] ={type:value_type,title:o, items: {"type":"string"}}
-	    	  if(debug) console.log("property schema="+JSON.stringify(schema[module_name]['properties']['config']['properties'][module_property]['properties'],' ',2))
+	    	  if(debug) console.log("property schema="+JSON.stringify(schema[module_name]['properties']['config']['properties'][module_property]['properties'],tohandler,2))
 	    	  // save the potential missing object
 	    	  if(JSON.stringify(vv)==='[]')
 	    			empty_objects.push(module_name+".config."+module_property)
@@ -681,7 +741,7 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	    	}
 	    } else {
 	       if( value_type != "string" )
-  	    	if(debug) console.log(" module="+module_name+" properties="+module_property+" name="+o+" value="+vv+ " " + JSON.stringify(schema[module_name]['properties']['config']['properties'],' ',2))
+  	    	if(debug) console.log(" module="+module_name+" properties="+module_property+" name="+o+" value="+vv+ " " + JSON.stringify(schema[module_name]['properties']['config']['properties'],tohandler,2))
   	    	let to = trimit(o,'.')
   	  		schema[module_name]['properties']['config']['properties'][module_property]['properties'][to] ={type:value_type, value: vv}
 	    		if(to !== o)
@@ -697,6 +757,19 @@ function processObjectProperty(schema, form, value, defines, module_name, mform,
 	  	  	}
   	  }
   	first_done=true;
+	  }
+	  if(count==0){
+	  	let xform= clone(array_template)
+	  	  xform['title']=module_property
+	  	  xform['items']=[]
+	  	  xform['items'].push(
+	  	  				{
+	                 key:module_name+'.config.'+module_property,
+	                 type:"pair"
+	       			  }
+	  	  	)
+				mform.items.pop()
+	  	  mform.items.push(xform)
 	  }
 	}
 	else
