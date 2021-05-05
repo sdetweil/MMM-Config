@@ -48,6 +48,9 @@ div ~ fieldset >legend {
 span ~ fieldset >legend {
     color: #333 !important;
 }
+/* fieldset ~ fieldset >legend {
+    color: #333 !important;
+} */
 div ~ fieldset  {
     margin-left: 2em;
 }

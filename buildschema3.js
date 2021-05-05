@@ -1,6 +1,6 @@
 const path = require('path')
 const defines = require(process.argv[2])
-const merge = require('lodash.merge');
+const merge = require('lodash').merge;
 const interfaces= require('os').networkInterfaces()
 
 const fs = require("fs")
@@ -45,6 +45,7 @@ const processTable ={
 	'number':processNumber,
 	'boolean':processBoolean,
 	'string':processString,
+	'textarea':processTextarea,
 	'integer':processInteger,
 	'function':processFunction,
 	'objectPair':processPairObject,
@@ -601,11 +602,17 @@ function getType(value, property){
 
 }
 function containsSpecialCharacters(str){
-	var regex = /[ !@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/g;
-	return regex.test(str);
+	if(str) {
+		var regex = /[ !@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/g;
+		return regex.test(str);
+	} else
+		return false;
 }
 function isNumeric(n) {
-	return !isNaN(parseFloat(n)) && isFinite(n);
+	if(n)
+		return !isNaN(parseFloat(n)) && isFinite(n);
+	else
+		return false
 }
 function processObject(m,p,v,mform, checkPair, recursive){
 	if(debug) console.log("processing object "+p +" for module "+m+" value="+JSON.stringify(v,tohandler))
@@ -626,32 +633,50 @@ function processObject(m,p,v,mform, checkPair, recursive){
 		pairVariables[m+'.'+p]=1
 		return processTable[type](m, p, v ,[], false, true )
 	}
+	if(Object.keys(v).length) {
+		for (let p1 of Object.keys(v)) {
+			if (debug) console.log("processing object item for module " + m + " for property " + p1 + " and value " + v[p1])
+			let type = getType(v[p1], p)
 
-	for(let p1 of Object.keys(v)){
-		if(debug) console.log("processing object item for module "+m+" for property "+p1+" and value "+v[p1])
-		let type = getType(v[p1], p)
+			if (debug) console.log("object element type=" + type + " for " + JSON.stringify(v, tohandler, 2) + ' and ' + p1)
+			type = (type == null ? "textarea" : type)
+			if (debug) console.log("object element type=" + type + " vv=" + type + " variable=" + m + '.' + p + '.' + p1)
 
-		if(debug) console.log("object element type="+type+" for "+JSON.stringify(v,tohandler,2)+' and '+p1)
-		type= (type==null ?"string": type)
-		if(debug) console.log("object element type="+type+" vv="+type+ " variable="+m+'.'+p+'.'+p1)
-
-	  let r = processTable[type](m+'.'+p, p1, v[p1], [], isPair, true)
-		let schema_value=r.results
-		let kk='"'+p1+'":{'
-		if(schema_value.startsWith(kk) || containsSpecialCharacters((p1)) || isNumeric((p1)))
-			stack.push(schema_value)
-		else
-			stack.push('"'+p1+'":{'+schema_value+'}')
-		if(r.mform){
-			if(debug) console.log("o mform="+(typeof r.mform ==='string'?r.mform:JSON.stringify(r.mform)))
-			if(Array.isArray(r.mform)){
-				for(let f of r.mform)
-				  vform.items.push(f)
-			}
+			let r = processTable[type](m + '.' + p, p1, v[p1], [], isPair, true)
+			let schema_value = r.results
+			let kk = '"' + p1 + '":{'
+			if (schema_value.startsWith(kk) || containsSpecialCharacters(p1) || isNumeric(p1))
+				stack.push(schema_value)
 			else
-				 vform.items.push(r.mform)
+				stack.push('"' + p1 + '":{' + schema_value + '}')
+			if (r.mform) {
+				if (debug) console.log("o mform=" + (typeof r.mform === 'string' ? r.mform : JSON.stringify(r.mform)))
+				if (Array.isArray(r.mform)) {
+					for (let f of r.mform)
+						vform.items.push(f)
+				} else
+					vform.items.push(r.mform)
+			}
 		}
 	}
+	/*else {  // JSONFORM error on anonymous properties
+		type='string'  // was textarea
+		let r = processTable[type](m , p, v, [], isPair, true)
+		let schema_value = r.results
+		//let kk = '"' + p1 + '":{'
+		if (JSON.stringify(v) =='{}') //|| schema_value.startsWith(kk) || containsSpecialCharacters(v) || isNumeric(v))
+			stack.push(schema_value)
+		else
+			stack.push('"' + Object.keys(v)[0] + '":{' + schema_value + '}')
+		if (r.mform) {
+			if (debug) console.log("o mform=" + (typeof r.mform === 'string' ? r.mform : JSON.stringify(r.mform)))
+			if (Array.isArray(r.mform)) {
+				for (let f of r.mform)
+					vform.items.push(f)
+			} else
+				vform.items.push(r.mform)
+		}
+	}*/
 	results=stack.join(',')
 	if(debug) console.log('object results='+results)
 	if(recursive)
@@ -769,6 +794,11 @@ function processBoolean(m,p,v,mform, checkPair, recursive){
 function processString(m,p,v,mform, checkPair, recursive){
 	if(debug) console.log("processing string "+p +" for module "+m)
   mform.push({title:p, key:m+'.'+trimit(p)})
+	return  {mform:mform,results:'"type": "string"'}
+}
+function processTextarea(m,p,v,mform, checkPair, recursive){
+	if(debug) console.log("processing string "+p +" for module "+m)
+  mform.push({title:p, key:m+'.'+trimit(p),type:'textarea'})
 	return  {mform:mform,results:'"type": "string"'}
 }
 function processPair(m,p,v,mform, checkPair, recursive){
