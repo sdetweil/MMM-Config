@@ -22,6 +22,7 @@ fi
 if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then
 	#get to the the modules list
 	#cd ~/$base/modules
+	cd $d
 	# get the list of installed modules, including defaults
 	NL=$'\n'
 	list=$(find .. -maxdepth 1 -type d | grep -v default | awk -F/ '{print substr($0,index($0,$5))}' )
