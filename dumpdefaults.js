@@ -116,6 +116,11 @@ function process_main(lines, name ){
 				line=line.slice(1)
 			// make it specific to the module
 			line = name.replace(/-/g,"_")+"_"+line.trim()
+			if(debug) console.log("start line="+line)
+			if(name.includes(' ')){
+				line=line.replace(name+'_'+start_string,'"'+name+'_defaults'+'":')
+				if(debug) console.log("name includes spaces, start line="+line)
+			}
 			started=true
 			counter=0;
 			if(debug) console.log("starting")

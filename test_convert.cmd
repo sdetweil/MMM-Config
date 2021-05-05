@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 Setlocal EnableDelayedExpansion
 rem
 rem port of unix script
@@ -56,9 +56,9 @@ rem
 	   echo var config = require^('../../config/config.js'^) >%defaults_file%
 	   echo var defined_config = {  >>%defaults_file%
 	   rem loop thru all the files and process the defines for each
-       for /f "tokens=1 usebackq" %%A in (`type somefile2.txt`) do  call :process_define %%A  %defaults_file%
+       for /f "tokens=1 usebackq delims=~" %%A in (`type somefile2.txt`) do  call :process_define "%%A"  %defaults_file%
 	   rem delete the work file
-	   del somefile2.txt 2>/nul
+	   rem del somefile2.txt 2>/nul
 	   rem add the js trailer
 	   echo } >>%defaults_file%
 	   echo module.exports={defined_config,config};  >>%defaults_file%
@@ -83,14 +83,20 @@ goto :done
 Setlocal EnableDelayedExpansion
 		set m=%1
 		rem echo !m!
-		if "%m:~0,7%"=="default"  (
-			set m=%m:~8%
+		if "%m:~1,7%"=="default"  (
+			set mf=%m:~1,-2%
+			set m=%m:~9,-2%
 			rem echo !m!  ended
+		) else (
+			set mf=%m:~1,-2%
+			set m=%m:~1,-2%
 		)
-		for /f "usebackq tokens=1 " %%B in ('!m!') do (
+		for /f "usebackq tokens=1 delims=~" %%B in ('!m!') do (
 			set m=%%B
 			rem echo."%m%"
 		)
-		node %d%\dumpdefaults.js "..\%1\%m%.js" >>%2
+		IF EXIST "..\%mf%\%m%.js" (
+			node %d%\dumpdefaults.js "..\%mf%\%m%.js" >>%2
+		)
   goto :eof
 :done
