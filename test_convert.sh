@@ -21,34 +21,41 @@ fi
 # if the modules changes
 if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then
 	#get to the the modules list
-	cd ~/$base/modules
+	#cd ~/$base/modules
 	# get the list of installed modules, including defaults
-	list=$(find . -maxdepth 1 -type d | grep -v default | awk -F/ '{ print ($2 =="default" && $3 !="") ? "default/"$3 :  ($2 !="default") ? $2: ""}' | uniq )
-	list1=$(find ./default -maxdepth 1 -type d | awk -F/ '{ print ($2 =="default" && $3 !="") ? "default/"$3 :  ($2 !="default") ? $2: ""}' | uniq )
-	listf="$list$list1"
+	NL=$'\n'
+	list=$(find .. -maxdepth 1 -type d | grep -v default | awk -F/ '{print substr($0,index($0,$5))}' )
+	list1=$(find ../default -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
+	listf="$list${NL}$list1"
+	IFS=$'\n'
 	modules=($listf)
 	echo "const config = require('../../config/config.js')" >$defaults_file
 	echo "var defined_config = {"  >>$defaults_file
+
 	for module in "${modules[@]}"
 	do
 		nm=$module
-		if [[ $nm =~ "/" ]]; then
-			nm=$(echo $nm| awk -F/ '{ print $2}')
+		if [[ "$nm" =~ "/" ]]; then
+			if [[ "$nm" =~ "default" ]]; then
+				nm=$(echo "$nm"| awk -F/ '{ print $3}')
+			else
+				nm=$(echo "$nm"| awk -F/ '{ print $2}')
+			fi
 		fi
 		# echo "// processing for module "
-		cd $module
-		#echo looking for $nm.js
-		if [ -e $nm.js ]; then
-		   node $d/dumpdefaults.js $nm.js >>$defaults_file
+
+		#echo looking for "$nm.js"
+		if [ -e "$module/$nm".js ]; then
+		   node $d/dumpdefaults.js "$module/$nm.js" >>$defaults_file
 		else
-			#echo "// file $nm.js does NOT exist"
+			#echo "// file "$nm.js" does NOT exist"
 			:
 		fi
-		cd - >/dev/null
+
 	done
 	echo "}" >>$defaults_file
 	echo "module.exports={defined_config,config};"  >>$defaults_file
-	cd - >/dev/null
+	#cd - >/dev/null
 	modules_changed=1
 	echo $mod_lastchange>$d/modules_lastchange
 fi
