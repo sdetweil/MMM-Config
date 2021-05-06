@@ -259,6 +259,7 @@ process_submit: async function (data, self, socket) {
 						}
 						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
 					}
+				delete data.objects
 
 				if(debug) console.log("potential arrays="+JSON.stringify(data.arrays,self.tohandler,2))
 
@@ -346,6 +347,7 @@ process_submit: async function (data, self, socket) {
 				for(let n of Object.keys(data.mangled_names)){
 					this.fixobject_name(data, n, data.mangled_names[n])
 				}
+				delete data.mangled_names
 			}
 			if(0){  // calculate diff   form input with form output
 				// loop thru the defines
@@ -377,8 +379,6 @@ process_submit: async function (data, self, socket) {
 			}
 
 
-
-
 			// setup the final data to write out
 			let r = {}
 			// save the config info
@@ -395,53 +395,63 @@ process_submit: async function (data, self, socket) {
 
 			// loop thru the form data (has all modules)
 			// copy the modules into their position sections
-			for(let m of Object.keys(data)){
+			for(let module_name of Object.keys(data)){
 				// don't copy config info
-				if(m !== 'config' && data[m].inconfig === '1' ){
+				if(module_name !== 'config' ){
+					let merged_module=null
 					// default is what the form has
-					let mx = data[m]
-					if(debug) console.log("looking for modules="+m+" in config.js , have form data="+JSON.stringify(mx,self.tohandler,2))
+					let module_form_data = merged_module= data[module_name]
+					if(debug) console.log("checking for modules="+module_name+" in config.js , have form data="+JSON.stringify(module_form_data,self.tohandler,2))
 					// find the config.js entry, if present
-					let mc=this.getConfigModule(m, cfg.config.modules)
-					if(debug) console.log("looking for modules="+m+" in config.js , have config data="+JSON.stringify(mc,self.tohandler,2))
+					let module_in_config=this.getConfigModule(module_name, cfg.config.modules)
+					if(debug) console.log("looking for modules="+module_name+" in config.js , have config data="+JSON.stringify(module_in_config,self.tohandler,2))
+
 					// if present, merge from the form
-					if(mc){
-						if(mc.order === undefined){
-							if(debug) console.log("existing config does NOT have order set, copying from form ="+mx.order)
-							mc.order=mx.order
+					if(module_in_config){
+						if(module_in_config.order === undefined){
+							if(debug) console.log("existing config does NOT have order set, copying from form ="+module_form_data.order)
+							module_in_config.order=module_form_data.order
 						}
-						if(mc.position === undefined){
-							if(debug) console.log("existing config does NOT have order set, copying from form ="+mx.order)
-							mc.position=mx.position
+						if(module_in_config.position === undefined){
+							if(debug) console.log("existing config does NOT have order set, copying from form ="+module_form_data.order)
+							module_in_config.position=module_form_data.position
 						}
 
-						mx=self.mergeModule(mc,mx)
+						merged_module=self.mergeModule(module_in_config,module_form_data)
 
-						if(debug) console.log("merged "+mx.module+"="+JSON.stringify(mx,self.tohandler,2))
+						if(debug) console.log("merged "+merged_module.module+"="+JSON.stringify(merged_module,self.tohandler,2))
+					} else {
+						if(debug) console.log("module "+module_name+" not in config.js, adding ")
 					}
+
 					// update the results
-					if(mx){
-						let t = { module:m }
-						for(let x of Object.keys(mx)){
-							t[x]=mx[x]
-							if(debug) console.log("copied for key="+x)
-	   				}
-	   				if(t.position=== undefined)
-	   					t.position = 'none'
+					if(merged_module){
+						if(debug) console.log("have a module to add to new config.js ="+merged_module.module)
+						// if the module WAS in config or is enabled
+						// save it for keeping in/adding to config
+						if (merged_module.inconfig === "1" || merged_module.disabled === false){
+							if(debug) console.log("module was in config="+merged_module.inconfig+" or is enabled="+merged_module.disabled)
+							let temp = { module:module_name }
+							for(let module_property of Object.keys(merged_module)){
+								temp[module_property]=merged_module[module_property]
+								if(debug) console.log("copied for key="+module_property)
+		   				}
+		   				if(temp.position=== undefined)
+		   					temp.position = 'none'
 
-	   				t.position=t.position.replace(' ','_')
-	   				layout_order[t.position].push(t)
-						//r['config']['modules'].push(t)
+		   				temp.position=temp.position.replace(' ','_')
+		   				layout_order[temp.position].push(temp)
+		   				if(debug) console.log("module="+merged_module.module+" added for config in position="+merged_module.position)
+		   			}
 					}
-					//console.log("deleting data."+m+" data.config="+JSON.stringify(data['config'],' ',2))
-				  //delete data[m]
+
 				} else {
-					if(m!=config){
-						if(debug) console.log(" module disabled="+m)
+					if(module_name!==config){
+						if(debug) console.log(" module disabled="+module_name)
 					}
 				}
 			}
-			var self = this
+			//var self = this
 			// sort the modules in position by order
 			module_positions.forEach((position)=>{
 			// sort the form alphabetically, vs as found
@@ -466,13 +476,16 @@ process_submit: async function (data, self, socket) {
 				})
 			  // now that modules are sorted
 			  // loop thru the positions
-				layout_order[position].forEach((m)=>{
+				layout_order[position].forEach((module)=>{
 					// remove position:none as it doesn't exist,
 					// position not present is the same as none specified
-					if(m.position === 'none')
-						delete  m.position
+					if(module.position === 'none')
+						delete  module.position
 					// add module to config.js modules list
-					r['config']['modules'].push(m)
+					if(debug) console.log("adding module "+module.module+" into list in position= "+module.position+" for config write")
+					if(module.inconfig !== undefined)
+						delete module.inconfig
+					r['config']['modules'].push(module)
 				})
 			})
 
@@ -484,7 +497,7 @@ process_submit: async function (data, self, socket) {
 			}
 			//console.log("data new to old diff ="+JSON.stringify(x,' ',2)+ "\n\n old to new ="+JSON.stringify(x1,' ',2)+ "\n\n delta to original ="+JSON.stringify(x2,' ',2))
 			//let reg=/(.*[^:])\:.*/gm
-			let xx = JSON.stringify(r, null, 2).replace(/::/g,"==").replace(/f:/g,"~~")
+			let xx = JSON.stringify(r, self.tohandler, 2).replace(/::/g,"==").replace(/f:/g,"~~")
 			//console.log(xx)
 			//console.log("there are "+xx.length+" matches")
 
@@ -494,7 +507,7 @@ process_submit: async function (data, self, socket) {
 				let t = match.split(":")
 				t[0]=t[0].trimStart()
 				//console.log("match="+match + " keyword="+t[0])
-				if(!t[0].includes(" ") && !t[0].slice(1).match(/^\d/) && !t[0].startsWith('".') && !t[0].startsWith('"-')){
+				if(!t[0].includes(" ") && !t[0].slice(1).match(/^\d/) && !t[0].startsWith('".') && !t[0].startsWith('"-') && !t[0].includes('"-')){
 					//console.log("match 2="+match + " keyword="+t[0])
 					xx=xx.replace(new RegExp(t[0]+':', 'g'), t[0].replace(/\"/g,"")+':')
 				}
