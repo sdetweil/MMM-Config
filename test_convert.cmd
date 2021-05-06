@@ -1,4 +1,4 @@
-rem @echo off
+@echo off
 Setlocal EnableDelayedExpansion
 rem
 rem port of unix script
@@ -40,7 +40,7 @@ if %need_to_update_modules% equ 1 (
 rem
 rem if modules folder change date doesn't match saved
 rem
-       rem cd %d%
+
        del somefile 2>nul
 	   rem get all the modules installed
        for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
