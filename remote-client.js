@@ -99,6 +99,7 @@ $(function () {
 		let arrays = data.arrays
 		let objects = data.objects
 		let mangled_names=data.mangled_names
+		let convertedObjects=data.convertedObjects
 		$('#outmessage').text("")
 		try {
 			data.onSubmitValid = function (values) {
@@ -107,6 +108,7 @@ $(function () {
 				values['arrays']=arrays
 				values['objects']=objects
 				values['mangled_names']=mangled_names
+				values['convertedObjects']=convertedObjects
 
 				activesocket.emit('saveConfig', values)
 				$('#outmessage').html("<p><strong>Your Configuration has been submitted.</strong></p>")

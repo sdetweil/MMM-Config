@@ -1,8 +1,8 @@
- .expandable > legend:before {
+ .expandable > legend::before {
   content: '\25B8';
   padding-right: 5px;
 }
-.expanded > legend:before {
+.expanded > legend::before {
   content: '\25BE';
 }
 

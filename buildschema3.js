@@ -52,6 +52,8 @@ const processTable ={
 	'pair': processPair
 }
 
+const form_code_block={type: "ace",aceMode: "json",aceTheme: "twilight", width: "100%",height: "100px"}
+
 for(let interface of Object.keys(interfaces)){
 	for( let info in interfaces[interface]){
 		if(interfaces[interface][info].family ==='IPv4'){
@@ -119,11 +121,12 @@ var data = {}
 var pairVariables = {}
 
 var value={}
-
+// items used for data restoration
+var convertedObjects=[]
 let empty_objects=[]
 let empty_arrays = []
 let mangled_names={}
-
+let form_object_correction= []
 if(process.argv.length>3 && process.argv[3] ==='debug')
 	debug=true
 
@@ -286,6 +289,26 @@ positions.sort(function (a, b) {
 	return r
 })
 
+empty_arrays =find_empty_arrays(value,[],[])
+
+form_object_correction.forEach((key)=>{
+	let temp_key = key.replace('.config','')
+	let t = temp_key.split('.')
+	let module_define_name= t[0].replace(/-/g,'_')+'_defaults'
+	// module info used
+	t.shift()
+	let variable_definition=get_define_info(defines.defined_config[module_define_name], t.join('.'))
+	if(Array.isArray(variable_definition)){
+		// if it has NOTHING inside
+		if(!variable_definition.length){
+			// then we can fixup the form to add the editor capabilities
+			if(debug) console.log("found item, key="+key)
+			updateFormElement(form[0].items[1].items, key, form_code_block)
+			updateValueElement(value,key)
+		}
+	}
+})
+
 value['positions']=positions
 
 let base= {}
@@ -297,8 +320,6 @@ for(let k of Object.keys(defines.config)){
 }
 //let x = value
 value['config']=base
-
-empty_arrays =find_empty_arrays(value,[],[])
 
 // fixup the pair variables so they are proper objects for jsonform
 Object.keys(pairVariables).forEach((m)=>{
@@ -325,6 +346,30 @@ Object.keys(pairVariables).forEach((m)=>{
 	}
 	setValueObject(m,value,t)
 })
+empty_arrays.forEach((key)=>{
+		if(debug) console.log("checking for empty array definitions="+key)
+		let module_data=getValueObject(key,value)
+	  if(module_data){
+	  	if(debug) console.log("found value data for empty array definitions="+key+" value="+JSON.stringify(module_data,tohandler,2)+" type="+typeof module_data)
+			if(Array.isArray(module_data)){
+				if(debug) console.log("found value data for empty array definitions="+key+" item is array")
+				// if there are elements
+				if(module_data.length){
+					if(debug) console.log("found value data for empty array definitions="+key+" item is array, and has elements")
+					// get the 1st one
+					let array_element = module_data[0]
+					if(debug) console.log("found value data for empty array definitions="+key+" item is array, and has elements, type="+typeof array_element)
+					if(typeof array_element === 'object'){
+						// we need to fixup the form definition
+						// find the form element
+						// add the info for code block
+					}
+				}
+			}
+		}
+})
+empty_arrays.push('config.ipWhitelist')
+empty_arrays.push('config.logLevel')
 
 // set the enabled style for the modules
 form[0].items[1].items.forEach((m)=>{
@@ -334,13 +379,59 @@ form[0].items[1].items.forEach((m)=>{
 
 value = JSON.parse(JSON.stringify(value,tohandler).replace(/"\.*/g,"\""),fromhandler )
 
-let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects, mangled_names:mangled_names}
+let combined = { schema:schema, form:form, validate:false, value:value, pairs:pairVariables, arrays:empty_arrays, objects:empty_objects, mangled_names:mangled_names, convertedObjects:convertedObjects}
 //console.log( "    $('form').jsonForm({")
 let cc = JSON.stringify(combined,tohandler,2).slice(1,-1)
 console.log('{'+cc+'}')
 //
 // functions after here
 //
+	function updateValueElement(data,key){
+		let t=key.split('.')
+		let left = t.shift()
+		if(t.length){
+			updateValueElement(data[left],t.join('.'))
+			return
+		}
+		let temparray=[]
+		data[left].forEach((item)=>{
+			let temp_string=JSON.stringify(item, tohandler,2)
+			temp_string=temp_string.replace(/\\n/g,"\n")
+			temparray.push(temp_string)
+		})
+		data[left] = temparray
+	}
+	function updateFormElement(data, key, new_attributes){
+		let t = key.split('.')
+		left = t.shift()
+		for(let form_entry of data){
+			if(form_entry.title===left){
+				if(t.length){
+					updateFormElement(form_entry.items, t.join('.'), new_attributes)
+					return
+				}
+				form_entry['draggable']=false
+				Object.keys(new_attributes).forEach((key)=>{
+					form_entry.items[0][key]=new_attributes[key]
+				})
+				break
+			}
+
+		}
+	}
+	// get the item in an array
+	function get_define_info(data, key){
+		// get the key parts
+		let t=key.split('.')
+		let left = t.shift()
+		// if there is more key
+		if(t.length){
+			// iterate
+			return get_define_info(data[left], t.join('.'))
+		}
+		// last key part now
+		return data[left]
+	}
 	// get the module properties from the config.js entry
 	function getConfigModule(m, source){
 		//console.log("looking for "+m.module)
@@ -355,25 +446,44 @@ console.log('{'+cc+'}')
 	function find_empty_arrays(obj, stack, hash){
 		if(typeof obj == 'object'){
 			if(Array.isArray(obj)){
-				if(debug) console.log(" object is an array, length="+Object.keys(obj).length)
-				for (const o of Object.keys(obj)){
+				if(debug) console.log(" object is an array, length="+obj.length)
+				for (const o of obj){
+					if(typeof o ==='object' && !Array.isArray(o)){
+						let t = stack.join('.')
+						if(!form_object_correction.includes(t))
+							form_object_correction.push(t)
+					}
 					stack.push("[]")
 					hash=find_empty_arrays(o,stack, hash)
 					stack.pop()
 				}
-					//console.log("adding "+stack.join('.'))
-					let last = stack.slice(-1).toString()
-					if(last.startsWith('.')){
-						if(debug) console.log("last="+last+" startsWith .")
-						stack.pop()
-						last=last.replace(/\./g,'')
-						stack.push(last)
+				//console.log("adding "+stack.join('.'))
+				let last = stack.slice(-1).toString()
+				if(last.startsWith('.')){
+					if(debug) console.log("last="+last+" startsWith .")
+					stack.pop()
+					last=last.replace(/\./g,'')
+					stack.push(last)
+				}
+				let t = stack.join('.')
+				if(debug) console.log(" array name="+t)
+				if(t.endsWith(".[]"))
+					t=t.replace(".[]","[]")
+				if(t.includes('.[]'))
+					t=t.replace('.[]','')
+				for(let i in hash){
+					if(hash[i].startsWith(t)) {
+						if(!hash.includes(t))
+							hash.splice(i,0,t)
+						break;
 					}
-					let t = stack.join('.')
-					if(debug) console.log(" array name="+t)
-					if(t.endsWith(".[]"))
-						t=t.replace(".[]","[]")
+				}
+				//	if(hash.includes(t+'[]')){
+				//		hash.splice(-1,0,t)
+				//	} else {
+				if(!hash.includes(t))
 					hash.push(t)
+				//	}
 			}
 			else {
 				if(obj){
@@ -506,7 +616,8 @@ console.log('{'+cc+'}')
 function clone(obj){
  	return JSON.parse(JSON.stringify(obj,tohandler),fromhandler)
 }
-function getType(value, property){
+function getType(value, property, wasObject){
+	  //console.log("processing gettype for v="+value+" and p="+property+" and wo="+wasObject)
 	  let type='string'
 		if(value !== undefined){
 			type = typeof value
@@ -529,8 +640,12 @@ function getType(value, property){
 				default:
 			}
 		} else {
-			type='string'
+			if(typeof property === 'string' && wasObject)
+				type='function'
+			else
+				type='string'
 		}
+		//console.log("processing gettype for v="+value+" and p="+property+" and wo="+wasObject+" returning="+type)
 		return type
 }
 	function processModule(schema, form, value, defines, module_definition){
@@ -574,8 +689,8 @@ function getType(value, property){
 	Object.keys(defines).forEach((propertyName)=>{
 		if(debug) console.log("processing for each property "+ propertyName)
 		let property_value = defines[propertyName]
-		let type = getType(property_value, propertyName)
-		let r=processTable[type](module_name+'.config', propertyName, property_value, [],true, false)
+		let type = getType(property_value, propertyName, false)
+		let r=processTable[type](module_name+'.config', propertyName, property_value, [],true, false, false)
 		let schema_value=r.results
 		if(schema_value.startsWith('"'+propertyName+'":{')  || containsSpecialCharacters(propertyName) || isNumeric(propertyName))
 			stack.push(schema_value)
@@ -614,7 +729,7 @@ function isNumeric(n) {
 	else
 		return false
 }
-function processObject(m,p,v,mform, checkPair, recursive){
+function processObject(m,p,v,mform, checkPair, recursive, wasObject){
 	if(debug) console.log("processing object "+p +" for module "+m+" value="+JSON.stringify(v,tohandler))
 	let pair_object=false;
 	let results=''
@@ -631,18 +746,18 @@ function processObject(m,p,v,mform, checkPair, recursive){
 		//v=v[Object.keys(v)[0]]
 		type='objectPair'
 		pairVariables[m+'.'+p]=1
-		return processTable[type](m, p, v ,[], false, true )
+		return processTable[type](m, p, v ,[], false, true , false)
 	}
 	if(Object.keys(v).length) {
 		for (let p1 of Object.keys(v)) {
 			if (debug) console.log("processing object item for module " + m + " for property " + p1 + " and value " + v[p1])
-			let type = getType(v[p1], p)
+			let type = getType(v[p1], p, wasObject)
 
 			if (debug) console.log("object element type=" + type + " for " + JSON.stringify(v, tohandler, 2) + ' and ' + p1)
 			type = (type == null ? "textarea" : type)
 			if (debug) console.log("object element type=" + type + " vv=" + type + " variable=" + m + '.' + p + '.' + p1)
 
-			let r = processTable[type](m + '.' + p, p1, v[p1], [], isPair, true)
+			let r = processTable[type](m + '.' + p, p1, v[p1], [], isPair, true, wasObject)
 			let schema_value = r.results
 			let kk = '"' + p1 + '":{'
 			if (schema_value.startsWith(kk) || containsSpecialCharacters(p1) || isNumeric(p1))
@@ -651,6 +766,8 @@ function processObject(m,p,v,mform, checkPair, recursive){
 				stack.push('"' + p1 + '":{' + schema_value + '}')
 			if (r.mform) {
 				if (debug) console.log("o mform=" + (typeof r.mform === 'string' ? r.mform : JSON.stringify(r.mform)))
+					if(r.mform.type==='array' && r.mform.items[0].type==='ace')
+						r.mform['draggable']=false
 				if (Array.isArray(r.mform)) {
 					for (let f of r.mform)
 						vform.items.push(f)
@@ -658,6 +775,18 @@ function processObject(m,p,v,mform, checkPair, recursive){
 					vform.items.push(r.mform)
 			}
 		}
+	}
+	else {
+		type='array'
+		if(debug) console.log("processing for variable "+ p +" empty object now array ")
+		convertedObjects.push(m+'.'+p)
+	// if we haven't already pushed the parent
+		if(!empty_objects.includes(m))
+			// do it now
+			empty_objects.push(m)
+		// save the child object
+		//empty_objects.push(m+'.'+p)
+		return processTable[type](m, p, v ,[], false, true, true )
 	}
 	/*else {  // JSONFORM error on anonymous properties
 		type='string'  // was textarea
@@ -686,7 +815,7 @@ function processObject(m,p,v,mform, checkPair, recursive){
 }
 
 
-function processArray(m,p,v,mform, checkPair, recursive){
+function processArray(m,p,v,mform, checkPair, recursive, wasObject){
 	let results=''
 	 if(debug) console.log("processing array "+p +" for module "+m+" value="+JSON.stringify(v,tohandler))
 	let type
@@ -709,19 +838,22 @@ function processArray(m,p,v,mform, checkPair, recursive){
 		// drop the other array objects, we only need 1
 		//v=v.slice(0,1)
 		type='pair'
-		let r =processTable[type](m, trimit(p), p1, [], false, true)
+		let r =processTable[type](m, trimit(p), p1, [], false, true, wasObject)
 		results=r.results
 		pairVariables[m+'.'+p]=2
 		return {mform:vform,results:'"'+trimit(p)+'":{"type": "array","items": {'+results+'}}'}
 	}
 
-// get the first item in array
-	if(JSON.stringify(v)!=='[[]]'){
+	// get the first item in array
+	let temp =JSON.stringify(v)
+	if(debug) console.log("checking array item contents="+v)
+	// also used below on 'else'
+	if(v!=='[[]]' && v !== '[]'){
 
 		// get its type
-		type = getType(p1, p)
+		type = getType(p1, p, wasObject)
 
-		let r =processTable[type](m, trimit(p)+'[]', p1, [], isPair, true)
+		let r =processTable[type](m, trimit(p)+'[]', p1, [], isPair, true, wasObject)
 		let schema_value=r.results
 		if(t!==p){
 			// need to adda title tring if not present
@@ -731,19 +863,37 @@ function processArray(m,p,v,mform, checkPair, recursive){
 		let variable = p1
 		if( p1=== undefined)
 			variable = p
+		if(debug) console.log("immediate array results="+schema_value+" property name="+p)
+		if(schema_value.startsWith('"'+p+'[]":{')){
+			if(debug) console.log("fixing array info ="+schema_value)
+			schema_value=schema_value.slice(schema_value.indexOf('{')+1,-1)
+			if(debug) console.log("post fixing array info ="+schema_value)
+			addedTitle=''
+		}
 		results+=schema_value
 		if(r.mform) {
 			if (debug) console.log("a mform=" + (typeof r.mform === 'string' ? r.mform : JSON.stringify(r.mform)))
 			if (Array.isArray(r.mform)) {
 				vform.items=[]
-				for(let m of r.mform){
-					if(m.title.endsWith("[]"))
-						m.title=m.title.slice(0,-2)+ " {{idx}}"
+				for(let n of r.mform){
+					if(n.title.endsWith("[]")){
+						//empty_arrays.push(m+'.'+p[])
+						addedTitle=''
+						/*if(m.key.endsWith("[][]")){
+							if(recursive){
+								addedTitle=''
+								let t=m.key.replace("[][]","[]")
+								empty_arrays.push(t)
+					     	m.key=t+"."+p
+							}
+					  } */
+						n.title=n.title.slice(0,-2)+ " {{idx}}"
 						if(t !== p){
-							if(m.title.startsWith(t))
-								m.title=m.title.replace(t,p)
+							if(n.title.startsWith(t))
+								n.title=n.title.replace(t,p)
 						}
-					vform.items.push(m)
+					}
+					vform.items.push(n)
 				}
 			} else {
 				/*for (let item of r.mform.items) {
@@ -760,11 +910,14 @@ function processArray(m,p,v,mform, checkPair, recursive){
 						}
 					}
 				}*/
+				if(JSON.stringify(variable) ==='[]' && r.mform.title.endsWith('[]'))
+					delete r.mform.title
 			    vform.items=JSON.parse(JSON.stringify(r.mform,tohandler))
 			}
 		}
 	}
 	else {
+		if(debug) console.log("processing for empty array at "+m+'.'+p+" value="+temp)
 		  empty_objects.push(m+'.'+p)
 
 		  if('[[]]'=== JSON.stringify(v))
@@ -781,37 +934,37 @@ function processArray(m,p,v,mform, checkPair, recursive){
 		return {mform:vform,results:'"'+trimit(p)+'":{"type": "array",'+addedTitle+'"items": {'+results+'}}'}
 
 }
-function processNumber(m,p,v,mform, checkPair, recursive){
+function processNumber(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing number "+p +" for module "+m+" value="+v)
   mform.push({title:p, key:m+'.'+trimit(p)})
 	return {mform:mform,results:'"type": "integer"'}
 }
-function processBoolean(m,p,v,mform, checkPair, recursive){
+function processBoolean(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing boolean "+p +" for module "+m+" value="+v)
   mform.push({title:p, key:m+'.'+trimit(p)})
 	return {mform:mform,results:'"type": "boolean"'}
 }
-function processString(m,p,v,mform, checkPair, recursive){
+function processString(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing string "+p +" for module "+m)
   mform.push({title:p, key:m+'.'+trimit(p)})
 	return  {mform:mform,results:'"type": "string"'}
 }
-function processTextarea(m,p,v,mform, checkPair, recursive){
+function processTextarea(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing string "+p +" for module "+m)
   mform.push({title:p, key:m+'.'+trimit(p),type:'textarea'})
 	return  {mform:mform,results:'"type": "string"'}
 }
-function processPair(m,p,v,mform, checkPair, recursive){
+function processPair(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing string "+p +" for module "+m)
 	mform.push({title:p, key:m+'.'+trimit(p)})
 	return  {mform:mform,results:'"type": "pair"'}
 }
-function processInteger(m,p,v,mform, checkPair, recursive){
+function processInteger(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing integer "+p +" for module "+m+" value="+v)
   mform.push({title:p, key:m+'.'+trimit(p)})
 	return {mform:mform,results:'"type": "integer"'}
 }
-function processPairObject(m,p,v,mform, checkPair, recursive){
+function processPairObject(m,p,v,mform, checkPair, recursive, wasObject){
 	let results=''
 	if(debug) console.log("processing pair "+p +" for module "+m+" value="+JSON.stringify(v,tohandler))
 	let type
@@ -825,7 +978,7 @@ function processPairObject(m,p,v,mform, checkPair, recursive){
 	  title:(p.endsWith('s')?p.slice(0,-1):p)+" {{idx}}"
   }]}
   type= 'pair'
-	let r =processTable[type](m, trimit(p), p1, [], checkPair, true)
+	let r =processTable[type](m, trimit(p), p1, [], checkPair, true, wasObject)
 	results+=r.results
 	if(r.mform){
 		if(debug)console.log("p mform="+(typeof r.mform ==='string'?r.mform:JSON.stringify(r.mform)))
@@ -836,16 +989,19 @@ function processPairObject(m,p,v,mform, checkPair, recursive){
 			 vform.items.push(r.mform)
 	}
 	if(debug) console.log('pair results='+results+" = "+JSON.stringify(results))
-	//mform.push(vform)
+
 	if(t!==p)
 		mangled_names[m+'.'+t]=p
 	return {mform:vform,results:'"'+trimit(p)+'":{"type": "array","items": {"type":"pair"}}'}
 
 }
-function processFunction(m,p,v,mform, checkPair, recursive){
+function processFunction(m,p,v,mform, checkPair, recursive,wasObject){
 	if(debug) console.log("processing function "+p +" for module "+m+" value="+v)
-  mform.push({title:p, key:m+'.'+trimit(p)})
-	return {mform:mform,results:'"'+p+'":{"type": "ace","aceMode": "javascript","aceTheme": "twilight", "width": "25%","height": "100px"}'}
+	let t = '{"title":"'+p+'","key":"'+m+'.'+trimit(p)+'",'+JSON.stringify(form_code_block).slice(1,-1)+'}'
+	if(debug) console.log("adding code block definition="+t)
+  mform.push(JSON.parse(t))
+	return  {mform:mform,results:'"type": "string"'}
+
 }
 function tohandler(key, value){
 	if (typeof value === 'function') {

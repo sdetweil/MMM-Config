@@ -23,7 +23,8 @@ if (typeof module !== \"undefined\") {module.exports = config;}"
 // add require of other javascripot components here
 // var xxx = require('yyy') here
 let debug = false
-
+// disable savinging while testing = false
+let doSave = true
 
 module.exports = NodeHelper.create({
 config:{},
@@ -81,6 +82,7 @@ config:{},
 		if (notification === "CONFIG") {
 			// save payload config info
 			this.config=payload
+
 			debug=this.config.debug
 			this.startit()
 
@@ -107,16 +109,39 @@ config:{},
 		}
 		return null
 	},
-reformat_array:function (data){
-		//console.log(" array present ="+JSON.stringify(data,' ',2))
-		if(!Array.isArray(data)){
+reformat_array:function (data,self, key){
+		if(debug) console.log("reformat_array data present ="+JSON.stringify(data,self.tohandler,2))
+		if(Array.isArray(data[key])) {
+			if(debug) console.log("reformat_array to object from array")
+			let d = []
+			if(debug) console.log("reformatting array of strings back to object")
+			data[key].forEach((element)=>{
+				if(typeof element ==='string'
+					    && element.startsWith('{')
+					    && element.endsWith('}')){
+					if(debug) console.log("reformat_array, about to parse="+element.replace(/\r?\n|\r/gm,''))
+						let tt=JSON.parse(element.replace(/\r?\n|\r/gm,''),self.fromhandler)
+					if(debug) console.log("reformat_array, after parse="+tt)
+					d.push(tt)
+					if(debug) console.log(" item added to object="+JSON.stringify(d,self.tohandler,2))
+				}
+			})
+			if(debug) console.log(" new data contents="+JSON.stringify(d,self.tohandler,2))
+			data[key]=d
+			if(debug) console.log(" new data contents="+JSON.stringify(d,self.tohandler,2))
+		} else	if(!Array.isArray(data)){
+			if(debug) console.log("reformat_array to array from object")
 			let d = []
 			Object.keys(data).forEach((a)=>{
-				  //console.log("saving item="+JSON.stringify(data[a]))
+				  if(debug) console.log("saving item="+JSON.stringify(data[a]))
 					d.push(data[a])
 			})
 			data=d
 		}
+},
+fix_editor_fields: function(data, key){
+
+
 },
 object_from_key: function (object, key, type){
 	if(debug) console.log("key = "+key)
@@ -239,9 +264,13 @@ setpair: function(datasource,key, self, value){
 process_submit: async function (data, self, socket) {
 			let cfg = require(__dirname+"/defaults.js")
 			// cleanup the arrays
+
+			if(debug) console.log("\nstart processing form submit\n")
+
 			if(1) {
+
 				if(debug) console.log("potential empty objects="+JSON.stringify(data.objects,self.tohandler,2))
-					for(const p of data.objects){
+					data.objects.forEach((p)=>{
 						let t=p
 						while(t.includes(".."))
 							t=t.replace("..",'.')
@@ -257,11 +286,52 @@ process_submit: async function (data, self, socket) {
 							if(debug) console.log("reset missing object")
 							o.object[o.key]={}
 						}
-						if(debug) console.log("done 3 setting object="+JSON.stringify(rr) )
-					}
+						if(debug) console.log("done 3 setting object="+JSON.stringify(rr,self.tohandler,2)+"\n" )
+					})
 				delete data.objects
 
-				if(debug) console.log("potential arrays="+JSON.stringify(data.arrays,self.tohandler,2))
+				if(debug) console.log("restoring converted (obj->array) objects\n")
+
+				data.convertedObjects.forEach((key)=>{
+					if(debug) console.log("converted object found item for key="+key)
+					let obj = this.object_from_key(data,key, 'object')
+					// if we have data in the form
+					// its in the wrong format, array instead of object
+					// so make each array element a new object for this module object
+					if(obj){
+						// could have been restored by the missing object function above
+						//
+						if(typeof obj.object === 'array'){
+							if(debug) console.log("found item as array")
+							let result={}
+							// loop thru the elements of the array
+							for(let i in obj.object){
+								// save in has
+								// supposedly these are going to be 'objects' themselves
+								// but the editor was a textarea.. so no validation
+								result[i] = obj.object[i]
+							}
+							// overlay the object with the new results
+							obj.object = self.clone(result)
+						}
+							// didn't find any form data
+						else {
+							//  wasn't an array, so...
+							if(debug) console.log(" found converted object for key="+key+" but not an array\n")
+							if(_.isEqual(obj.object[obj.key], { "fribble":null })){
+								// it was the lookup inserted dummy
+								if(debug) console.log("converted object reset missing object key="+key+"\n")
+								obj.object[obj.key]={}
+							}
+							else {
+								if(debug) console.log("converted object already restored")
+							}
+						}
+					}
+				})
+			  delete data.converted_objects
+
+				if(debug) console.log("\npotential arrays="+JSON.stringify(data.arrays,self.tohandler,2))
 
 				for(const p of data.arrays){
 					let t=p
@@ -278,7 +348,7 @@ process_submit: async function (data, self, socket) {
 					//  MMM-GooglePhotos.config.albums"
 					let rr = data[v[0]]
 					let o = this.object_from_key(data,t,'array')
-					if(debug) console.log("array="+JSON.stringify(o,' ',2))
+					if(debug) console.log("array="+JSON.stringify(o,self.tohandler,2))
 						if(_.isEqual(o.object[o.key], [ "fribble" ])){
 							if(debug) console.log("items equal key="+o.key)
 							if(!t.endsWith(o.key)){
@@ -302,10 +372,11 @@ process_submit: async function (data, self, socket) {
 								//console.log("set NOT nested")
 							}
 						} else {
-							// present but NOT an array
-							this.reformat_array(o.object)
+							// present but NOT an empty array
+							if (debug) console.log("reformat_array key="+o.key)
+							this.reformat_array(Array.isArray(o.object[o.key])?o.object:o.object, self, o.key)
 						}
-						if(debug) console.log("done 3 setting array="+JSON.stringify(rr) )
+						if(debug) console.log("done 3 setting array="+JSON.stringify(rr,self.tohandler,2)+"\n" )
 				}
 				delete data.arrays
 			}
@@ -338,7 +409,7 @@ process_submit: async function (data, self, socket) {
 									modified_value[property[0]]=property[1]
 							}
 							j=self.setpair(data,p,self,modified_value)
-							if(debug) console.log("pair reset="+JSON.stringify(j,self.tohandler,2))
+							if(debug) console.log("pair reset="+JSON.stringify(j,self.tohandler,2)+"\n")
 						}
 					}
 				delete data.pairs
@@ -497,7 +568,7 @@ process_submit: async function (data, self, socket) {
 			}
 			//console.log("data new to old diff ="+JSON.stringify(x,' ',2)+ "\n\n old to new ="+JSON.stringify(x1,' ',2)+ "\n\n delta to original ="+JSON.stringify(x2,' ',2))
 			//let reg=/(.*[^:])\:.*/gm
-			let xx = JSON.stringify(r, self.tohandler, 2).replace(/::/g,"==").replace(/f:/g,"~~")
+			let xx = JSON.stringify(r, self.tohandler, 2).replace(/::/g,"=:=").replace(/f:/g,"~~")
 			//console.log(xx)
 			//console.log("there are "+xx.length+" matches")
 
@@ -512,24 +583,26 @@ process_submit: async function (data, self, socket) {
 					xx=xx.replace(new RegExp(t[0]+':', 'g'), t[0].replace(/\"/g,"")+':')
 				}
 			})
-			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/==/g,"::").replace(/~~/g,"f:")
+			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/=:=/g,"::").replace(/~~/g,"f:")
 
 			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6).replace(/:/g,'.')
 			let targetpath=__dirname.split(path.sep).slice(0,-2).join(path.sep)+ "/config/config.js"
-			fs.renameSync(oc, targetpath+"."+d)
-			fs.writeFile(oc, xx.slice(1,-1)+closeString, "utf8", (err) => {
-				if (err) {
-					console.error(err)
-				}
-				else {
-					socket.emit("saved","config.js created successfully")
-					if(self.config.restart.length) {
-						if(self.config.restart.toLowerCase().startsWith("pm2:")){
-							exec("pm2 restart "+ self.config.restart.split(':')[1])
+			if(doSave){
+				fs.renameSync(oc, targetpath+"."+d)
+				fs.writeFile(oc, xx.slice(1,-1)+closeString, "utf8", (err) => {
+					if (err) {
+						console.error(err)
+					}
+					else {
+						socket.emit("saved","config.js created successfully")
+						if(self.config.restart.length) {
+							if(self.config.restart.toLowerCase().startsWith("pm2:")){
+								exec("pm2 restart "+ self.config.restart.split(':')[1])
+							}
 						}
 					}
-				}
-			})
+				})
+			}
 
 },
 
