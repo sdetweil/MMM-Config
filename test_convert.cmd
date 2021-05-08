@@ -82,14 +82,17 @@ goto :done
 :process_define
 Setlocal EnableDelayedExpansion
 		set m=%1
-		rem echo !m!
-		if "%m:~1,7%"=="default"  (
-			set mf=%m:~1,-2%
-			set m=%m:~9,-2%
+		echo !m!
+		set "m=!m:~1!"            remove the 1st character
+        set "m=!m:~0,-1!
+		echo !m!
+		if "%m:~0,7%"=="default"  (
+			set mf=%m:~0,-1%
+			set m=%m:~8,-1%
 			rem echo !m!  ended
 		) else (
-			set mf=%m:~1,-2%
-			set m=%m:~1,-2%
+			set mf=%m:~0,-1%
+			set m=%m:~0,-1%
 		)
 		for /f "usebackq tokens=1 delims=~" %%B in ('!m!') do (
 			set m=%%B
