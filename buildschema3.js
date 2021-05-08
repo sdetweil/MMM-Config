@@ -54,6 +54,23 @@ const processTable ={
 
 const form_code_block={type: "ace",aceMode: "json",aceTheme: "twilight", width: "100%",height: "100px"}
 
+if (fs.existsSync(__dirname +"/editorinfo.json")) {
+
+    	 let editor_setup = require(__dirname +"/editorinfo.json")
+    	 Object.keys(editor_setup).forEach((key)=>{
+    	 		switch(key){
+    	 			case 'mode':
+						form_code_block['aceMode']=editor_setup[key]
+    	 				break;
+    	 			case 'theme':
+						form_code_block['aceTheme']=editor_setup[key]
+    	 				break;
+					default:
+						form_code_block[key]=editor_setup[key]
+    	 		}
+    	 })
+};
+
 for(let interface of Object.keys(interfaces)){
 	for( let info in interfaces[interface]){
 		if(interfaces[interface][info].family ==='IPv4'){
@@ -697,6 +714,11 @@ function getType(value, property, wasObject){
 		else
 			stack.push('"'+propertyName+'":{'+schema_value+'}')
 		if(r.mform){
+			if(r.mform.type==='array'){
+				if(((typeof r.mform ==='object')?JSON.stringify(r.mform):r.mform).includes("aceMode"))
+					r.mform['draggable']=false;
+				if(debug) console.log("r.mform = "+JSON.stringify(r.mform,' ',2))
+			}
 			if(debug) console.log("m mform="+(typeof r.mform ==='string'?r.mform:JSON.stringify(r.mform)))
 			if(Array.isArray(r.mform)){
 				for(let f of r.mform)

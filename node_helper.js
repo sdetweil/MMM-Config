@@ -596,6 +596,16 @@ process_submit: async function (data, self, socket) {
 				}
 			})
 			xx=xx.replace(new RegExp('config:'), 'var config =').replace(/=:=/g,"::").replace(/~~/g,"f:")
+			let function_match=xx.match(/: "\(.*$/gm)
+			if(function_match.length){
+				function_match.forEach((expression)=>{
+					let saved=expression=expression.slice(2)
+					if(debug) console.log("expression found ="+expression+" \nsaved="+saved)
+					expression=expression.replace(/\\"/g,'"').replace(/\\r\\n/g,'\n').slice(1,-1).replace(/{ /gm,"{\n").replace(/}/gm,"\n}")
+					if(debug) console.log("expression found ="+expression)
+					xx=xx.replace(saved,expression)
+				})
+			}
 
 			let d = JSON.stringify( fs.statSync(oc).mtime).slice(1,-6).replace(/:/g,'.')
 			let targetpath=__dirname.split(path.sep).slice(0,-2).join(path.sep)+ "/config/config.js"

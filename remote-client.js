@@ -39,6 +39,9 @@ $(function () {
 					  		// parens mean don't EXECUTE the function, just get its value
 								value = eval("(" + value + ")");
 						break;
+					//	default:
+					//		if ( (value.startsWith("(") || value.startsWith("function(")) 	&& value.endsWith("}"))
+					//			value = eval("(" + value + ")");
 						}
 				}
 				return value;
