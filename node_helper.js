@@ -110,26 +110,38 @@ config:{},
 		return null
 	},
 reformat_array:function (data,self, key){
-		if(debug) console.log("reformat_array data present ="+JSON.stringify(data,self.tohandler,2))
+
 		if(Array.isArray(data[key])) {
+			if(debug) console.log("reformat_array data present ="+JSON.stringify(data[key],self.tohandler,2))
 			if(debug) console.log("reformat_array to object from array")
 			let d = []
 			if(debug) console.log("reformatting array of strings back to object")
 			data[key].forEach((element)=>{
-				if(typeof element ==='string'
-					    && element.startsWith('{')
-					    && element.endsWith('}')){
-					if(debug) console.log("reformat_array, about to parse="+element.replace(/\r?\n|\r/gm,''))
-						let tt=JSON.parse(element.replace(/\r?\n|\r/gm,''),self.fromhandler)
-					if(debug) console.log("reformat_array, after parse="+tt)
+				if(typeof element ==='string'){
+						let tt
+						if( element.startsWith('{') && element.endsWith('}')){
+							if(debug) console.log("reformat_array, about to parse="+element.replace(/\r?\n|\r/gm,''))
+								 tt=JSON.parse(element.replace(/\r?\n|\r/gm,''),self.fromhandler)
+							if(debug) console.log("reformat_array, after parse="+tt)
+							}
+						else{
+							tt=element
+							if(debug) console.log("reformat_array, just copy string="+tt)
+						}
 					d.push(tt)
 					if(debug) console.log(" item added to object="+JSON.stringify(d,self.tohandler,2))
+				} else {
+					if(!Array.isArray(element)){
+						if(debug) console.log("reformat_array, just copy object="+JSON.stringify(element,self.tohandler,2))
+						d.push(element)
+					}
 				}
 			})
 			if(debug) console.log(" new data contents="+JSON.stringify(d,self.tohandler,2))
 			data[key]=d
 			if(debug) console.log(" new data contents="+JSON.stringify(d,self.tohandler,2))
 		} else	if(!Array.isArray(data)){
+			if(debug) console.log("reformat_array data present ="+JSON.stringify(data,self.tohandler,2))
 			if(debug) console.log("reformat_array to array from object")
 			let d = []
 			Object.keys(data).forEach((a)=>{
