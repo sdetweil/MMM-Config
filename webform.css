@@ -57,3 +57,10 @@ div > ul > li > fieldset >legend {
 div ~ fieldset  {
     margin-left: 2em;
 }
+body {
+  background-color: navajowhite;
+}
+.tab-content {
+background-color: lightgray;
+}
+

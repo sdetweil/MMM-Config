@@ -4,6 +4,7 @@
   "description": "",
   "main": "MMM-Config.js",
   "scripts": {
+    "postinstall": "./post_install",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
@@ -17,6 +18,8 @@
     "lodash": "^4.17.21",
     "os": "^0.1.1",
     "path": "^0.12.7",
+    "prettier": "^2.0.5",
+    "pretty-ms": "^7.0.0",
     "qrcode": "^1.4.4",
     "socket.io-client": "^4.0.1",
     "stream": "0.0.2"
