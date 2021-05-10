@@ -1,0 +1,4 @@
+#!/bin/bash
+# copy the git pre-commit hook file
+cp .pre-commit .git/hooks/pre-commit
+
