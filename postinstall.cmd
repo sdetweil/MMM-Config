@@ -1,1 +1,0 @@
-@del .\schema3.json 2>nul

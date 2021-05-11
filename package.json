@@ -4,7 +4,7 @@
   "description": "",
   "main": "MMM-Config.js",
   "scripts": {
-    "postinstall": "node post_install.ps",
+    "postinstall": "node post_install.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
