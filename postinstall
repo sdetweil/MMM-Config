@@ -1,0 +1,3 @@
+#!/bin/bash
+echo copying git pre-commit hook 
+cp .pre-commit .git/hooks
