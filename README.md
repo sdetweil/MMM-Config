@@ -7,6 +7,8 @@ enable form based configuration for MagicMirror
 
 * An installation of [MagicMirror<sup>2</sup>](https://github.com/MichMich/MagicMirror)
 
+a dynamically built form, based on modules installed (git cloned at least) into the modules folder and the contents of the config.js
+
 
 ## Installation
 
@@ -25,7 +27,7 @@ enable form based configuration for MagicMirror
 		}
     ```
 
-## Config Options
+## Config Options (you can set/change all of these options in the form )
 
 all options are case sensitive
 
@@ -59,5 +61,14 @@ the base expanded
 modules expanded
 Module names in red are disabled or not in config.js, in blue are in config.js and enabled
 
-
 ![base variables](./doc_images/MMM-Config%20modules.png)
+
+the Module positions section
+
+![base variables](./doc_images/MMM-Config%20positions.png)
+
+**because the order of modules is top down by position,  all the positioning is moved to this section of the form.
+if u want a specific module first, select 1, second select 2, (consider date/time(1) above calendar(2))
+if u don't care, select * (the default)**
+
+**disabled modules are left in config.js, just disabled.  otherwise we would lose the configuration information , like api keys, or latitude/longitude**
