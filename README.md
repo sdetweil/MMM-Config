@@ -66,9 +66,9 @@ Module names in blue are in config.js and enabled.
 
 ![base variables](./doc_images/MMM-Config%20positions.png)
 
-**Because the order of modules is top down by position, all the positioning is moved to this section of the form.
+**Because the order of modules is top down by position, all the positioning is moved to this section of the form.**
 
-If u want a specific module first, select 1, second select 2, (consider date/time(1) above calendar(2))
+**If u want a specific module first, select 1, second select 2, (consider date/time(1) above calendar(2))
 if u don't care, select * (the default)**
 
 **Disabled modules are left in config.js, just disabled.  Otherwise, we would lose the configuration information , like api keys, latitude/longitude, etc.**
