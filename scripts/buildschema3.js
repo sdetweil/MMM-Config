@@ -58,8 +58,8 @@ const form_code_block = {
   height: "100px"
 };
 
-if (fs.existsSync(__dirname + "/editorinfo.json")) {
-  let editor_setup = require(__dirname + "/editorinfo.json");
+if (fs.existsSync(path.join(__dirname, "editorinfo.json"))) {
+  let editor_setup = require(path.join(__dirname, "editorinfo.json"));
   Object.keys(editor_setup).forEach((key) => {
     switch (key) {
       case "mode":
@@ -73,7 +73,9 @@ if (fs.existsSync(__dirname + "/editorinfo.json")) {
     }
   });
 }
-
+//
+//	get the network interfaces for the address box dropdown
+//
 for (let interface of Object.keys(interfaces)) {
   for (let info in interfaces[interface]) {
     if (interfaces[interface][info].family === "IPv4") {
@@ -85,19 +87,16 @@ for (let interface of Object.keys(interfaces)) {
     }
   }
 }
+// add in all
 networkInterfaces.splice(1, 0, "0.0.0.0");
+
 if (debug)
   console.log("networkInterfaces=" + JSON.stringify(networkInterfaces));
-function getColor(cssfile, name) {
-  for (let line = 0; line < cssfile.length; line++) {
-    //console.log(name+" found on line="+line+" = "+cssfile[line])
-    if (cssfile[line].includes(name)) {
-      //console.log(name+" found on line="+cssfile[r])
-      return cssfile[line + 1].split(":")[1].replace(";", "").trim();
-    }
-  }
-  return "";
-}
+
+//
+//  get the langauages for the lamguage dropdown
+//
+// code for use in debugger in another path
 let fp;
 if (!__dirname.includes("MagicMirror"))
   fp = path.join(
@@ -108,7 +107,7 @@ if (!__dirname.includes("MagicMirror"))
   );
 else
   fp = path.join(
-    __dirname.split(path.sep).slice(0, -2).join(path.sep),
+    __dirname.split(path.sep).slice(0, -3).join(path.sep),
     "translations"
   );
 if (debug) console.log("listing languages from " + fp);
@@ -119,18 +118,35 @@ fs.readdirSync(fp).forEach((file) => {
 });
 
 const module_position_schema = JSON.parse(
-  fs.readFileSync(__dirname + "/module_positions_schema.json", "utf8")
+  fs.readFileSync(
+    path.join(__dirname, "../templates/module_positions_schema.json"),
+    "utf8"
+  )
 );
 const module_position_form = JSON.parse(
-  fs.readFileSync(__dirname + "/module_positions_form.json", "utf8")
+  fs.readFileSync(
+    path.join(__dirname, "../templates/module_positions_form.json"),
+    "utf8"
+  )
 );
 const module_positions = JSON.parse(
-  fs.readFileSync(__dirname + "/module_positions.json", "utf8")
+  fs.readFileSync(
+    path.join(__dirname, "../templates/module_positions.json"),
+    "utf8"
+  )
 );
-const cssfile = fs.readFileSync(__dirname + "/webform.css", "utf8").split("\n");
+//
+//  find the color to be used for enabled/disabled and save for the onclick handler
+//
+const cssfile = fs
+  .readFileSync(path.join(__dirname, "../webform.css"), "utf8")
+  .split("\n");
 let module_enabled_color = getColor(cssfile, "module_enabled");
 let module_disabled_color = getColor(cssfile, "module_disabled");
 
+//
+//	form templates
+//
 const module_form_template = {
   type: "fieldset",
   title: "modulename",
@@ -151,6 +167,12 @@ var array_item_template = {
   key: "field"
 };
 
+//
+//	end of form templates
+//
+
+// variables used to store content
+
 var data = {};
 var pairVariables = {};
 
@@ -165,8 +187,15 @@ if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 
 let results = [];
 
+//
+//	copy the info from config.js before the modules list
+//
 copyConfig(defines, schema, form);
 
+//
+//	loop thru the modules in the defaults collection list
+//  and process as 'modules'
+//
 Object.keys(defines.defined_config).forEach((module_definition) => {
   let r = "";
   let stack = [];
@@ -191,25 +220,28 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   );
 });
 
+// then sort
 if (!sort) {
   let xy = [];
 
   let temp = form[0].items[1].items;
-
+  // get the same form layout as in config.js
   defines.config.modules.forEach((m) => {
     let name = m.module;
     for (let i in temp) {
       if (temp[i].title === name) {
         // watch out, splice returns an array
         // we want the element of the array
+        // take this out of the form list
         let t = temp.splice(i, 1)[0];
-        //t.inconfig=true
+        // and add it to the end of the new form list
         xy.push(t);
         break;
       }
     }
   });
   // save the rest of the items to end of the new array
+  // add everything left in old list to end of new list
   xy.push.apply(xy, temp);
   // reset the form to the new order
   form[0].items[1].items = xy;
@@ -241,10 +273,8 @@ form.push({
   id: "submit_button"
 });
 
-//let layout_order={}
 module_positions.forEach((position) => {
   module_position_schema.items.properties.position.enum.push(position);
-  //layout_order[position]=[]
 });
 schema["positions"] = module_position_schema;
 
@@ -252,15 +282,15 @@ let positions = [];
 let position_hash = {};
 // loop thru the form data
 // save position info for all modules
-Object.keys(value).forEach((key) => {
-  switch (key) {
+Object.keys(value).forEach((module_name) => {
+  switch (module_name) {
     case "config":
       break;
     default:
-      position_hash[key] = {
-        name: key,
-        position: value[key].position,
-        order: value[key].order
+      position_hash[module_name] = {
+        name: module_name,
+        position: value[module_name].position,
+        order: value[module_name].order
       };
   }
 });
@@ -808,17 +838,24 @@ function getType(value, property, wasObject) {
   //console.log("processing gettype for v="+value+" and p="+property+" and wo="+wasObject+" returning="+type)
   return type;
 }
+
+//
+//	process a module
+//
 function processModule(schema, form, value, defines, module_definition) {
   let stack = [];
   let module_name = module_definition
     .slice(0, module_definition.lastIndexOf("_"))
     .replace(/_/g, "-");
+
+  // set its default form values
   value[module_name] = {
     disabled: true,
     module: module_name,
     position: "none",
     order: "*",
     inconfig: "0",
+    // from the defaults: collector
     config: defines
   };
 
@@ -831,6 +868,7 @@ function processModule(schema, form, value, defines, module_definition) {
         "\n"
     );
 
+  // setup the form data (schema/layout)
   schema[module_name] = {
     type: "object",
     title: "properties for " + module_name,
@@ -849,6 +887,11 @@ function processModule(schema, form, value, defines, module_definition) {
       config: { type: "object", title: "config", properties: {} }
     }
   };
+
+  //
+  // create the module FORM entries (that allow access to the data)
+  //
+
   // make a copy of the template
   let mform = clone(module_form_template);
   mform.title = module_name;
@@ -879,10 +922,16 @@ function processModule(schema, form, value, defines, module_definition) {
     }
   }
 
+  //
+  //	loop thru each property from the defaults
+  //
   Object.keys(defines).forEach((propertyName) => {
     if (debug) console.log("processing for each property " + propertyName);
     let property_value = defines[propertyName];
     let type = getType(property_value, propertyName, false);
+    //
+    // process the property by type to fill in the schema and the form
+    //
     let r = processTable[type](
       module_name + ".config",
       propertyName,
@@ -892,44 +941,50 @@ function processModule(schema, form, value, defines, module_definition) {
       false,
       false
     );
+    // get the constructed schema for this property
     let schema_value = r.results;
     if (
       schema_value.startsWith('"' + propertyName + '":{') ||
       containsSpecialCharacters(propertyName) ||
       isNumeric(propertyName)
     )
+      // save it
       stack.push(schema_value);
     else stack.push('"' + propertyName + '":{' + schema_value + "}");
+    //
+    //	if a form element was returned
+    //
     if (r.mform) {
       if (debug)
         console.log(
           "m mform=" +
             (typeof r.mform === "string" ? r.mform : JSON.stringify(r.mform))
         );
+      // if this is a list of elements (object with properties)
       if (Array.isArray(r.mform)) {
         //  mform.items.push(f)
+        // add them to the form definition for this module
         for (let f of r.mform) mform.items[ptr]["items"].push(f);
       }
-      //mform.items.push(r.mform)
+      // not array, so single type
       else mform.items[ptr]["items"].push(r.mform);
     }
   });
+  // get the collected schema
   let r = "{" + stack.join(",") + "}";
   if (debug) console.log("module info =" + r + "\n\n");
+  // add it to the module config schema
   schema[module_name].properties.config.properties = JSON.parse(r, fromhandler);
-
+  //
+  //	save the constructed form definition for the properties
+  //
   form[0].items[1].items.push(mform);
 }
-function containsSpecialCharacters(str) {
-  if (str) {
-    var regex = /[ !@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/g;
-    return regex.test(str);
-  } else return false;
-}
-function isNumeric(n) {
-  if (n) return !isNaN(parseFloat(n)) && isFinite(n);
-  else return false;
-}
+
+//
+// process an Object from the defaults
+// object contains other properties
+//
 function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
   if (debug)
     console.log(
@@ -947,7 +1002,7 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
   let vform = clone(object_template);
   vform["type"] = "fieldset";
   vform["items"] = [];
-  vform["title"] = formtitle; // (formtitle.endsWith('s')?formtitle.slice(0,-1):formtitle)+(recursive?" {{idx}}":'')
+  vform["title"] = formtitle;
   let isPair = false;
   if (checkPair) isPair = checkForPair(v);
   if (isPair) {
@@ -1059,6 +1114,10 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
     };
 }
 
+//
+//	process array object []
+//  contains a list of some type properties, string, int, Object!
+//
 function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
   let results = "";
   if (debug)
@@ -1305,6 +1364,28 @@ function processFunction(m, p, v, mform, checkPair, recursive, wasObject) {
   mform.push(JSON.parse(t));
   return { mform: mform, results: '"type": "string"' };
 }
+function getColor(cssfile, name) {
+  for (let line = 0; line < cssfile.length; line++) {
+    //console.log(name+" found on line="+line+" = "+cssfile[line])
+    if (cssfile[line].includes(name)) {
+      //console.log(name+" found on line="+cssfile[r])
+      return cssfile[line + 1].split(":")[1].replace(";", "").trim();
+    }
+  }
+  return "";
+}
+
+function containsSpecialCharacters(str) {
+  if (str) {
+    var regex = /[ !@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/g;
+    return regex.test(str);
+  } else return false;
+}
+function isNumeric(n) {
+  if (n) return !isNaN(parseFloat(n)) && isFinite(n);
+  else return false;
+}
+
 function tohandler(key, value) {
   if (typeof value === "function") {
     return value + ""; // implicitly `toString` it

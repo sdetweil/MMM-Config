@@ -47,7 +47,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 
 		#echo looking for "$nm.js"
 		if [ -e "$module/$nm".js ]; then
-		   node $d/dumpdefaults.js "$module/$nm.js" >>$defaults_file
+		   node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
 		else
 			#echo "// file "$nm.js" does NOT exist"
 			:
@@ -63,7 +63,7 @@ fi
 # if the config changed since last start or the modules changed
 if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./buildschema3.js $defaults_file >$FILE
+	node ./scripts/buildschema3.js $defaults_file >$FILE
 	echo $config_lastchange>$d/config_lastchange
 fi
 echo completed
