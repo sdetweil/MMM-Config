@@ -257,7 +257,7 @@ module.exports = NodeHelper.create({
     return a + d + u === 0;
   },
   isNumeric: function (n) {
-    return !isNaN(parseFloat(n)) && isFinite(n);
+    return !isNaN(parseFloat(n)) && isFinite(parseInt(n));
   },
   mergeModule(config, data) {
     return _.assign(config, _.pick(data, _.keys(config)));
@@ -714,7 +714,7 @@ module.exports = NodeHelper.create({
       layout_order[position].sort((a, b) => {
         // compare titles, function for clarity
         function testit(x, y) {
-          if (self.isNumeric(a.border) && self.isNumeric(b.border)) {
+          if (self.isNumeric(a.order) && self.isNumeric(b.order)) {
             if (a.order < b.order) {
               return -1;
             }

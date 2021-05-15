@@ -26,7 +26,9 @@ if (process.argv[2]) {
 
     switch (process.platform) {
       case "win32":
-        cmd = shell_command[1];
+        if (shell_command.length > 1) cmd = shell_command[1];
+        else console.log("no windows script specified, aborting");
+        return;
         break;
       default:
         cmd = shell_command[0];
