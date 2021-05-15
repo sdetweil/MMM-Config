@@ -15,7 +15,7 @@ const oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
 const configPath = __dirname + "/schema3.json";
 const module_positions = JSON.parse(
-  fs.readFileSync(__dirname + "/module_positions.json", "utf8")
+  fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
 const checking_diff = false;
 const closeString =
