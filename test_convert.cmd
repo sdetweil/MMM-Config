@@ -82,10 +82,10 @@ goto :done
 :process_define
 Setlocal EnableDelayedExpansion
 		set m=%1
-		echo !m!
+		rem echo !m!
 		set "m=!m:~1!"            remove the 1st character
         set "m=!m:~0,-1!
-		echo !m!
+		rem echo !m!
 		if "%m:~0,7%"=="default"  (
 			set mf=%m:~0,-1%
 			set m=%m:~8,-1%
