@@ -824,6 +824,54 @@ module.exports = NodeHelper.create({
           .replace(/{ /gm, "{\n")
           // add newline before }
           .replace(/}/gm, "\n}");
+
+        //expression = JSON.stringify(eval((expression)), self.tohandler,2)
+
+        let ne = [];
+        let xy = expression.split("\n");
+        if (debug)
+          console.log(" expression pre fixup=" + JSON.stringify(xy, "", 2));
+        let x = xy.length;
+        for (let i = 0; i < x; ) {
+          // get a line
+          let exp_line = xy[i++];
+          // if this is a blank line
+          if (exp_line.trim() === "")
+            // add the next line on
+            exp_line += xy[i++];
+          // if the line starts with } then we need to fix it to the previous line spacing at least
+          if (exp_line.startsWith("}")) {
+            // get the spacing of the previous line (current length - trimmed length)
+            let spacing = xy[i - 2].length - xy[i - 2].trimStart().length;
+            if (debug)
+              console.log(
+                "spacing =" +
+                  xy[i - 2].length +
+                  " - " +
+                  xy[i - 2].trimStart().length +
+                  " = " +
+                  spacing
+              );
+
+            let f = xy[i - 2].slice(0, spacing) + "}";
+            if (debug)
+              console.log("adding line back in at " + (i - 2) + " = " + f);
+            ne.push(f);
+            xy.splice(i - 1, 1, exp_line.slice(1));
+            i--;
+            if (debug)
+              console.log(" after insert =" + JSON.stringify(xy, "", 2));
+            x = xy.length;
+            continue;
+          }
+          //save the new line
+          if (debug) console.log("saving line=" + exp_line);
+          if (exp_line !== "undefined") ne.push(exp_line);
+        }
+        if (debug)
+          console.log(" expression post fixup=" + JSON.stringify(ne, "", 2));
+        expression = ne.join("\n");
+
         if (debug) console.log("expression found =" + expression);
         // replace the original with the updated text
         xx = xx.replace(saved, expression);
