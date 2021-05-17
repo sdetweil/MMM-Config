@@ -805,27 +805,30 @@ module.exports = NodeHelper.create({
       .replace(/~~/g, "f:");
     // find any function invocations (parms)=> ...
     // loop thru them to take out embedded text return/nl, and escaped quotes
-    xx.match(/(: "\(|: "function\().*$/gm).forEach((expression) => {
-      // we have lost context of the 'line' this is on, so we can only update the text in place
-      // remove the leading ': ' found by the regex
-      let saved = (expression = expression.slice(2));
-      if (debug)
-        console.log("expression found =" + expression + " \nsaved=" + saved);
-      expression = expression
-        // and the escaped quote
-        .replace(/\\"/g, '"')
-        // and the  retrun/nl's
-        .replace(/\\r\\n/g, "\n")
-        // remove the leading/trailing json quotes
-        .slice(1, -1)
-        // add newline after {
-        .replace(/{ /gm, "{\n")
-        // add newline before }
-        .replace(/}/gm, "\n}");
-      if (debug) console.log("expression found =" + expression);
-      // replace the original with the updated text
-      xx = xx.replace(saved, expression);
-    });
+    let matches = xx.match(/(: "\(|: "function\().*$/gm);
+    if (matches) {
+      matches.forEach((expression) => {
+        // we have lost context of the 'line' this is on, so we can only update the text in place
+        // remove the leading ': ' found by the regex
+        let saved = (expression = expression.slice(2));
+        if (debug)
+          console.log("expression found =" + expression + " \nsaved=" + saved);
+        expression = expression
+          // and the escaped quote
+          .replace(/\\"/g, '"')
+          // and the  retrun/nl's
+          .replace(/\\r\\n/g, "\n")
+          // remove the leading/trailing json quotes
+          .slice(1, -1)
+          // add newline after {
+          .replace(/{ /gm, "{\n")
+          // add newline before }
+          .replace(/}/gm, "\n}");
+        if (debug) console.log("expression found =" + expression);
+        // replace the original with the updated text
+        xx = xx.replace(saved, expression);
+      });
+    }
 
     // get the last mod date of the current config.js
     let d = JSON.stringify(fs.statSync(oc).mtime)
