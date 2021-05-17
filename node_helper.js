@@ -127,7 +127,7 @@ module.exports = NodeHelper.create({
   getConfigModule: function (m, source) {
     // module name is not a direct key
     for (let x of source) {
-      if (x.module == m) {
+      if (x.module === m) {
         //console.log(" getconf="+ x.module)
         return x;
       }
@@ -337,6 +337,7 @@ module.exports = NodeHelper.create({
   // handle form submission from web browser
   process_submit: async function (data, self, socket) {
     let cfg = require(__dirname + "/defaults.js");
+    //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
     if (debug) console.log("\nstart processing form submit\n");
@@ -357,7 +358,7 @@ module.exports = NodeHelper.create({
           console.log("processing for " + p + " parts=" + JSON.stringify(v));
         //   "MMM-AlexaControl.config.devices.devices",
         let rr = data[v[0]];
-        let o = this.object_from_key(data, t, "object");
+        let o = self.object_from_key(data, t, "object");
         if (debug) console.log("object=" + JSON.stringify(o, " ", 2));
         if (_.isEqual(o.object[o.key], { fribble: null })) {
           if (debug) console.log("reset missing object");
@@ -376,7 +377,7 @@ module.exports = NodeHelper.create({
 
       data.convertedObjects.forEach((key) => {
         if (debug) console.log("converted object found item for key=" + key);
-        let obj = this.object_from_key(data, key, "object");
+        let obj = self.object_from_key(data, key, "object");
         // if we have data in the form
         // its in the wrong format, array instead of object
         // so make each array element a new object for this module object
@@ -438,7 +439,7 @@ module.exports = NodeHelper.create({
           console.log("processing for " + p + " parts=" + JSON.stringify(v));
         //  MMM-GooglePhotos.config.albums"
         let rr = data[v[0]];
-        let o = this.object_from_key(data, t, "array");
+        let o = self.object_from_key(data, t, "array");
         if (debug) console.log("array=" + JSON.stringify(o, self.tohandler, 2));
         // if these was no object found (the function inserted dummy data for us to find )
         // if we find it, the array was not returned from the form handler
@@ -491,7 +492,7 @@ module.exports = NodeHelper.create({
         } else {
           // present but NOT an empty array
           if (debug) console.log("reformat_array key=" + o.key);
-          this.reformat_array(o.object, self, o.key);
+          self.reformat_array(o.object, self, o.key);
         }
         if (debug)
           console.log(
@@ -529,7 +530,7 @@ module.exports = NodeHelper.create({
             let property = item.split(":");
             if (property[1] == "true") property[1] = true;
             if (property[1] == "false") property[1] = false;
-            if (this.isNumeric(property[1]))
+            if (self.isNumeric(property[1]))
               property[1] = parseFloat(property[1]);
             modified_value[property[0]] = property[1];
           }
@@ -544,7 +545,7 @@ module.exports = NodeHelper.create({
     }
     if (1) {
       for (let n of Object.keys(data.mangled_names)) {
-        this.fixobject_name(data, n, data.mangled_names[n]);
+        self.fixobject_name(data, n, data.mangled_names[n]);
       }
       delete data.mangled_names;
     }
@@ -570,7 +571,7 @@ module.exports = NodeHelper.create({
 
       // compare returned and cleaned up data with the module defines
       for (const m of Object.keys(self.config.data.value)) {
-        let cfgmodule = this.getConfigModule(m, cfg.config.modules);
+        let cfgmodule = self.getConfigModule(m, cfg.config.modules);
         //console.log (m !== 'config' && "module "+m+" disabled a="+self.config.data.value[m]['disabled']+" b="+this.getConfigModule(m, cfg.modules)['disabled']+" c="+data[m]['disabled'])
         if (
           m !== "config" &&
@@ -618,7 +619,7 @@ module.exports = NodeHelper.create({
               JSON.stringify(module_form_data, self.tohandler, 2)
           );
         // find the config.js entry, if present
-        let module_in_config = this.getConfigModule(
+        let module_in_config = self.getConfigModule(
           module_name,
           cfg.config.modules
         );
@@ -643,13 +644,14 @@ module.exports = NodeHelper.create({
           if (module_in_config.position === undefined) {
             if (debug)
               console.log(
-                "existing config does NOT have order set, copying from form =" +
-                  module_form_data.order
+                "existing config does NOT have position set, copying from form =" +
+                  module_form_data.position
               );
             module_in_config.position = module_form_data.position;
           }
 
           merged_module = self.mergeModule(module_in_config, module_form_data);
+          merged_module.inconfig = "1";
 
           if (debug)
             console.log(
