@@ -100,10 +100,9 @@ if (debug)
 let fp;
 if (!__dirname.includes("MagicMirror"))
   fp = path.join(
-    __dirname.split(path.sep).slice(0, -1).join(path.sep),
+    __dirname.split(path.sep).slice(0, -2).join(path.sep),
     "/MagicMirror",
-    "translations",
-    path.sep
+    "translations"
   );
 else
   fp = path.join(
@@ -583,10 +582,13 @@ function get_define_info(data, key) {
   // get the key parts
   let t = key.split(".");
   let left = t.shift();
+  if (left.endsWith("[]")) left = left.slice(0, -2);
   // if there is more key
   if (t.length) {
     // iterate
-    return get_define_info(data[left], t.join("."));
+    let tt = data[left];
+    if (Array.isArray(tt)) tt = tt[0];
+    return get_define_info(tt, t.join("."));
   }
   // last key part now
   return data[left];
@@ -609,8 +611,10 @@ function find_empty_arrays(obj, stack, hash) {
       for (const o of obj) {
         if (typeof o === "object" && !Array.isArray(o)) {
           let t = stack.join(".");
-          if (!form_object_correction.includes(t))
+          if (!form_object_correction.includes(t)) {
+            if (t.includes(".[]")) t = t.replace(".[]", "[]");
             form_object_correction.push(t);
+          }
         }
         stack.push("[]");
         hash = find_empty_arrays(o, stack, hash);
@@ -1072,7 +1076,11 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
             "o mform=" +
               (typeof r.mform === "string" ? r.mform : JSON.stringify(r.mform))
           );
-        if (r.mform.type === "array" && r.mform.items[0].type === "ace")
+        if (
+          Array.isArray(r.mform) &&
+          r.mform[0].type !== undefined &&
+          r.mform[0].type === "ace"
+        )
           r.mform["draggable"] = false;
         if (Array.isArray(r.mform)) {
           for (let f of r.mform) vform.items.push(f);
