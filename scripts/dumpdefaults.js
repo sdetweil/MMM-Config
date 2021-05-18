@@ -2,7 +2,7 @@ const path = require("path");
 let debug = false;
 let add_helper_vars = false;
 let counter = 0;
-
+if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
 
@@ -147,6 +147,21 @@ function process_main(lines, name) {
       }
       // count any open braces
       if (debug) console.log(" checking line=" + line);
+      // maybe a template line?
+      if (line.includes("{{")) {
+        let results = line.match(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/);
+        if (results) {
+          let lr = line.replace(results[0], "");
+          if (debug) {
+            console.log("match results=" + JSON.stringify(results, "", 2));
+            console.log("line without match=" + lr);
+          }
+          if (!lr.includes("{")) {
+            cache.push(line);
+            continue;
+          }
+        }
+      }
       while ((index = line.indexOf(startChar, index + 1)) >= 0) {
         indent++;
         if (debug) console.log("counting up index=" + indent);
