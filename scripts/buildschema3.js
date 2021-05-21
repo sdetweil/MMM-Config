@@ -5,6 +5,7 @@ const interfaces = require("os").networkInterfaces();
 
 const fs = require("fs");
 var debug = false;
+var debugging = false;
 
 const networkInterfaces = [];
 const languages = [];
@@ -97,18 +98,19 @@ if (debug)
 //  get the langauages for the lamguage dropdown
 //
 // code for use in debugger in another path
-let fp;
-if (!__dirname.includes("MagicMirror"))
-  fp = path.join(
-    __dirname.split(path.sep).slice(0, -2).join(path.sep),
-    "/MagicMirror",
-    "translations"
-  );
-else
-  fp = path.join(
-    __dirname.split(path.sep).slice(0, -3).join(path.sep),
-    "translations"
-  );
+let fp = path.join(
+  __dirname.split(path.sep).slice(0, -3).join(path.sep),
+  "translations"
+);
+if (debugging) {
+  if (!__dirname.includes("MagicMirror"))
+    fp = path.join(
+      __dirname.split(path.sep).slice(0, -2).join(path.sep),
+      "/MagicMirror",
+      "translations"
+    );
+}
+
 if (debug) console.log("listing languages from " + fp);
 // get the language list
 fs.readdirSync(fp).forEach((file) => {
@@ -404,6 +406,10 @@ form_object_correction.forEach((key) => {
   let temp_key = key.replace(".config", "");
   let t = temp_key.split(".");
   let module_define_name = t[0].replace(/-/g, "_") + "_defaults";
+  if (debug)
+    console.log(
+      "looking for define info for module=" + module_define_name + " key=" + key
+    );
   // module info used
   t.shift();
   let variable_definition = get_define_info(

@@ -1,10 +1,9 @@
 #!/bin/bash
 # convert modules to info for remote UI
 
-base=MagicMirror
 d=$(dirname "$(realpath $0)")
-mod_lastchange=$(stat --printf="%y %n\n" ~/$base/* | grep "/modules$" | awk -F. '{print $1}')
-config_lastchange=$(stat --printf="%y %n\n" ~/$base/config/*.js | grep "/config.js$" | awk -F. '{print $1}')
+mod_lastchange=$(stat --printf="%y %n\n" $d/../../* | grep "/modules$" | awk -F. '{print $1}')
+config_lastchange=$(stat --printf="%y %n\n" $d/../../config/*.js | grep "/config.js$" | awk -F. '{print $1}')
 touch $d/config_lastchange
 config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
@@ -21,7 +20,6 @@ fi
 # if the modules changes
 if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then
 	#get to the the modules list
-	#cd ~/$base/modules
 	cd $d
 	# get the list of installed modules, including defaults
 	NL=$'\n'
