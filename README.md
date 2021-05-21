@@ -44,7 +44,7 @@ On form submission, a new config.js is constructed and saved, `AFTER` renaming t
 
 The rename adds on the date and time the existing config.js was last modified.
 
-The new config.js filename will look like this `config.js.2021-05-04T10.01.27`.
+The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`.
 
 The ':'  in the time is changed to '.' as windows will not allow a filename with ':'.
 
