@@ -5,7 +5,7 @@ const interfaces = require("os").networkInterfaces();
 
 const fs = require("fs");
 var debug = false;
-var debugging = false;
+var debugging = true;
 
 const networkInterfaces = [];
 const languages = [];
@@ -593,7 +593,9 @@ function get_define_info(data, key) {
   if (t.length) {
     // iterate
     let tt = data[left];
-    if (Array.isArray(tt)) tt = tt[0];
+    if (Array.isArray(tt) && tt.length) {
+      tt = tt[0];
+    }
     return get_define_info(tt, t.join("."));
   }
   // last key part now
