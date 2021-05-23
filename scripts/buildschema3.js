@@ -5,7 +5,7 @@ const interfaces = require("os").networkInterfaces();
 
 const fs = require("fs");
 var debug = false;
-var debugging = true;
+var debugging = false;
 
 const networkInterfaces = [];
 const languages = [];
