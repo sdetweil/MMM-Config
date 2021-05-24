@@ -18,6 +18,8 @@ const module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
 const checking_diff = false;
+var socket_io_port = 8200;
+const getPort = require("get-port");
 const closeString =
   ';\n\
 \n\
@@ -49,7 +51,13 @@ module.exports = NodeHelper.create({
   extraRoutes: function () {
     this.expressApp.get("/modules/MMM-Config/review", (req, res) => {
       // redirect to config form
-      res.redirect(this.config.url + "/modules/" + this.name + "/config.html");
+      res.redirect(
+        this.config.url +
+          "/modules/" +
+          this.name +
+          "/config.html?port=" +
+          socket_io_port
+      );
     });
   },
   // module startup after receiving MM ready
@@ -957,8 +965,13 @@ module.exports = NodeHelper.create({
         methods: ["GET", "POST"]
       }
     });
-    // Start the server
-    server.listen(8200);
+
+    getPort({ port: getPort.makeRange(8300, 9500) }).then((port) => {
+      // Start the server
+      console.log(" got port=" + port);
+      socket_io_port = port;
+      server.listen(socket_io_port);
+    });
     /**
      * When the connection begins
      */

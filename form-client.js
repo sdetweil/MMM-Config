@@ -2,9 +2,12 @@ $(function () {
   // global vars
   var u = window.location.href;
   var pos = u.substr(u.lastIndexOf("/") + 1);
+  if (pos.includes("?")) pos = pos.slice(0, pos.indexOf("?"));
   var server = u.slice(0, u.indexOf(":", 5));
   var socket = io();
-  let port = 8200;
+  const port_param = findGetParameter("port");
+
+  let port = port_param || 8200;
 
   // config vars
   var timeoutID;
@@ -12,7 +15,7 @@ $(function () {
   var wasDisconnected = false;
 
   // watch out in case the libraries don't load
-  if (location.href.split("/").slice(-1) == "config.html") {
+  if (pos === "config.html") {
     if (typeof JSONForm !== "object") {
       $("#outMsg").html(
         "Unable to load Required Libraries <br> Please try again in a few moments"
@@ -20,6 +23,16 @@ $(function () {
       showElm("#out", 1);
       return false;
     }
+  }
+  function findGetParameter(parameterName) {
+    var result = null,
+      tmp = [];
+    var items = location.search.substr(1).split("&");
+    for (var index = 0; index < items.length; index++) {
+      tmp = items[index].split("=");
+      if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
+    }
+    return result;
   }
 
   function parseData(data) {
