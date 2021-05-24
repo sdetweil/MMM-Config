@@ -5,7 +5,7 @@ if [ $(uname -s) == 'Darwin' ]; then
 	mod_lastchange=$(GetFileInfo -m $d/../../modules | tr / - | awk '{print $1  " "  $2}')
 	config_lastchange=$(GetFileInfo -m $d/../../config/config.js | tr / - | awk '{print $1  " "  $2}')
 else
-	d=$(dirname "$(./realpath $0)")
+	d=$(dirname "$(realpath $0)")
 	mod_lastchange=$(stat --printf="%y %n\n" $d/../../* | grep "/modules$" | awk -F. '{print $1}')
 	config_lastchange=$(stat --printf="%y %n\n" $d/../../config/*.js | grep "/config.js$" | awk -F. '{print $1}')
 fi
