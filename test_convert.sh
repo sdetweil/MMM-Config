@@ -1,9 +1,14 @@
 #!/bin/bash
 # convert modules to info for remote UI
-
-d=$(dirname "$(realpath $0)")
-mod_lastchange=$(stat --printf="%y %n\n" $d/../../* | grep "/modules$" | awk -F. '{print $1}')
-config_lastchange=$(stat --printf="%y %n\n" $d/../../config/*.js | grep "/config.js$" | awk -F. '{print $1}')
+if [ $(uname -s) == 'Darwin' ]; then
+	d=$( cd "$(dirname "$0")" ; pwd -P )
+	mod_lastchange=$(GetFileInfo -m $d/../../modules | tr / - | awk '{print $1  " "  $2}')
+	config_lastchange=$(GetFileInfo -m $d/../../config/config.js | tr / - | awk '{print $1  " "  $2}')
+else
+	d=$(dirname "$(./realpath $0)")
+	mod_lastchange=$(stat --printf="%y %n\n" $d/../../* | grep "/modules$" | awk -F. '{print $1}')
+	config_lastchange=$(stat --printf="%y %n\n" $d/../../config/*.js | grep "/config.js$" | awk -F. '{print $1}')
+fi
 touch $d/config_lastchange
 config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
