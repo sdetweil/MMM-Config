@@ -1414,7 +1414,7 @@ function getColor(cssfile, name) {
 
 function containsSpecialCharacters(str) {
   if (str) {
-    var regex = /[ !@#$%^&*()+\-=\[\]{};':"\\|,.<>\/?]/g;
+    var regex = /[ !@#$%^&*()+=\[\]{};':"\\|,.<>\/?]/g;
     return regex.test(str);
   } else return false;
 }
