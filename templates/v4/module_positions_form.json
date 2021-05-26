@@ -1,0 +1,58 @@
+{
+      "title":"Module Positions",
+      "type":"fieldset",
+      "htmlClass": "webform",
+      "_comment":"put this content at the bottom of list of config controls",
+      "expandable":true,
+      "order":100,
+      "items": [
+        {
+          "type":"tabarray",
+          "draggable":"false",
+          "items":[
+            {
+              "type":"section",
+              "legend":"{{value}}",
+              "htmlClass":"possibly-hidden-tab",
+              "items":[
+                {
+                "description":"Module name",
+                "key":"positions[].name",
+                "valueInLegend": true,
+                "read-only":"true",
+                "notitle": true
+                },
+                {
+                  "type":"tabarray",
+                  "draggable":"false",
+                  "items":[
+                    {
+                    "type":"section",
+                    "legend":"{{value}}",
+                    "items":[
+                      {
+                       "key":"positions[].instance_info[].label",
+                       "valueInLegend":true,
+                       "description":"module instance label",
+                       "type":"hidden"
+                      },
+                       {
+                        "key":"positions[].instance_info[].position",
+                       "description":"module position in MagicMirror regions",
+                       "onChange":"(evt,node)=>{var value=$(evt.target).val();  let parts=$(evt.target).attr('name').split('.');let idx='';let id=parts[0];if(!parts[1].endsWith('[0]')){idx='['+parseInt(parts[1].split('[')[1])+']';};let m=$(\"[name*='\"+id+\".name']\").val();let x=$(\"[name*='\"+m+idx+\".position']\").val(value);}"
+                       },
+                       {
+                       "key":"positions[].instance_info[].order",
+                       "description":"position order in MagicMirror region, 1 is 1st, 2 is second, and so on, * is don't care",
+                       "onChange":"(evt,node)=>{var value=$(evt.target).val(); let parts=$(evt.target).attr('name').split('.');let idx='';let id=parts[0];if(!parts[1].endsWith('[0]')){idx='['+parseInt(parts[1].split('[')[1])+']';};let m=$(\"[name*='\"+id+\".name']\").val();let x=$(\"[name*='\"+m+idx+\".order']\").val(value);}"
+                       }
+                     ]
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
