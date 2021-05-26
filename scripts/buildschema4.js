@@ -1467,13 +1467,23 @@ function writeJsonFormInfoFile(
     let module_folder = path.join(__dirname, "../..", module_name);
     // check to make sure the module folder exists
     if (fs.existsSync(module_folder)) {
+      // remove the label item if present
+      // only important for the arrayed layout, not the module data
+      let form_info_clone = clone(form_info);
+      for (let i in form_info_clone) {
+        let item = form_info_clone[i];
+        if (item.key !== undefined && item.key.endsWith(".label")) {
+          form_info_clone.splice(i, 1);
+          break;
+        }
+      }
       // it does
       let x = {};
       x[module_name] = schema_info;
       // build the file structure
       let jsonform_info = {
         schema: x,
-        form: form_info,
+        form: form_info_clone,
         value: value_info[module_name]
       };
       // get the file path
