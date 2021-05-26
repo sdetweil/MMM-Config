@@ -997,6 +997,9 @@ function find_empty_arrays(obj, stack, hash) {
       if (debug) console.log(" object is an array, length=" + obj.length);
       for (const o of obj) {
         if (typeof o === "object" && !Array.isArray(o)) {
+          for (let i in stack) {
+            if (stack[i].includes(".")) stack[i] = trimit(stack[i]);
+          }
           let t = stack.join(".");
           if (!form_object_correction.includes(t)) {
             if (t.includes(".[]")) t = t.replace(".[]", "[]");
@@ -1009,10 +1012,10 @@ function find_empty_arrays(obj, stack, hash) {
       }
       //console.log("adding "+stack.join('.'))
       let last = stack.slice(-1).toString();
-      if (last.startsWith(".")) {
-        if (debug) console.log("last=" + last + " startsWith .");
+      if (last.includes(".")) {
+        if (debug) console.log("last=" + last + " includes .");
         stack.pop();
-        last = last.replace(/\./g, "");
+        last = last.replace(new RegExp("\\.", "g"), special_variable_name_char);
         stack.push(last);
       }
       let t = stack.join(".");
