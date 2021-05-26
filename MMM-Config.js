@@ -91,9 +91,10 @@ Module.register("MMM-Config", {
     // if user supplied message text in its module config, use it
     if (this.config.hasOwnProperty("url")) {
       if (
-        config.address !== "localhost" &&
-        config.ipWhitelist &&
-        config.ipWhitelist.length == 0
+        config.address.toLowerCase() !== "localhost"
+        // &&
+        // config.ipWhitelist &&
+        // config.ipWhitelist.length == 0
       ) {
         // using text from module config block in config.js
         //wrapper.innerText = this.config.message;
