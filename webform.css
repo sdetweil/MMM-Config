@@ -34,13 +34,7 @@
    /* all: revert2 */
 }
 
-/* used to set the initial state of the modules */
-.module_disabled  legend {
-  color: red;
-}
-.module_enabled   legend {
-  color: blue;
-}
+
 
 div ~ fieldset >legend {
     color: #333 !important;
@@ -64,3 +58,14 @@ body {
 background-color: lightgray;
 }
 
+/* used to set the initial state of the modules */
+.module_disabled  legend {
+  color: red ;
+}
+.module_enabled   legend {
+  color: blue ;
+}
+
+.possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item 1"] {
+  display: none;
+}
