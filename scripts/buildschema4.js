@@ -2,7 +2,7 @@ const path = require("path");
 const defines = require(process.argv[2]);
 const merge = require("lodash").merge;
 const interfaces = require("os").networkInterfaces();
-const save_jsonform_info = false;
+var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
@@ -1405,6 +1405,9 @@ function processModule(schema, form, value, defines, module_name) {
         JSON.stringify(multi_modules, tohandler, 2)
     );
 
+  //
+  //  save the constructed form definition for the properties
+  //
   writeJsonFormInfoFile(module_name, prefix, module_form_items, temp_value);
 
   if (checkMulti(module_name)) {
@@ -1444,9 +1447,7 @@ function processModule(schema, form, value, defines, module_name) {
     if (debug)
       console.log("module form items=" + JSON.stringify(mform, tohandler, 2));
   }
-  //
-  //	save the constructed form definition for the properties
-  //
+
   form[0].items[1].items.push(mform);
 }
 
@@ -1467,9 +1468,11 @@ function writeJsonFormInfoFile(
     // check to make sure the module folder exists
     if (fs.existsSync(module_folder)) {
       // it does
+      let x = {};
+      x[module_name] = schema_info;
       // build the file structure
       let jsonform_info = {
-        schema: schema_info,
+        schema: x,
         form: form_info,
         value: value_info[module_name]
       };
