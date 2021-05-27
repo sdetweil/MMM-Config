@@ -15,6 +15,7 @@ const networkInterfaces = [];
 const languages = [];
 const sort = false;
 const special_variable_name_char = "^";
+const module_define_name_special_char = "ς";
 const module_jsonform_info_name = "schema.json";
 var schema = {};
 var form = [
@@ -250,7 +251,8 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
 
   let module_name = module_definition
     .slice(0, module_definition.lastIndexOf("_"))
-    .replace(/_/g, "-");
+    .replace(/_/g, "-")
+    .replace(new RegExp("\\" + module_define_name_special_char, "g"), "_");
 
   if (debug)
     console.log(
@@ -268,32 +270,46 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   // get the name of the module schema file
   let fn = path.join(
     __dirname,
+    // "../../MagicMirror/modules",
     "../..",
     module_name,
     module_jsonform_info_name
   );
+  if (debug) console.log("looking for module's schema file=" + fn);
   // if it exists
-  if (false && fs.existsSync(fn)) {
+  if (true && fs.existsSync(fn)) {
+    moduleIndex[module_name] = 0;
+
+    if (debug) console.log("processing using the schema file");
+
     // lets use it
     let jsonform_info = require(fn);
     // if this module supports multi-instance
     if (checkMulti(module_name)) {
       // add the label field
-      jsonform_info.schema.properties["label"] = {
+      jsonform_info.schema[module_name].properties["label"] = {
         type: "string",
         title: "label",
-        default: module_name + " index {{idx}}"
+        default: module_name + " instance {{idx}}"
       };
       // put the info in the right place
-      schema[module_name] = { type: "array", items: jsonform_info.schema };
+      schema[module_name] = {
+        type: "array",
+        items: jsonform_info.schema[module_name]
+      };
 
-      temp_value[module_name].push(jsonform_info.value);
+      //if(temp_value[module_name] == undefined)
+      //  temp_value[module_name] = []
+      /*if(jsonform_info.value.index == undefined)
+        jsonform_info.value.index=0
+      if(jsonform_info.value.label === undefined)
+        jsonform_info.value.label="instance 1" */
+      temp_value[module_name] = fixVariableNames(jsonform_info.value);
 
       let mform = clone(module_form_template);
       mform.title = module_name;
 
       parents_parent = "parent=parent.parent().closest('fieldset')";
-      let module_form_items = [];
       // if this is the disabled element in the form
       if (jsonform_info.form[0].key === module_name + "." + "disabled") {
         // update the onchange handler for the array
@@ -306,8 +322,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
           parents_parent +
           ";var allchecked=parent.find(\"input[name$='disabled']:checked\").length;var count=parent.find(\"input[name$='disabled']\").length;if(selection===true && allchecked!==count){selection=false};setc(parent,selection);}";
       }
-
-      module_form_items.push({
+      jsonform_info.form.splice(3, 0, {
         key: module_name + "[]." + "label",
         valueInLegend: true,
         onKeyUp:
@@ -338,13 +353,37 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       );
 
       form[0].items[1].items.push(mform);
+      checkObjects(
+        module_name,
+        schema[module_name].items.properties.config,
+        defines.defined_config[module_definition]
+      );
     } else {
       // put the info in the right place
-      schema[module_name] = jsonform_info.schema;
+      schema[module_name] = jsonform_info.schema[module_name];
+      parents_parent = "";
+      // if this is the disabled element in the form
+      if (jsonform_info.form[0].key === module_name + "." + "disabled") {
+        // update the onchange handler for the array
+        jsonform_info.form[0].onChange =
+          "(evt,node)=>{function setc(p,s){p.find('legend').first().css('color',s?'" +
+          module_disabled_color +
+          "':'" +
+          module_enabled_color +
+          "')};var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('fieldset');setc(parent,selection);" +
+          parents_parent +
+          ";var allchecked=parent.find(\"input[name$='disabled']:checked\").length;var count=parent.find(\"input[name$='disabled']\").length;if(selection===true && allchecked!==count){selection=false};setc(parent,selection);}";
+      }
       form[0].items[1].items.push(jsonform_info.form);
-      temp_value[module_name] = jsonform_info.value;
+      temp_value[module_name] = fixVariableNames(jsonform_info.value);
+      checkObjects(
+        module_name,
+        schema[module_name].properties.config,
+        defines.defined_config[module_definition]
+      );
     }
   } else {
+    if (debug) console.log("processing by construction");
     // process for this module
     processModule(
       schema,
@@ -459,7 +498,7 @@ for (let m of defines.config.modules) {
     // merge the values from defaults and actual
     let tt = merge(temp_value[m.module], x);
     // delete the defined version, this will help us know what is not used
-    delete temp_value[m.module];
+    //delete temp_value[m.module];
     // mark it as in config if not already
     tt.inconfig = "1";
     if (debug) console.log(" tt=" + JSON.stringify(tt, tohandler, 2));
@@ -481,6 +520,7 @@ for (let m of defines.config.modules) {
     // watch out for spaces in position names
     // old habits
     tt.position = tt.position.replace(" ", "_");
+    tt = fixVariableNames(tt);
     // if this is a module that supports multi instance
     if (checkMulti(m.module)) {
       // if no index field set
@@ -490,7 +530,7 @@ for (let m of defines.config.modules) {
       // if no user label for this instance
       if (tt.label === undefined)
         // set it
-        tt.label = "instance " + tt.index;
+        tt.label = "instance " + (tt.index + 1);
       // add it to the arra for this module
       value[m.module].push(clone(tt));
     }
@@ -510,8 +550,8 @@ for (let m of defines.config.modules) {
       m.order = "*";
     }
     m.inconfig = "1";
-    if (checkMulti(m.module)) value[m.module].push(clone(m));
-    else value[m.module] = clone(m);
+    if (checkMulti(m.module)) value[m.module].push(fixVariableNames(clone(m)));
+    else value[m.module] = fixVariableNames(clone(m));
   }
 }
 // free memory
@@ -529,9 +569,15 @@ Object.keys(temp_value).forEach((unused_module) => {
         " to value section =" +
         JSON.stringify(temp_value[unused_module], tohandler, 2)
     );
-  if (checkMulti(unused_module))
-    value[unused_module].push(clone(temp_value[unused_module]));
-  else value[unused_module] = clone(temp_value[unused_module]);
+  let c = Object.keys(value[unused_module]).length;
+  if (c === 0) {
+    if (checkMulti(unused_module))
+      value[unused_module].push(
+        fixVariableNames(clone(temp_value[unused_module]))
+      );
+    else
+      value[unused_module] = fixVariableNames(clone(temp_value[unused_module]));
+  }
 });
 
 //
@@ -913,6 +959,84 @@ console.log("{" + cc + "}");
 //
 // functions after here
 //
+
+//
+// module info loaded via schema file
+// check to see if schema matches definition
+// empty objects (we don't know what is in here) converted to arrays for web handling
+//
+function checkObjects(module_name, schema, define) {
+  function findVar(name, schema) {
+    if (schema[name]) {
+      return schema[name].type;
+    }
+  }
+
+  Object.keys(define).forEach((property_name) => {
+    let dtype = getType(define[property_name], property_name, false);
+    let stype = findVar(property_name, schema.properties);
+
+    //if(stype !==dtype){
+    if (!module_name.includes(".config")) module_name = module_name + ".config";
+    switch (dtype) {
+      case "object":
+        switch (stype) {
+          case "array":
+            if (debug)
+              console.log(
+                " schema and define object types don't match " +
+                  stype +
+                  " <> " +
+                  dtype +
+                  " for " +
+                  module_name +
+                  ".config." +
+                  property_name
+              );
+            convertedObjects.push(module_name + "." + property_name);
+            // if we haven't already pushed the parent
+            if (!empty_objects.includes(module_name + "." + property_name))
+              // do it now
+              empty_objects.push(module_name + "." + property_name);
+            break;
+          case "object":
+            checkObjects(
+              module_name + ".config." + property_name,
+              schema.properties[property_name],
+              define[property_name]
+            );
+        }
+        break;
+    }
+    // }
+  });
+}
+
+//
+//  fixVariableName(value_section)
+//
+function fixVariableNames(value_section) {
+  let str = JSON.stringify(value_section, tohandler);
+  let index = 0;
+  while ((index = str.indexOf('":', index)) > -1) {
+    let eos = index; // str.lastIndexOf('"', index)
+    let x = str.slice(eos, eos + 1);
+    if (x === '"') {
+      let sos = str.lastIndexOf('"', eos - 1);
+      let savestring = (workstring = str.slice(sos, eos + 1));
+      index = eos + 2;
+      if (!workstring.includes("/") && workstring.includes(".")) {
+        workstring = trimit(workstring);
+        str = str.replace(savestring, workstring);
+      }
+    } else index = eos + 2;
+  }
+  return JSON.parse(str, fromhandler);
+}
+
+//
+// check if this module is in the list that supports multiple concurrent instances
+//
 function checkMulti(module_name) {
   let result = false;
   for (let m of multi_modules)
@@ -1199,7 +1323,9 @@ function copyConfig(defines, schema, form) {
 }
 
 function clone(obj) {
-  return JSON.parse(JSON.stringify(obj, tohandler), fromhandler);
+  let str = JSON.stringify(obj, tohandler);
+  let o = JSON.parse(str, fromhandler);
+  return o;
 }
 
 function getType(value, property, wasObject) {
@@ -1241,6 +1367,7 @@ function processModule(schema, form, value, defines, module_name) {
   // set its default form values
   temp_value[module_name] = {
     disabled: true,
+
     module: module_name,
     position: "none",
     order: "*",
@@ -1414,11 +1541,11 @@ function processModule(schema, form, value, defines, module_name) {
   writeJsonFormInfoFile(module_name, prefix, module_form_items, temp_value);
 
   if (checkMulti(module_name)) {
-    moduleIndex[module_name] = 1;
+    moduleIndex[module_name] = 0;
     prefix.properties["label"] = {
       type: "string",
       title: "label",
-      default: module_name + " index {{idx}}"
+      default: module_name + " instance {{idx}}"
     };
     schema[module_name] = { type: "array", items: prefix };
 
@@ -1475,6 +1602,9 @@ function writeJsonFormInfoFile(
       let form_info_clone = clone(form_info);
       for (let i in form_info_clone) {
         let item = form_info_clone[i];
+        if (item.key !== undefined && item.key.endsWith(".disabled")) {
+          delete item.onChange;
+        }
         if (item.key !== undefined && item.key.endsWith(".label")) {
           form_info_clone.splice(i, 1);
           break;

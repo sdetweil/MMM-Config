@@ -2,6 +2,7 @@ const path = require("path");
 let debug = false;
 let add_helper_vars = false;
 let counter = 0;
+const module_define_name_special_char = "ς";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
@@ -117,7 +118,10 @@ function process_main(lines, name) {
       // if the line as a brace, toss it
       if (line.startsWith("{")) line = line.slice(1);
       // make it specific to the module
-      line = name.replace(/-/g, "_") + "_" + line.trim();
+      line =
+        name.replace(/_/g, module_define_name_special_char).replace(/-/g, "_") +
+        "_" +
+        line.trim();
       if (debug) console.log("start line=" + line);
       if (name.includes(" ")) {
         line = line.replace(
