@@ -268,7 +268,9 @@ module.exports = NodeHelper.create({
     return !isNaN(parseFloat(n)) && isFinite(parseInt(n));
   },
   mergeModule(config, data) {
-    return _.assign(config, _.pick(data, _.keys(config)));
+    let keys = _.keys(config);
+    if (!keys.includes("disabled")) keys.push("disabled");
+    return _.assign(config, _.pick(data, keys));
   },
 
   fixobject_name: function (object, key, newname) {
@@ -775,14 +777,18 @@ module.exports = NodeHelper.create({
       let x1 = detailedDiff(cfg.config, r["config"]);
       let x2 = detailedDiff(x, x1);
     }
+    // remove any variable with leading . in the name (compliments has one)
     //console.log("data new to old diff ="+JSON.stringify(x,' ',2)+ "\n\n old to new ="+JSON.stringify(x1,' ',2)+ "\n\n delta to original ="+JSON.stringify(x2,' ',2))
     // convert the data object toa string, so we can edit it
     // make it look more like what is normally present
     let xx = JSON.stringify(r, self.tohandler, 2)
       // make a couple special strings harder to find
+      // first two are ipWhitelist
       .replace(/::/g, "=:=")
       // so we can restore them later
-      .replace(/f:/g, "~~");
+      .replace(/f:/g, "~~")
+      // MMM-FlipClock with 'seperator: ":"'
+      .replace(/: ":"/g, "^::^");
 
     // get the line that has a quoted keyword on the left of colon
     // old = (.*[^:])\:.*
@@ -812,7 +818,8 @@ module.exports = NodeHelper.create({
     xx = xx
       .replace(new RegExp("config:"), "var config =")
       .replace(/=:=/g, "::")
-      .replace(/~~/g, "f:");
+      .replace(/~~/g, "f:")
+      .replace(/\^::\^/g, ': ":"');
     // find any function invocations (parms)=> ...
     // loop thru them to take out embedded text return/nl, and escaped quotes
     let matches = xx.match(/(: "\(|: "function\().*$/gm);

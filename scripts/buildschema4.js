@@ -298,12 +298,6 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         items: jsonform_info.schema[module_name]
       };
 
-      //if(temp_value[module_name] == undefined)
-      //  temp_value[module_name] = []
-      /*if(jsonform_info.value.index == undefined)
-        jsonform_info.value.index=0
-      if(jsonform_info.value.label === undefined)
-        jsonform_info.value.label="instance 1" */
       temp_value[module_name] = fixVariableNames(jsonform_info.value);
 
       let mform = clone(module_form_template);
