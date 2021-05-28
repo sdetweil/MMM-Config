@@ -10,6 +10,7 @@ if (process.argv.length > 3 && process.argv[3] === "saveform")
   save_jsonform_info = true;
 
 let multi_modules = [];
+let schema_present = {};
 let moduleIndex = {};
 const networkInterfaces = [];
 const languages = [];
@@ -266,7 +267,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     value[module_name] = [];
   // one
   else value[module_name] = {};
-
+  schema_present[module_name] = false;
   // get the name of the module schema file
   let fn = path.join(
     __dirname,
@@ -284,6 +285,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
 
     // lets use it
     let jsonform_info = require(fn);
+    schema_present[module_name] = true;
     // if this module supports multi-instance
     if (checkMulti(module_name)) {
       // add the label field
@@ -773,8 +775,16 @@ form_object_correction.forEach((key) => {
       if (!variable_definition.length) {
         // then we can fixup the form to add the editor capabilities
         if (debug) console.log("found empty array item, key=" + key);
-        updateFormElement(form[0].items[1].items, key, form_code_block);
-        updateValueElement(value, key);
+        if (!schema_present[key.split(".")[0].split("[")[0]]) {
+          updateFormElement(form[0].items[1].items, key, form_code_block);
+          updateValueElement(value, key);
+        } else {
+          if (debug)
+            console.log(
+              "schema file present for module=" +
+                key.split(".")[0].split("[")[0]
+            );
+        }
       } else {
         if (debug) console.log("array not empty key=" + key);
       }
