@@ -152,6 +152,34 @@ $(function () {
       $("#result").html('<form id="result-form" class="form-vertical"></form>');
       // insert the new form
       $("#result-form").jsonForm(data);
+
+      // delete entry
+      $(
+        "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-deletelast "
+      ).click((event) => {
+        let m = $(event.target)
+          .closest(".module_entry")
+          .children("legend")
+          .text();
+        $("[value='" + m + "']")
+          .closest(".possibly-hidden-tab")
+          .find("._jsonform-array-deleteitem")
+          .trigger("click");
+      });
+
+      // add entry
+      $(
+        "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-addmore "
+      ).click((event) => {
+        let m = $(event.target)
+          .closest(".module_entry")
+          .children("legend")
+          .text();
+        $("[value='" + m + "']")
+          .closest(".possibly-hidden-tab")
+          .find("._jsonform-array-addmore")
+          .trigger("click");
+      });
     } catch (e) {
       $("#result").html(
         "<pre>Entered content is not yet a valid" +

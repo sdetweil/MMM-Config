@@ -324,7 +324,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         onKeyUp:
           "(evt,node)=>{var value=$(evt.target).val();var parent =$(evt.target).closest('fieldset');parent.find('legend').first().text(value)}",
         onChange:
-          "(evt,node)=>{let value=$(evt.target).val();let p=$(evt.target).attr('name').split('[');let n=p[0];let i=parseInt(p[1]);$(evt.target).find(\"[value*='\"+n+\"']\").closest('.tab-pane').find('.nav-tabs').find(\"[data-idx='\"+i+\"'] >a \").text(value)}"
+          "(evt,node)=>{let value=$(evt.target).val();let p=$(evt.target).attr('name').split('[');let n=p[0];let i=parseInt(p[1]);$(\"[value*='\"+n+\"']\").closest('.tab-pane').find('.nav-tabs').find(\"[data-idx='\"+i+\"'] >a \").text(value)}"
       });
 
       mform.items.push({
@@ -875,6 +875,7 @@ empty_arrays.push("config.logLevel");
 //
 
 Object.keys(value).forEach((mv) => {
+  let extra = " module_entry";
   if (Array.isArray(value[mv])) {
     let disabled = 0;
     let mheader;
@@ -889,9 +890,9 @@ Object.keys(value).forEach((mv) => {
               formitem.key.endsWith("disabled")
             ) {
               if (mvi.disabled !== undefined && mvi.disabled === true) {
-                formitem.htmlClass = "module_disabled";
+                formitem.htmlClass = "module_disabled ";
               } else {
-                formitem.htmlClass = "module_enabled";
+                formitem.htmlClass = "module_enabled ";
               }
             }
           });
@@ -900,15 +901,17 @@ Object.keys(value).forEach((mv) => {
     });
     if (mheader) {
       mheader.htmlClass =
-        disabled === value[mv].length ? "module_disabled" : "module_enabled";
+        disabled === value[mv].length
+          ? "module_disabled" + extra
+          : "module_enabled" + extra;
     }
   } else {
     form[0].items[1].items.forEach((m) => {
       if (m.title === mv) {
         m.htmlClass =
           value[mv].disabled !== undefined && value[mv].disabled === true
-            ? "module_disabled"
-            : "module_enabled";
+            ? "module_disabled" + extra
+            : "module_enabled" + extra;
       }
     });
   }
