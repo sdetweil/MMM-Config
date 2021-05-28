@@ -270,7 +270,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   // get the name of the module schema file
   let fn = path.join(
     __dirname,
-    // "../../MagicMirror/modules",
+    //"../../MagicMirror/modules",
     "../..",
     module_name,
     module_jsonform_info_name
@@ -354,7 +354,9 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       );
     } else {
       // put the info in the right place
-      schema[module_name] = jsonform_info.schema[module_name];
+      schema[module_name] = clone(jsonform_info.schema[module_name]);
+      let mform = clone(module_form_template);
+      mform.title = module_name;
       parents_parent = "";
       // if this is the disabled element in the form
       if (jsonform_info.form[0].key === module_name + "." + "disabled") {
@@ -368,7 +370,9 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
           parents_parent +
           ";var allchecked=parent.find(\"input[name$='disabled']:checked\").length;var count=parent.find(\"input[name$='disabled']\").length;if(selection===true && allchecked!==count){selection=false};setc(parent,selection);}";
       }
-      form[0].items[1].items.push(jsonform_info.form);
+      mform.items = jsonform_info.form;
+
+      form[0].items[1].items.push(mform);
       temp_value[module_name] = fixVariableNames(jsonform_info.value);
       checkObjects(
         module_name,
@@ -742,8 +746,15 @@ form_object_correction.forEach((key) => {
   let module_define_name = "";
   let i = t[0].indexOf("[");
   if (i > 0) {
-    module_define_name = t[0].slice(0, i).replace(/-/g, "_") + "_defaults";
-  } else module_define_name = t[0].replace(/-/g, "_") + "_defaults";
+    module_define_name =
+      t[0]
+        .slice(0, i)
+        .replace(/_/g, module_define_name_special_char)
+        .replace(/-/g, "_") + "_defaults";
+  } else
+    module_define_name =
+      t[0].replace(/_/g, module_define_name_special_char).replace(/-/g, "_") +
+      "_defaults";
   if (debug)
     console.log(
       "looking for define info for module=" + module_define_name + " key=" + key
@@ -761,9 +772,11 @@ form_object_correction.forEach((key) => {
       // if it has NOTHING inside
       if (!variable_definition.length) {
         // then we can fixup the form to add the editor capabilities
-        if (debug) console.log("found item, key=" + key);
+        if (debug) console.log("found empty array item, key=" + key);
         updateFormElement(form[0].items[1].items, key, form_code_block);
         updateValueElement(value, key);
+      } else {
+        if (debug) console.log("array not empty key=" + key);
       }
     }
   }
@@ -1064,8 +1077,14 @@ function updateValueElement(data, key) {
 function updateFormElement(data, key, new_attributes) {
   let t = key.split(".");
   let left = t.shift().split("[");
+  if (debug)
+    console.log(
+      " trying to update field=" + key + " with editor form definition"
+    );
   for (let form_entry of data) {
+    //
     if (form_entry.title === left[0]) {
+      if (debug) console.log(" found the item we are looking for =" + left[0]);
       if (t.length) {
         let form_pointer = form_entry.items;
 
@@ -1075,6 +1094,8 @@ function updateFormElement(data, key, new_attributes) {
         updateFormElement(form_pointer, t.join("."), new_attributes);
         return;
       }
+      if (debug)
+        console.log(" updating the item we are looking for =" + left[0]);
       form_entry["draggable"] = false;
       Object.keys(new_attributes).forEach((key) => {
         form_entry.items[0][key] = new_attributes[key];
@@ -1140,6 +1161,10 @@ function find_empty_arrays(obj, stack, hash) {
       if (debug) console.log(" array name=" + t);
       if (t.endsWith(".[]")) t = t.replace(".[]", "[]");
       if (t.includes(".[]")) t = t.replace(".[]", "");
+      if (!form_object_correction.includes(t)) {
+        form_object_correction.push(t);
+        if (debug) console.log("saving key for editor conversion =" + t);
+      }
       for (let i in hash) {
         if (hash[i].startsWith(t)) {
           if (!hash.includes(t)) hash.splice(i, 0, t);
