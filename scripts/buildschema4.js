@@ -93,6 +93,21 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
       "../modules_list.txt"
     );
 }
+//
+//  lets auto detect multiple instances of the same module
+//  being used
+//
+let module_instance_counter = {};
+defines.config.modules.forEach((module_instance) => {
+  if (module_instance_counter[module_instance.module] === undefined)
+    module_instance_counter[module_instance.module] = 0;
+  module_instance_counter[module_instance.module]++;
+});
+Object.keys(module_instance_counter).forEach((m) => {
+  if (module_instance_counter[m] > 1) {
+    if (!multi_modules.includes(m)) multi_modules.push(m);
+  }
+});
 
 if (fs.existsSync(path.join(__dirname, "editorinfo.json"))) {
   let editor_setup = require(path.join(__dirname, "editorinfo.json"));
@@ -431,7 +446,7 @@ if (!sort) {
 // add the positions form
 form.push(module_position_form);
 // add a push button to submit the form
-if (0) {
+if (true) {
   form.push({
     type: "submit",
     title: "Save, Create config",
@@ -468,6 +483,10 @@ schema["positions"] = module_position_schema;
 let installed_modules = clone(temp_value);
 // loop thru the config.js modules list
 for (let m of defines.config.modules) {
+  if (value[m.module] === undefined) {
+    if (checkMulti(m.module)) value[m.module] = [];
+    else value[m.module] = {};
+  }
   // if we have data in the value section
   if (installed_modules[m.module] !== undefined) {
     if (debug)
@@ -496,7 +515,7 @@ for (let m of defines.config.modules) {
           JSON.stringify(x, tohandler, 2)
       );
     // merge the values from defaults and actual
-    let tt = merge(temp_value[m.module], x);
+    let tt = merge(clone(temp_value[m.module]), x);
     // delete the defined version, this will help us know what is not used
     //delete temp_value[m.module];
     // mark it as in config if not already
@@ -577,6 +596,28 @@ Object.keys(temp_value).forEach((unused_module) => {
       );
     else
       value[unused_module] = fixVariableNames(clone(temp_value[unused_module]));
+  }
+});
+
+Object.keys(value).forEach((item) => {
+  // if this is an array of modules
+  if (Array.isArray(value[item])) {
+    value[item].sort(function (a, b) {
+      // compare titles, function for clarity
+      function sortit(x, y) {
+        if (a.index < b.index) {
+          return -1;
+        }
+        if (b.index > a.index) {
+          return 1;
+        }
+        return 0;
+      }
+      // get the difference
+      let r = sortit(a, b);
+      // return results to sort
+      return r;
+    });
   }
 });
 
@@ -1132,7 +1173,7 @@ function get_define_info(data, key) {
   // last key part now
   return data[left];
 }
-// get the module properties from the config.js entry
+/* // get the module properties from the config.js entry
 function getConfigModule(m, source) {
   //console.log("looking for "+m.module)
   for (let x of source) {
@@ -1142,7 +1183,7 @@ function getConfigModule(m, source) {
     }
   }
   return null;
-}
+} */
 function find_empty_arrays(obj, stack, hash) {
   if (typeof obj == "object") {
     if (Array.isArray(obj)) {
@@ -1572,6 +1613,7 @@ function processModule(schema, form, value, defines, module_name) {
   //
   writeJsonFormInfoFile(module_name, prefix, module_form_items, temp_value);
 
+  if (debug) console.log("checking multi");
   if (checkMulti(module_name)) {
     moduleIndex[module_name] = 0;
     prefix.properties["label"] = {

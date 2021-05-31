@@ -132,12 +132,23 @@ module.exports = NodeHelper.create({
   },
 
   // get the module properties from the config.js entry
-  getConfigModule: function (m, source) {
+  getConfigModule: function (m, source, index) {
     // module name is not a direct key
+    let i = -1;
     for (let x of source) {
       if (x.module === m) {
-        //console.log(" getconf="+ x.module)
-        return x;
+        // if we didn't care which module instance
+        // return first
+        // else return instance of matching index (if any)
+        i++;
+        if (
+          index === -1 ||
+          (m.index !== undefined && m.index === index) ||
+          i === index
+        ) {
+          //console.log(" getconf="+ x.module)
+          return x;
+        }
       }
     }
     return null;
@@ -216,15 +227,24 @@ module.exports = NodeHelper.create({
     if (key && key.includes(".")) {
       let r = key.split(".");
       let left = r.shift().replace(/' '/g, ".");
-      if (debug)
-        console.log("object[" + left + "]=" + JSON.stringify(object[left]));
-      if (type === "array" || r.length > 1 || object[left] !== undefined) {
-        if (object[left] != undefined) {
-          return this.object_from_key(object[left], r.join("."), type);
+      let index = -1;
+      let li = left.split("[");
+      left = li[0];
+      let obj = object[left];
+      if (li.length > 1) {
+        index = parseInt(li[1]);
+        obj = obj[index];
+      }
+      if (debug) console.log("object[" + left + "]=" + JSON.stringify(obj));
+      if (type === "array" || r.length > 1 || obj !== undefined) {
+        if (obj != undefined) {
+          return this.object_from_key(obj, r.join("."), type);
         } else key = left;
       } else key = left;
     }
-    if (debug) console.log(type + " object from key=" + JSON.stringify(object));
+
+    if (debug)
+      console.log(type + " object from key=" + JSON.stringify(object[key]));
     //console.log("checking item "+key+" in "+JSON.stringify(object, ' ',2))
     if (object[key] === undefined)
       //----------mykle
@@ -270,6 +290,7 @@ module.exports = NodeHelper.create({
   mergeModule(config, data) {
     let keys = _.keys(config);
     if (!keys.includes("disabled")) keys.push("disabled");
+    if (!keys.includes("label")) keys.push("label");
     return _.assign(config, _.pick(data, keys));
   },
 
@@ -344,13 +365,17 @@ module.exports = NodeHelper.create({
     return datasource[left];
   },
 
+  //
   // handle form submission from web browser
+  //
   process_submit: async function (data, self, socket) {
     let cfg = require(__dirname + "/defaults.js");
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
     if (debug) console.log("\nstart processing form submit\n");
+
+    console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
 
     if (1) {
       if (debug)
@@ -367,19 +392,21 @@ module.exports = NodeHelper.create({
         if (debug)
           console.log("processing for " + p + " parts=" + JSON.stringify(v));
         //   "MMM-AlexaControl.config.devices.devices",
-        let rr = data[v[0]];
+
         let o = self.object_from_key(data, t, "object");
         if (debug) console.log("object=" + JSON.stringify(o, " ", 2));
-        if (_.isEqual(o.object[o.key], { fribble: null })) {
+        if (o && _.isEqual(o.object[o.key], { fribble: null })) {
           if (debug) console.log("reset missing object");
           o.object[o.key] = {};
         }
-        if (debug)
+        if (debug) {
+          let rr = data[v[0]];
           console.log(
             "done 3 setting object=" +
               JSON.stringify(rr, self.tohandler, 2) +
               "\n"
           );
+        }
       });
       delete data.objects;
 
@@ -427,7 +454,7 @@ module.exports = NodeHelper.create({
           }
         }
       });
-      delete data.converted_objects;
+      delete data.convertedObjects;
 
       if (debug)
         console.log(
@@ -559,7 +586,7 @@ module.exports = NodeHelper.create({
       }
       delete data.mangled_names;
     }
-    if (0) {
+    /*  if (0) {
       // calculate diff   form input with form output
       // loop thru the defines
       Object.keys(cfg.defined_config).forEach((module_define) => {
@@ -573,15 +600,15 @@ module.exports = NodeHelper.create({
           data[module_name].config
         );
 
-        /*if(this.clean_diff(diff))
-							console.log("object equal for module="+module_name)
-						else
-							console.log("define compare for module="+module_name+"="+JSON.stringify(diff,' ',2)) */
+      //  if(this.clean_diff(diff))
+		  //  	console.log("object equal for module="+module_name)
+			//	else
+			//		console.log("define compare for module="+module_name+"="+JSON.stringify(diff,' ',2))
       });
 
       // compare returned and cleaned up data with the module defines
       for (const m of Object.keys(self.config.data.value)) {
-        let cfgmodule = self.getConfigModule(m, cfg.config.modules);
+        let cfgmodule = self.getConfigModule(m, cfg.config.modules); will fail
         //console.log (m !== 'config' && "module "+m+" disabled a="+self.config.data.value[m]['disabled']+" b="+this.getConfigModule(m, cfg.modules)['disabled']+" c="+data[m]['disabled'])
         if (
           m !== "config" &&
@@ -597,7 +624,7 @@ module.exports = NodeHelper.create({
           //	console.log("diff for module="+m+" = "+JSON.stringify(x))
         }
       }
-    }
+    } */
 
     // setup the final data to write out
     let r = {};
@@ -615,35 +642,77 @@ module.exports = NodeHelper.create({
 
     // loop thru the form data (has all modules)
     // copy the modules into their position sections
+    let mm_index = {};
     for (let module_name of Object.keys(data)) {
+      // fix this for multiple instances
       // don't copy config info
-      if (module_name !== "config") {
-        let merged_module = null;
+      switch (module_name) {
+        case "config":
+        case "positions":
+          continue;
+          break;
+        default:
+          break;
+      }
+      if (mm_index[module_name] == undefined) {
+        if (Array.isArray(data[module_name])) mm_index[module_name] = 0;
+        else mm_index[module_name] = -1;
+      }
+      let merged_module = null;
+      let module_form_data;
+
+      while (true) {
+        switch (mm_index[module_name]) {
+          case -1:
+            module_form_data = data[module_name];
+            break;
+          default:
+            // get the data and increment the counter.
+            // remember that.. will have to adjust later
+            module_form_data = data[module_name][mm_index[module_name]++];
+        }
         // default is what the form has
-        let module_form_data = (merged_module = data[module_name]);
+        merged_module = module_form_data;
         if (debug)
           console.log(
-            "checking for modules=" +
+            "checking for module=" +
               module_name +
               " in config.js , have form data=" +
               JSON.stringify(module_form_data, self.tohandler, 2)
           );
         // find the config.js entry, if present
-        let module_in_config = self.getConfigModule(
-          module_name,
-          cfg.config.modules
-        );
         if (debug)
           console.log(
-            "looking for modules=" +
+            "going to get entry for " +
               module_name +
-              " in config.js , have config data=" +
-              JSON.stringify(module_in_config, self.tohandler, 2)
+              " from config.js with index=" +
+              mm_index[module_name]
           );
-
+        let module_in_config = self.getConfigModule(
+          module_name,
+          cfg.config.modules,
+          mm_index[module_name] - 1 // have to adjust index
+        );
         // if present, merge from the form
         if (module_in_config) {
+          // don't know how we got here
+          // data in value section, so config data present
+          // name (data object key is present)
+          // but no data..
+          if (module_form_data === undefined)
+            // copy config entry to form entry
+            module_form_data = module_in_config;
+          if (debug)
+            console.log(
+              "looking for modules=" +
+                module_name +
+                " in config.js , have config data=" +
+                JSON.stringify(module_in_config, self.tohandler, 2)
+            );
+
           if (module_in_config.order === undefined) {
+            if (module_form_data.order === undefined)
+              module_form_data.order = "*";
             if (debug)
               console.log(
                 "existing config does NOT have order set, copying from form =" +
@@ -672,14 +741,17 @@ module.exports = NodeHelper.create({
             );
         } else {
           if (debug)
-            console.log("module " + module_name + " not in config.js, adding ");
+            console.log(
+              "module " + module_name + " not in config.js, might be adding "
+            );
         }
 
         // update the results
         if (merged_module) {
           if (debug)
             console.log(
-              "have a module to add to new config.js =" + merged_module.module
+              "might have a module to add to new config.js =" +
+                merged_module.module
             );
           // if the module WAS in config or is enabled = not disabled
           // save it for keeping in/adding to config
@@ -694,6 +766,14 @@ module.exports = NodeHelper.create({
                   " or is disabled=" +
                   merged_module.disabled
               );
+            // if this module is a multiple
+            if (mm_index[module_name] != -1) {
+              // if the index was not in the merged result
+              // 1st or added
+              if (merged_module.index == undefined)
+                // set it
+                merged_module.index = mm_index[module_name];
+            }
             let temp = { module: module_name };
             for (let module_property of Object.keys(merged_module)) {
               temp[module_property] = merged_module[module_property];
@@ -710,13 +790,20 @@ module.exports = NodeHelper.create({
                   " added for config in position=" +
                   merged_module.position
               );
+          } else {
+            if (debug)
+              console.log(
+                "module " + module_name + " wasn't in config, skipping "
+              );
           }
         }
-      } else {
-        if (module_name !== config) {
-          if (debug) console.log(" module disabled=" + module_name);
-        }
-      }
+        if (
+          mm_index[module_name] === -1 ||
+          mm_index[module_name] > data[module_name].length
+        )
+          break;
+        // otherwise loop back to top
+      } // end of while
     }
 
     // sort the modules in position by order
@@ -903,9 +990,9 @@ module.exports = NodeHelper.create({
     // false for testing data handling
     if (doSave) {
       // rename curent using ist last mod date as part of the extension name
-      fs.renameSync(oc, oc + "." + d);
+      //fs.renameSync(oc, oc + "." + d);
       // write out the new config.js
-      fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
+      fs.writeFile(oc + "1", xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
           console.error(err);
         } else {
@@ -923,6 +1010,9 @@ module.exports = NodeHelper.create({
       });
     }
   },
+  // end of form post handling
+
+  // setup remote handling
 
   remote_start: function (self) {
     const app = express();
