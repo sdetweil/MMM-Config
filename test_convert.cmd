@@ -71,7 +71,7 @@ if %config_lastsaved% neq %config_lastchanged%  (set changed=1)
 if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 	if %changed% equ 1 (
-	   node scripts\buildschema3.js %defaults_file% >%FILE%
+	   node scripts\buildschema4.js %defaults_file% >%FILE%
        for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
 	)
 
