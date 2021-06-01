@@ -784,6 +784,7 @@ multi_modules.forEach((module_name) => {
 //
 
 form_object_correction.forEach((key) => {
+  if (debug) console.log("form_object_correction key=" + key);
   let temp_key = key.replace(".config", "");
   let t = temp_key.split(".");
   let module_define_name = "";
@@ -817,7 +818,7 @@ form_object_correction.forEach((key) => {
         // then we can fixup the form to add the editor capabilities
         if (debug) console.log("found empty array item, key=" + key);
         if (!schema_present[key.split(".")[0].split("[")[0]]) {
-          updateFormElement(form[0].items[1].items, key, form_code_block);
+          updateFormElement(form[0].items[1].items, key, form_code_block, true);
           updateValueElement(value, key);
         } else {
           if (debug)
@@ -1108,6 +1109,7 @@ function checkMulti(module_name) {
   return result;
 }
 function updateValueElement(data, key) {
+  if (debug) console.log("updating value element with key=" + key);
   let t = key.split(".");
   let left = t.shift();
   if (t.length) {
@@ -1121,6 +1123,11 @@ function updateValueElement(data, key) {
     return;
   }
   let temparray = [];
+  if (debug)
+    console.log(
+      "see data for key=" + key + " data =" + JSON.stringify(data, tohandler, 2)
+    );
+  if (Array.isArray(data)) data = data[0];
   data[left].forEach((item) => {
     let temp_string = JSON.stringify(item, tohandler, 2);
     temp_string = temp_string.replace(/\n/g, "");
@@ -1128,24 +1135,51 @@ function updateValueElement(data, key) {
   });
   data[left] = temparray;
 }
-function updateFormElement(data, key, new_attributes) {
+function updateFormElement(data, key, new_attributes, top_level) {
   let t = key.split(".");
   let left = t.shift().split("[");
   if (debug)
     console.log(
       " trying to update field=" + key + " with editor form definition"
     );
+
   for (let form_entry of data) {
     //
     if (form_entry.title === left[0]) {
-      if (debug) console.log(" found the item we are looking for =" + left[0]);
-      if (t.length) {
-        let form_pointer = form_entry.items;
+      if (debug)
+        console.log(
+          " found the item we are looking for " +
+            form_entry.title +
+            " = " +
+            JSON.stringify(form_entry, tohandler, 2)
+        );
+      if (t.length || form_entry.type === "array") {
+        let form_pointer; // = form_entry.items;
 
-        if (checkMulti(left[0])) {
+        if (top_level && checkMulti(left[0])) {
+          if (debug) console.log("recursing after top level=" + left[0]);
           form_pointer = form_entry.items[0].items[0].items;
+        } else if (
+          form_entry.type === "array" ||
+          form_entry.type === "section" ||
+          form_entry.type === "fieldset"
+        ) {
+          if (debug) console.log(" form field = array =" + left[0]);
+          if (!t.length) t.push(left[0]);
+          form_pointer = form_entry.items;
         }
-        updateFormElement(form_pointer, t.join("."), new_attributes);
+        if (form_pointer.type === "fieldset") {
+          if (debug) console.log(" form field = fieldset =" + left[0]);
+          form_pointer = form_pointer.items;
+        }
+        if (debug)
+          console.log(
+            "updateformElement recursing for key=" +
+              t.join(".") +
+              " data=" +
+              JSON.stringify(form_pointer, tohandler, 2)
+          );
+        updateFormElement(form_pointer, t.join("."), new_attributes, false);
         return;
       }
       if (debug)
@@ -1154,6 +1188,7 @@ function updateFormElement(data, key, new_attributes) {
       Object.keys(new_attributes).forEach((key) => {
         form_entry.items[0][key] = new_attributes[key];
       });
+      if (debug) console.log("done updating form for key=" + key);
       break;
     }
   }

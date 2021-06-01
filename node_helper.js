@@ -226,11 +226,23 @@ module.exports = NodeHelper.create({
     if (debug) console.log("key = " + key);
     if (key && key.includes(".")) {
       let r = key.split(".");
+      if (debug)
+        console.log(
+          "object from key after split(.)=" + JSON.stringify(r, null, 2)
+        );
       let left = r.shift().replace(/' '/g, ".");
       let index = -1;
       let li = left.split("[");
+      if (debug)
+        console.log(
+          "object from key after left split([)=" + JSON.stringify(li, null, 2)
+        );
       left = li[0];
       let obj = object[left];
+      if (debug)
+        console.log(
+          "object from key after indexing=" + JSON.stringify(obj, null, 2)
+        );
       if (li.length > 1) {
         index = parseInt(li[1]);
         obj = obj[index];
