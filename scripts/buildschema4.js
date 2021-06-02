@@ -308,6 +308,13 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         mangled_names[k] = jsonform_info.mangled_names[k];
       });
     }
+    // if the module have pair variables
+    if (jsonform_info.pairs !== undefined) {
+      // record them in the list for correction on save
+      Object.keys(jsonform_info.pairs).forEach((k) => {
+        pairVariables[k] = 4; // indicate came from moduel schema file
+      });
+    }
     // if this module supports multi-instance
     if (checkMulti(module_name)) {
       // add the label field

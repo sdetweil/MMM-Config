@@ -1004,6 +1004,11 @@ module.exports = NodeHelper.create({
             x = xy.length;
             continue;
           }
+          if (exp_line !== undefined) {
+            while (exp_line.includes('\\\\"')) {
+              exp_line = exp_line.replace('\\\\"', '\\"');
+            }
+          }
           //save the new line
           if (debug) console.log("saving line=" + exp_line);
           if (exp_line !== "undefined") ne.push(exp_line);
