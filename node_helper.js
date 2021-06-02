@@ -898,15 +898,23 @@ module.exports = NodeHelper.create({
       // remove andy leading spaces
       t[0] = t[0].trimStart();
       //console.log("match="+match + " keyword="+t[0])
+      // don't remove quotes around keyword if it contains or starts with specific characters
       if (
+        // includes a space
         !t[0].includes(" ") &&
+        // starts with a number
         !t[0].slice(1).match(/^\d/) &&
+        // starts with .
         !t[0].startsWith('".') &&
+        // or dash
         !t[0].startsWith('"-') &&
-        !t[0].includes('"-') &&
+        // or has a dash
+        !t[0].includes("-") &&
+        // or has the special dot replacement character
         !t[0].includes("^")
       ) {
         //console.log("match 2="+match + " keyword="+t[0])
+        // remove the JSON double quotes around the keyword
         xx = xx.replace(
           // old "keyword":
           new RegExp(t[0] + ":", "g"),
@@ -922,12 +930,27 @@ module.exports = NodeHelper.create({
       .replace(/\^::\^/g, ': ":"');
     // find any function invocations (parms)=> ...
     // loop thru them to take out embedded text return/nl, and escaped quotes
-    let matches = xx.match(/(: "\(|: "function\().*$/gm);
+    // old (: "\(|: "function\().*$
+    let matches = xx.match(
+      /(:\s[\[]\s*"\(|:\s*"\(|:\s[\[]\s*"function\(|:\s*"function\().*$/gm
+    );
     if (matches) {
       matches.forEach((expression) => {
         // we have lost context of the 'line' this is on, so we can only update the text in place
-        // remove the leading ': ' found by the regex
-        let saved = (expression = expression.slice(2));
+        // remove the leading ': ' or ': [' found by the regex
+        let saved = (expression = expression.slice(
+          expression.startsWith(": [") ? 3 : 2
+        ));
+        //        if(saved.startsWith('[')){
+        //        let index=saved.indexOf('"')
+        //      saved = saved.slice(index)
+        saved = saved.trimStart();
+        expression = saved;
+        //}
+        if (expression.startsWith('"') && expression.endsWith('"')) {
+          expression = expression.slice(1, -1);
+        }
+
         if (debug)
           console.log("expression found =" + expression + " \nsaved=" + saved);
         expression = expression
@@ -936,7 +959,7 @@ module.exports = NodeHelper.create({
           // and the  retrun/nl's
           .replace(/\\r\\n/g, "\n")
           // remove the leading/trailing json quotes
-          .slice(1, -1)
+          // .slice(1, -1)
           // add newline after {
           .replace(/{ /gm, "{\n")
           // add newline before }
@@ -989,7 +1012,7 @@ module.exports = NodeHelper.create({
           console.log(" expression post fixup=" + JSON.stringify(ne, "", 2));
         expression = ne.join("\n");
 
-        if (debug) console.log("expression found =" + expression);
+        if (debug) console.log("expression saved =" + expression);
         // replace the original with the updated text
         xx = xx.replace(saved, expression);
       });
@@ -1003,7 +1026,7 @@ module.exports = NodeHelper.create({
     // false for testing data handling
     if (doSave) {
       // rename curent using ist last mod date as part of the extension name
-      //fs.renameSync(oc, oc + "." + d);
+      fs.renameSync(oc, oc + "." + d);
       // write out the new config.js
       fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
