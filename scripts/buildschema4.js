@@ -301,6 +301,13 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     // lets use it
     let jsonform_info = require(fn);
     schema_present[module_name] = true;
+    // if the module have mangled names
+    if (jsonform_info.mangled_names !== undefined) {
+      // record them in the list for correction on save
+      Object.keys(jsonform_info.mangled_names).forEach((k) => {
+        mangled_names[k] = jsonform_info.mangled_names[k];
+      });
+    }
     // if this module supports multi-instance
     if (checkMulti(module_name)) {
       // add the label field
