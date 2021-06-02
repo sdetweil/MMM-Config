@@ -903,8 +903,8 @@ module.exports = NodeHelper.create({
         !t[0].slice(1).match(/^\d/) &&
         !t[0].startsWith('".') &&
         !t[0].startsWith('"-') &&
-        !t[0].includes('"-') ^^
-        !t[0].includes('^')
+        !t[0].includes('"-') &&
+        !t[0].includes("^")
       ) {
         //console.log("match 2="+match + " keyword="+t[0])
         xx = xx.replace(
@@ -1005,7 +1005,7 @@ module.exports = NodeHelper.create({
       // rename curent using ist last mod date as part of the extension name
       //fs.renameSync(oc, oc + "." + d);
       // write out the new config.js
-      fs.writeFile(oc , xx.slice(1, -1) + closeString, "utf8", (err) => {
+      fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
           console.error(err);
         } else {
