@@ -1,3 +1,3 @@
 @rem
-
-node  scripts\buildschema4.js ..\defaults.js saveform >/dev/null
+set d=%~dp0
+node  scripts\buildschema4.js %d%defaults.js saveform >nul
