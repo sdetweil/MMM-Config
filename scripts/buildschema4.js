@@ -1209,6 +1209,7 @@ function updateFormElement(data, key, new_attributes, top_level) {
 }
 // get the item in an array
 function get_define_info(data, key) {
+  if (data === undefined) return null;
   // get the key parts
   let t = key.split(".");
   let left = t.shift().split("[");
