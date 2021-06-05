@@ -55,7 +55,12 @@
               }
             },
             "mode": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "global",
+                "positional",
+                "slides"
+              ]
             },
             "top_bar": {
               "type": "object",
