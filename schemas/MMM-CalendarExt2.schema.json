@@ -1,0 +1,874 @@
+{
+  "schema": {
+    "MMM-CalendarExt2": {
+      "type": "object",
+      "title": "properties for MMM-CalendarExt2",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MMM-CalendarExt2",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "locale": {
+              "type": "string"
+            },
+            "rotateInterval": {
+              "type": "integer"
+            },
+            "updateInterval": {
+              "type": "integer"
+            },
+            "deduplicateEventsOn": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "defaultSet": {
+              "type": "object",
+              "title": "defaultSet",
+              "properties": {
+                "calendar": {
+                  "type": "array",
+                  "items": {
+                    "type": "pair"
+                  }
+                },
+                "scene": {
+                  "type": "array",
+                  "items": {
+                    "type": "pair"
+                  }
+                },
+                "view": {
+                  "type": "array",
+                  "items": {
+                    "type": "pair"
+                  }
+                }
+              }
+            },
+            "calendars": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "maxItems": {
+                    "type": "integer"
+                  },
+                  "scanInterval": {
+                    "type": "integer"
+                  },
+                  "beforeDays": {
+                    "type": "integer"
+                  },
+                  "afterDays": {
+                    "type": "integer"
+                  },
+                  "maxIterations": {
+                    "type": "integer"
+                  },
+                  "forceLocalTZ": {
+                    "type": "boolean"
+                  },
+                  "replaceTitle": {
+                    "type": "array",
+                    "items": {
+                      "type": "pair"
+                    }
+                  },
+                  "icon": {
+                    "type": "string"
+                  },
+                  "className": {
+                    "type": "string"
+                  },
+                  "auth": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "filter": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "scenes": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "uid": {
+                    "type": "integer"
+                  },
+                  "views": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "className": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "views": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "mode": {
+                    "type": "string",
+                    "enum":[
+                      "daily",
+                      "weekly",
+                      "monthly",
+                      "week",
+                      "month",
+                      "upcoming",
+                      "current"
+                    ]
+                  },
+                  "className": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "string"
+                  },
+                  "positionOrder": {
+                    "type": "integer"
+                  },
+                  "title": {
+                    "type": "string"
+                  },
+                  "calendars": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "filter": {
+                    "type": "string"
+                  },
+                  "sort": {
+                    "type": "string"
+                  },
+                  "transform": {
+                    "type": "string"
+                  },
+                  "locale": {
+                    "type": "string"
+                  },
+                  "fromNow": {
+                    "type": "integer"
+                  },
+                  "slotCount": {
+                    "type": "integer"
+                  },
+                  "slotMaxHeight": {
+                    "type": "string"
+                  },
+                  "hideOverflow": {
+                    "type": "boolean"
+                  },
+                  "slotTitleFormat": {
+                    "type": "string"
+                  },
+                  "slotSubTitleFormat": {
+                    "type": "string"
+                  },
+                  "slotTitle": {
+                    "type": "string"
+                  },
+                  "slotSubTitle": {
+                    "type": "string"
+                  },
+                  "filterPassedEvent": {
+                    "type": "boolean"
+                  },
+                  "maxItems": {
+                    "type": "integer"
+                  },
+                  "dateFormat": {
+                    "type": "object",
+                    "properties": {
+                      "sameDay": {
+                        "type": "string"
+                      },
+                      "nextDay": {
+                        "type": "string"
+                      },
+                      "nextWeek": {
+                        "type": "string"
+                      },
+                      "lastDay": {
+                        "type": "string"
+                      },
+                      "lastWeek": {
+                        "type": "string"
+                      },
+                      "sameElse": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "dateTimeFormat": {
+                    "type": "object",
+                    "properties": {
+                      "sameDay": {
+                        "type": "string"
+                      },
+                      "nextDay": {
+                        "type": "string"
+                      },
+                      "nextWeek": {
+                        "type": "string"
+                      },
+                      "lastDay": {
+                        "type": "string"
+                      },
+                      "lastWeek": {
+                        "type": "string"
+                      },
+                      "sameElse": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "timeFormat": {
+                    "type": "object",
+                    "properties": {
+                      "sameDay": {
+                        "type": "string"
+                      },
+                      "nextDay": {
+                        "type": "string"
+                      },
+                      "nextWeek": {
+                        "type": "string"
+                      },
+                      "lastDay": {
+                        "type": "string"
+                      },
+                      "lastWeek": {
+                        "type": "string"
+                      },
+                      "sameElse": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "relativeFormat": {
+                    "type": "object",
+                    "properties": {
+                      "passed": {
+                        "type": "string"
+                      },
+                      "current": {
+                        "type": "string"
+                      },
+                      "future": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "useEventTimeRelative": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "iconify": {
+              "type": "string"
+            },
+            "firstDrawingDelay": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MMM-CalendarExt2.disabled",
+      "htmlClass": "disabled_checkbox"
+    },
+    {
+      "key": "MMM-CalendarExt2.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MMM-CalendarExt2.classes"
+    },
+    {
+      "key": "MMM-CalendarExt2.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-CalendarExt2.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-CalendarExt2.index",
+      "type": "hidden"
+    },
+    {
+      "type": "section",
+      "title": "config",
+      "items": [
+        {
+          "title": "locale",
+          "key": "MMM-CalendarExt2.config.locale"
+        },
+        {
+          "title": "rotateInterval",
+          "key": "MMM-CalendarExt2.config.rotateInterval"
+        },
+        {
+          "title": "updateInterval",
+          "key": "MMM-CalendarExt2.config.updateInterval"
+        },
+        {
+          "type": "array",
+          "title": "deduplicateEventsOn",
+          "items": [
+            {
+              "title": "deduplicateEventsOn {{idx}}",
+              "key": "MMM-CalendarExt2.config.deduplicateEventsOn[]"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "defaultSet",
+          "items": [
+            {
+              "type": "array",
+              "title": "calendar global properties",
+              "items": [
+                {
+                  "title": "calendar property {{idx}}",
+                  "key": "MMM-CalendarExt2.config.defaultSet.calendar[]"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "title": "scene global properties",
+              "items": [
+                {
+                  "title": "scene property {{idx}}",
+                  "key": "MMM-CalendarExt2.config.defaultSet.scene[]"
+                }
+              ]
+            },
+            {
+              "type": "array",
+              "title": "view  global properties",
+              "items": [
+                {
+                  "title": "view  property {{idx}}",
+                  "key": "MMM-CalendarExt2.config.defaultSet.view[]"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "title": "calendars",
+          "items": {
+            "type": "fieldset",
+            "title": "calendar",
+            "items": [
+              {
+                "title": "name",
+                "key": "MMM-CalendarExt2.config.calendars[].name"
+              },
+              {
+                "title": "maxItems",
+                "key": "MMM-CalendarExt2.config.calendars[].maxItems"
+              },
+              {
+                "title": "scanInterval",
+                "key": "MMM-CalendarExt2.config.calendars[].scanInterval"
+              },
+              {
+                "title": "beforeDays",
+                "key": "MMM-CalendarExt2.config.calendars[].beforeDays"
+              },
+              {
+                "title": "afterDays",
+                "key": "MMM-CalendarExt2.config.calendars[].afterDays"
+              },
+              {
+                "title": "maxIterations",
+                "key": "MMM-CalendarExt2.config.calendars[].maxIterations"
+              },
+              {
+                "title": "forceLocalTZ",
+                "key": "MMM-CalendarExt2.config.calendars[].forceLocalTZ"
+              },
+              {
+                "type": "array",
+                "title": "replaceTitle",
+                "items": [
+                  {
+                    "title": "replaceTitle {{idx}}",
+                    "key": "MMM-CalendarExt2.config.calendars[].replaceTitle[]"
+                  }
+                ]
+              },
+              {
+                "title": "icon",
+                "key": "MMM-CalendarExt2.config.calendars[].icon"
+              },
+              {
+                "title": "className",
+                "key": "MMM-CalendarExt2.config.calendars[].className"
+              },
+              {
+                "type": "array",
+                "title": "auth",
+                "items": [
+                  {
+                    "title": "auth {{idx}}",
+                    "key": "MMM-CalendarExt2.config.calendars[].auth[]",
+                    "type": "ace",
+                    "aceMode": "json",
+                    "aceTheme": "twilight",
+                    "width": "100%",
+                    "height": "100px"
+                  }
+                ]
+              },
+              {
+                "title": "filter",
+                "key": "MMM-CalendarExt2.config.calendars[].filter",
+                "type": "ace",
+                "aceMode": "json",
+                "aceTheme": "twilight",
+                "width": "100%",
+                "height": "100px"
+              }
+            ]
+          },
+          "draggable": false
+        },
+        {
+          "type": "array",
+          "title": "scenes",
+          "items": {
+            "type": "fieldset",
+            "title": "scenes",
+            "items": [
+              {
+                "title": "name",
+                "key": "MMM-CalendarExt2.config.scenes[].name"
+              },
+              {
+                "title": "uid",
+                "key": "MMM-CalendarExt2.config.scenes[].uid"
+              },
+              {
+                "type": "array",
+                "title": "views",
+                "items": [
+                  {
+                    "title": "view name {{idx}}",
+                    "key": "MMM-CalendarExt2.config.scenes[].views[]"
+                  }
+                ]
+              },
+              {
+                "title": "className",
+                "key": "MMM-CalendarExt2.config.scenes[].className"
+              }
+            ]
+          }
+        },
+        {
+          "type": "array",
+          "title": "views",
+          "items": {
+            "type": "fieldset",
+            "title": "views",
+            "items": [
+              {
+                "title": "name",
+                "key": "MMM-CalendarExt2.config.views[].name"
+              },
+              {
+                "title": "mode",
+                "key": "MMM-CalendarExt2.config.views[].mode"
+              },
+              {
+                "title": "className",
+                "key": "MMM-CalendarExt2.config.views[].className"
+              },
+              {
+                "title": "position",
+                "key": "MMM-CalendarExt2.config.views[].position"
+              },
+              {
+                "title": "positionOrder",
+                "key": "MMM-CalendarExt2.config.views[].positionOrder"
+              },
+              {
+                "title": "title",
+                "key": "MMM-CalendarExt2.config.views[].title"
+              },
+              {
+                "type": "array",
+                "title": "calendars",
+                "items": [
+                  {
+                    "title": "calendar name {{idx}}",
+                    "key": "MMM-CalendarExt2.config.views[].calendars[]"
+                  }
+                ]
+              },
+              {
+                "title": "filter",
+                "key": "MMM-CalendarExt2.config.views[].filter",
+                "type": "ace",
+                "aceMode": "json",
+                "aceTheme": "twilight",
+                "width": "100%",
+                "height": "100px"
+              },
+              {
+                "title": "sort",
+                "key": "MMM-CalendarExt2.config.views[].sort",
+                "type": "ace",
+                "aceMode": "json",
+                "aceTheme": "twilight",
+                "width": "100%",
+                "height": "100px"
+              },
+              {
+                "title": "transform",
+                "key": "MMM-CalendarExt2.config.views[].transform",
+                "type": "ace",
+                "aceMode": "json",
+                "aceTheme": "twilight",
+                "width": "100%",
+                "height": "100px"
+              },
+              {
+                "title": "locale",
+                "key": "MMM-CalendarExt2.config.views[].locale"
+              },
+              {
+                "title": "fromNow",
+                "key": "MMM-CalendarExt2.config.views[].fromNow"
+              },
+              {
+                "title": "slotCount",
+                "key": "MMM-CalendarExt2.config.views[].slotCount"
+              },
+              {
+                "title": "slotMaxHeight",
+                "key": "MMM-CalendarExt2.config.views[].slotMaxHeight"
+              },
+              {
+                "title": "hideOverflow",
+                "key": "MMM-CalendarExt2.config.views[].hideOverflow"
+              },
+              {
+                "title": "slotTitleFormat",
+                "key": "MMM-CalendarExt2.config.views[].slotTitleFormat"
+              },
+              {
+                "title": "slotSubTitleFormat",
+                "key": "MMM-CalendarExt2.config.views[].slotSubTitleFormat"
+              },
+              {
+                "title": "slotTitle",
+                "key": "MMM-CalendarExt2.config.views[].slotTitle"
+              },
+              {
+                "title": "slotSubTitle",
+                "key": "MMM-CalendarExt2.config.views[].slotSubTitle"
+              },
+              {
+                "title": "filterPassedEvent",
+                "key": "MMM-CalendarExt2.config.views[].filterPassedEvent"
+              },
+              {
+                "title": "maxItems",
+                "key": "MMM-CalendarExt2.config.views[].maxItems"
+              },
+              {
+                "type": "fieldset",
+                "title": "dateFormat",
+                "items": [
+                  {
+                    "title": "sameDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.sameDay"
+                  },
+                  {
+                    "title": "nextDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.nextDay"
+                  },
+                  {
+                    "title": "nextWeek",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.nextWeek"
+                  },
+                  {
+                    "title": "lastDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.lastDay"
+                  },
+                  {
+                    "title": "lastWeek",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.lastWeek"
+                  },
+                  {
+                    "title": "sameElse",
+                    "key": "MMM-CalendarExt2.config.views[].dateFormat.sameElse"
+                  }
+                ]
+              },
+              {
+                "type": "fieldset",
+                "title": "dateTimeFormat",
+                "items": [
+                  {
+                    "title": "sameDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.sameDay"
+                  },
+                  {
+                    "title": "nextDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.nextDay"
+                  },
+                  {
+                    "title": "nextWeek",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.nextWeek"
+                  },
+                  {
+                    "title": "lastDay",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.lastDay"
+                  },
+                  {
+                    "title": "lastWeek",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.lastWeek"
+                  },
+                  {
+                    "title": "sameElse",
+                    "key": "MMM-CalendarExt2.config.views[].dateTimeFormat.sameElse"
+                  }
+                ]
+              },
+              {
+                "type": "fieldset",
+                "title": "timeFormat",
+                "items": [
+                  {
+                    "title": "sameDay",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.sameDay"
+                  },
+                  {
+                    "title": "nextDay",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.nextDay"
+                  },
+                  {
+                    "title": "nextWeek",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.nextWeek"
+                  },
+                  {
+                    "title": "lastDay",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.lastDay"
+                  },
+                  {
+                    "title": "lastWeek",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.lastWeek"
+                  },
+                  {
+                    "title": "sameElse",
+                    "key": "MMM-CalendarExt2.config.views[].timeFormat.sameElse"
+                  }
+                ]
+              },
+              {
+                "type": "fieldset",
+                "title": "relativeFormat",
+                "items": [
+                  {
+                    "title": "passed",
+                    "key": "MMM-CalendarExt2.config.views[].relativeFormat.passed"
+                  },
+                  {
+                    "title": "current",
+                    "key": "MMM-CalendarExt2.config.views[].relativeFormat.current"
+                  },
+                  {
+                    "title": "future",
+                    "key": "MMM-CalendarExt2.config.views[].relativeFormat.future"
+                  }
+                ]
+              },
+              {
+                "title": "useEventTimeRelative",
+                "key": "MMM-CalendarExt2.config.views[].useEventTimeRelative"
+              }
+            ]
+          },
+          "draggable": false
+        },
+        {
+          "title": "iconify",
+          "key": "MMM-CalendarExt2.config.iconify"
+        },
+        {
+          "title": "firstDrawingDelay",
+          "key": "MMM-CalendarExt2.config.firstDrawingDelay"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MMM-CalendarExt2",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "locale": "",
+      "rotateInterval": 0,
+      "updateInterval": 60000,
+      "deduplicateEventsOn": [],
+      "defaultSet": {
+        "calendar": {},
+        "scene": {},
+        "view": {}
+      },
+      "calendars": [
+        {
+          "name": "",
+          "maxItems": 1000,
+          "scanInterval": 1800000,
+          "beforeDays": 60,
+          "afterDays": 365,
+          "maxIterations": 100,
+          "forceLocalTZ": false,
+          "replaceTitle": [],
+          "icon": "",
+          "className": "",
+          "auth": {},
+          "filter": "(event)=> {\nreturn true\n\t\t}"
+        }
+      ],
+      "scenes": [
+        {
+          "name": "",
+          "uid": 0,
+          "views": [],
+          "className": ""
+        }
+      ],
+      "views": [
+        {
+          "name": "",
+          "mode": "daily",
+          "className": "",
+          "position": "top_left",
+          "positionOrder": -1,
+          "title": "",
+          "calendars": [],
+          "filter": "(event) =>  {\nreturn true\n\t\t}",
+          "sort": "(a,b) =>  {\nreturn a.startDate - b.startDate\n\t\t}",
+          "transform": "(event) =>  {\nreturn event\n\t\t}",
+          "locale": "",
+          "fromNow": 0,
+          "slotCount": 3,
+          "slotMaxHeight": "150px",
+          "hideOverflow": true,
+          "slotTitleFormat": "",
+          "slotSubTitleFormat": "",
+          "slotTitle": "",
+          "slotSubTitle": "",
+          "filterPassedEvent": false,
+          "maxItems": 1000,
+          "dateFormat": {
+            "sameDay": "[Today]",
+            "nextDay": "[Tomorrow]",
+            "nextWeek": "dddd",
+            "lastDay": "[Yesterday]",
+            "lastWeek": "[Last] ddd",
+            "sameElse": "M/D"
+          },
+          "dateTimeFormat": {
+            "sameDay": "[Today] HH:mm",
+            "nextDay": "[Tomorrow] HH:mm",
+            "nextWeek": "dddd HH:mm",
+            "lastDay": "[Yesterday] HH:mm",
+            "lastWeek": "[Last] ddd HH:mm",
+            "sameElse": "M/D HH:mm"
+          },
+          "timeFormat": {
+            "sameDay": "HH:mm",
+            "nextDay": "HH:mm",
+            "nextWeek": "HH:mm",
+            "lastDay": "HH:mm",
+            "lastWeek": "HH:mm",
+            "sameElse": "HH:mm"
+          },
+          "relativeFormat": {
+            "passed": "ended %ENDFROMNOW%",
+            "current": "ends %ENDFROMNOW%",
+            "future": "starts %STARTFROMNOW% (%DURATION%)"
+          },
+          "useEventTimeRelative": false
+        }
+      ],
+      "iconify": "//code.iconify.design/1/1.0.0-rc3/iconify.min.js",
+      "firstDrawingDelay": 1000
+    }
+  }
+}

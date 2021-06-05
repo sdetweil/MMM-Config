@@ -1,0 +1,709 @@
+{
+  "schema": {
+    "MMM-Carousel": {
+      "type": "object",
+      "title": "properties for MMM-Carousel",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MMM-Carousel",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "transitionInterval": {
+              "type": "integer"
+            },
+            "slideTransitionSpeed": {
+              "type": "integer"
+            },
+            "ignoreModules": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "mode": {
+              "type": "string"
+            },
+            "top_bar": {
+              "type": "object",
+              "title": "top_bar",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "top_left": {
+              "type": "object",
+              "title": "top_left",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "top_center": {
+              "type": "object",
+              "title": "top_center",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "top_right": {
+              "type": "object",
+              "title": "top_right",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "upper_third": {
+              "type": "object",
+              "title": "upper_third",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "middle_center": {
+              "type": "object",
+              "title": "middle_center",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "lower_third": {
+              "type": "object",
+              "title": "lower_third",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "bottom_left": {
+              "type": "object",
+              "title": "bottom_left",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "bottom_center": {
+              "type": "object",
+              "title": "bottom_center",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "bottom_right": {
+              "type": "object",
+              "title": "bottom_right",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "bottom_bar": {
+              "type": "object",
+              "title": "bottom_bar",
+              "properties": {
+                "enabled": {
+                  "type": "boolean"
+                },
+                "ignoreModules": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "overrideTransitionInterval": {
+                  "type": "integer"
+                }
+              }
+            },
+            "slides": {
+              "type": "array",
+              "items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            },
+            "showPageIndicators": {
+              "type": "boolean"
+            },
+            "showPageControls": {
+              "type": "boolean"
+            },
+            "keyBindings": {
+              "type": "array",
+              "items": {
+                "type": "pair"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MMM-Carousel.disabled",
+      "htmlClass": "disabled_checkbox"
+    },
+    {
+      "key": "MMM-Carousel.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MMM-Carousel.classes"
+    },
+    {
+      "key": "MMM-Carousel.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-Carousel.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-Carousel.index",
+      "type": "hidden"
+    },
+    {
+      "type": "section",
+      "title": "config",
+      "items": [
+        {
+          "title": "transitionInterval",
+          "key": "MMM-Carousel.config.transitionInterval"
+        },
+        {
+          "title": "slideTransitionSpeed",
+          "key": "MMM-Carousel.config.slideTransitionSpeed"
+        },
+        {
+          "type": "array",
+          "title": "ignoreModules",
+          "items": [
+            {
+              "title": "module name {{idx}}",
+              "key": "MMM-Carousel.config.ignoreModules[]"
+            }
+          ]
+        },
+        {
+          "title": "mode",
+          "key": "MMM-Carousel.config.mode"
+        },
+        {
+          "type": "fieldset",
+          "title": "top_bar",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.top_bar.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.top_bar.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.top_bar.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "top_left",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.top_left.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.top_left.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.top_left.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "top_center",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.top_center.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.top_center.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.top_center.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "top_right",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.top_right.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.top_right.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.top_right.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "upper_third",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.upper_third.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.upper_third.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.upper_third.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "middle_center",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.middle_center.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.middle_center.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.middle_center.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "lower_third",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.lower_third.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.lower_third.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.lower_third.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "bottom_left",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.bottom_left.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.bottom_left.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.bottom_left.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "bottom_center",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.bottom_center.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.bottom_center.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.bottom_center.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "bottom_right",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.bottom_right.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.bottom_right.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.bottom_right.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "bottom_bar",
+          "items": [
+            {
+              "title": "enabled",
+              "key": "MMM-Carousel.config.bottom_bar.enabled"
+            },
+            {
+              "type": "array",
+              "title": "ignoreModules",
+              "items": [
+                {
+                  "title": "module name {{idx}}",
+                  "key": "MMM-Carousel.config.bottom_bar.ignoreModules[]"
+                }
+              ]
+            },
+            {
+              "title": "overrideTransitionInterval",
+              "key": "MMM-Carousel.config.bottom_bar.overrideTransitionInterval"
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "title": "slides",
+          "items": {
+            "type": "array",
+            "title": "slide module list {{idx}}",
+            "items": [
+              {
+                "title": "module name {{idx}}",
+                "key": "MMM-Carousel.config.slides[][]"
+              }
+            ]
+          }
+        },
+        {
+          "title": "showPageIndicators",
+          "key": "MMM-Carousel.config.showPageIndicators"
+        },
+        {
+          "title": "showPageControls",
+          "key": "MMM-Carousel.config.showPageControls"
+        },
+        {
+          "type": "array",
+          "title": "keyBindings",
+          "items": [
+            {
+              "key": "MMM-Carousel.config.keyBindings[]",
+              "title": "keyBinding {{idx}}"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MMM-Carousel",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "transitionInterval": 10000,
+      "slideTransitionSpeed": 1500,
+      "ignoreModules": [],
+      "mode": "global",
+      "top_bar": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "top_left": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "top_center": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "top_right": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "upper_third": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "middle_center": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "lower_third": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "bottom_left": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "bottom_center": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "bottom_right": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "bottom_bar": {
+        "enabled": false,
+        "ignoreModules": [],
+        "overrideTransitionInterval": 10000
+      },
+      "slides": [
+        []
+      ],
+      "showPageIndicators": true,
+      "showPageControls": true,
+      "keyBindings": {
+        "enabled": true
+      }
+    }
+  }
+}

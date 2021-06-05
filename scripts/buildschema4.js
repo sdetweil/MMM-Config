@@ -283,20 +283,14 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   // one
   else value[module_name] = {};
   schema_present[module_name] = false;
-  // get the name of the module schema file
-  let fn = path.join(
-    __dirname,
-    //"../../MagicMirror/modules",
-    "../..",
-    module_name,
-    module_jsonform_info_name
-  );
+
   if (debug) console.log("looking for module's schema file=" + fn);
   // if it exists
-  if (true && fs.existsSync(fn)) {
+  let fn = check_for_schema(module_name);
+  if (true && fn !== null) {
     moduleIndex[module_name] = 0;
 
-    if (debug) console.log("processing using the schema file");
+    if (debug) console.log("processing using the schema file =" + fn);
 
     // lets use it
     let jsonform_info = require(fn);
@@ -1036,6 +1030,34 @@ console.log("{" + cc + "}");
 // functions after here
 //
 
+//
+//  check_for_schema
+//
+function check_for_schema(module_name) {
+  // get the name of the module schema file
+  // check in the module folder
+  let fn = path.join(
+    __dirname,
+    //"../../MagicMirror/modules",
+    "../..",
+    module_name,
+    module_jsonform_info_name
+  );
+  // if the module doesn't supply a schema file
+  if (!fs.existsSync(fn)) {
+    fn = path.join(
+      __dirname,
+      "../schemas",
+      //"../../MagicMirror/modules",
+      module_name + "." + module_jsonform_info_name
+    );
+    // check to see if we have one
+    if (!fs.existsSync(fn)) {
+      fn = null;
+    }
+  }
+  return fn;
+}
 //
 // module info loaded via schema file
 // check to see if schema matches definition
