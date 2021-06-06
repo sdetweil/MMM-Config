@@ -425,7 +425,7 @@
           "title": "calendars",
           "items": {
             "type": "fieldset",
-            "title": "calendar",
+            "title": "calendar {{idx}}",
             "items": [
               {
                 "title": "name",

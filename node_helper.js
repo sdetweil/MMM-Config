@@ -945,21 +945,26 @@ module.exports = NodeHelper.create({
         //        let index=saved.indexOf('"')
         //      saved = saved.slice(index)
         saved = saved.trimStart();
+        if (saved.endsWith(",")) {
+          saved = saved.slice(0, -1);
+        }
         expression = saved;
         //}
-        if (expression.startsWith('"') && expression.endsWith('"')) {
-          expression = expression.slice(1, -1);
-        }
+        //  if (expression.startsWith('"') && expression.endsWith('"')) {
+        //    expression = expression.slice(1, -1);
+        //  }
 
         if (debug)
           console.log("expression found =" + expression + " \nsaved=" + saved);
         expression = expression
           // and the escaped quote
           .replace(/\\"/g, '"')
+          // get rid of tabs
+          .replace(/\\t/g, "")
           // and the  retrun/nl's
           .replace(/\\r\\n/g, "\n")
           // remove the leading/trailing json quotes
-          // .slice(1, -1)
+          .slice(1, -1)
           // add newline after {
           .replace(/{ /gm, "{\n")
           // add newline before }
@@ -1015,6 +1020,15 @@ module.exports = NodeHelper.create({
         }
         if (debug)
           console.log(" expression post fixup=" + JSON.stringify(ne, "", 2));
+        if (ne.slice(-1)[0].trim().endsWith('"')) {
+          let e = ne.pop().trim().slice(0, -1);
+          if (debug) console.log(" ending expression item ='" + e + "'");
+          if (e.length) {
+            if (debug)
+              console.log(" ending expression item added ='" + e + "',");
+            ne.push(e);
+          }
+        }
         expression = ne.join("\n");
 
         if (debug) console.log("expression saved =" + expression);
