@@ -18,6 +18,7 @@ const sort = false;
 const special_variable_name_char = "^";
 const module_define_name_special_char = "ς";
 const module_jsonform_info_name = "schema.json";
+
 var schema = {};
 var form = [
   {
@@ -93,6 +94,13 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
       "../modules_list.txt"
     );
 }
+// get the default modules list
+const defaultModules = require("../../default/defaultmodules.js");
+if (debug)
+  console.log(
+    "default modules list=" + JSON.stringify(defaultModules, null, 2)
+  );
+
 //
 //  lets auto detect multiple instances of the same module
 //  being used
@@ -284,9 +292,10 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   else value[module_name] = {};
   schema_present[module_name] = false;
 
-  if (debug) console.log("looking for module's schema file=" + fn);
   // if it exists
   let fn = check_for_schema(module_name);
+  if (debug) console.log("looking for module's schema file=" + fn);
+
   if (true && fn !== null) {
     moduleIndex[module_name] = 0;
 
@@ -1036,13 +1045,16 @@ console.log("{" + cc + "}");
 function check_for_schema(module_name) {
   // get the name of the module schema file
   // check in the module folder
-  let fn = path.join(
-    __dirname,
-    //"../../MagicMirror/modules",
-    "../..",
-    module_name,
-    module_jsonform_info_name
-  );
+  let isDefault = defaultModules.includes(module_name);
+  let fn = isDefault
+    ? path.join(
+        __dirname,
+        "../..",
+        "default",
+        module_name,
+        module_jsonform_info_name
+      )
+    : path.join(__dirname, "../..", module_name, module_jsonform_info_name);
   // if the module doesn't supply a schema file
   if (!fs.existsSync(fn)) {
     fn = path.join(
@@ -1740,7 +1752,9 @@ function writeJsonFormInfoFile(
 ) {
   // if we should save the constructed files?
   if (save_jsonform_info) {
-    let module_folder = path.join(__dirname, "../..", module_name);
+    let module_folder = defaultModules.includes(module_name)
+      ? path.join(__dirname, "../..", "default", module_name)
+      : path.join(__dirname, "../..", module_name);
     // check to make sure the module folder exists
     if (fs.existsSync(module_folder)) {
       // remove the label item if present
