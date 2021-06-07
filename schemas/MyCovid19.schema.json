@@ -1,0 +1,341 @@
+{
+  "schema": {
+    "MyCovid19": {
+      "type": "object",
+      "title": "properties for MyCovid19",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MyCovid19",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "states": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "countries": {
+              "type": "array",
+              "items": {
+                "type": "pair"
+              }
+            },
+            "counties": {
+              "type": "array",
+              "items": {
+                "type": "pair"
+              }
+            },
+            "line_colors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "maxWidth": {
+              "type": "integer"
+            },
+            "width": {
+              "type": "integer"
+            },
+            "height": {
+              "type": "integer"
+            },
+            "debug": {
+              "type": "boolean"
+            },
+            "chart_type": {
+              "type": "string",
+              "enum": [
+                "cases",
+                "cumulative cases",
+                "deaths",
+                "cumulative deaths"
+              ]
+            },
+            "chart_title": {
+              "type": "string"
+            },
+            "xAxisLabel": {
+              "type": "string"
+            },
+            "yAxisLabel": {
+              "type": "string"
+            },
+            "ranges": {
+              "type": "object",
+              "title": "ranges",
+              "properties": {
+                "min": {
+                  "type": "integer"
+                },
+                "max": {
+                  "type": "integer"
+                },
+                "stepSize": {
+                  "type": "integer"
+                }
+              }
+            },
+            "startDate": {
+              "type": "string"
+            },
+            "backgroundColor": {
+              "type": "string"
+            },
+            "chartTitleColor": {
+              "type": "string"
+            },
+            "legendTextColor": {
+              "type": "string"
+            },
+            "xAxisLabelColor": {
+              "type": "string"
+            },
+            "xAxisTickLabelColor": {
+              "type": "string"
+            },
+            "yAxisLabelColor": {
+              "type": "string"
+            },
+            "yAxisTickLabelColor": {
+              "type": "string"
+            },
+            "attribution_label_height": {
+              "type": "integer"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MyCovid19.disabled",
+      "htmlClass": "disabled_checkbox"
+    },
+    {
+      "key": "MyCovid19.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MyCovid19.classes"
+    },
+    {
+      "key": "MyCovid19.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MyCovid19.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MyCovid19.index",
+      "type": "hidden"
+    },
+    {
+      "type": "section",
+      "title": "config",
+      "items": [
+        {
+          "type": "array",
+          "title": "states",
+          "items": [
+            {
+              "title": "states {{idx}}",
+              "key": "MyCovid19.config.states[]"
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "title": "countries",
+          "items": [
+            {
+              "title": "countries {{idx}}",
+              "key": "MyCovid19.config.countries[]"
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "title": "counties",
+          "items": [
+            {
+              "title": "State name : County name {{idx}}",
+              "key": "MyCovid19.config.counties[]"
+            }
+          ]
+        },
+        {
+          "type": "array",
+          "title": "line_colors",
+          "items": [
+            {
+              "title": "line_colors {{idx}}",
+              "key": "MyCovid19.config.line_colors[]"
+            }
+          ]
+        },
+        {
+          "title": "maxWidth",
+          "key": "MyCovid19.config.maxWidth"
+        },
+        {
+          "title": "width",
+          "key": "MyCovid19.config.width"
+        },
+        {
+          "title": "height",
+          "key": "MyCovid19.config.height"
+        },
+        {
+          "title": "debug",
+          "key": "MyCovid19.config.debug"
+        },
+        {
+          "title": "chart_type",
+          "key": "MyCovid19.config.chart_type"
+        },
+        {
+          "title": "chart_title",
+          "key": "MyCovid19.config.chart_title"
+        },
+        {
+          "title": "xAxisLabel",
+          "key": "MyCovid19.config.xAxisLabel"
+        },
+        {
+          "title": "yAxisLabel",
+          "key": "MyCovid19.config.yAxisLabel"
+        },
+        {
+          "type": "fieldset",
+          "title": "ranges",
+          "items": [
+            {
+              "title": "min",
+              "key": "MyCovid19.config.ranges.min"
+            },
+            {
+              "title": "max",
+              "key": "MyCovid19.config.ranges.max"
+            },
+            {
+              "title": "stepSize",
+              "key": "MyCovid19.config.ranges.stepSize"
+            }
+          ]
+        },
+        {
+          "title": "startDate",
+          "key": "MyCovid19.config.startDate"
+        },
+        {
+          "title": "backgroundColor",
+          "key": "MyCovid19.config.backgroundColor"
+        },
+        {
+          "title": "chartTitleColor",
+          "key": "MyCovid19.config.chartTitleColor"
+        },
+        {
+          "title": "legendTextColor",
+          "key": "MyCovid19.config.legendTextColor"
+        },
+        {
+          "title": "xAxisLabelColor",
+          "key": "MyCovid19.config.xAxisLabelColor"
+        },
+        {
+          "title": "xAxisTickLabelColor",
+          "key": "MyCovid19.config.xAxisTickLabelColor"
+        },
+        {
+          "title": "yAxisLabelColor",
+          "key": "MyCovid19.config.yAxisLabelColor"
+        },
+        {
+          "title": "yAxisTickLabelColor",
+          "key": "MyCovid19.config.yAxisTickLabelColor"
+        },
+        {
+          "title": "attribution_label_height",
+          "key": "MyCovid19.config.attribution_label_height"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MyCovid19",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "states": [],
+      "countries": [],
+      "counties": [],
+      "line_colors": [
+        "red",
+        "blue"
+      ],
+      "maxWidth": 800,
+      "width": 500,
+      "height": 500,
+      "debug": false,
+      "chart_type": "cumulative_cases",
+      "chart_title": "",
+      "xAxisLabel": "by date",
+      "yAxisLabel": "Count",
+      "ranges": {
+        "min": 0,
+        "max": 1000,
+        "stepSize": 100
+      },
+      "startDate": "01/01/2020",
+      "backgroundColor": "black",
+      "chartTitleColor": "white",
+      "legendTextColor": "white",
+      "xAxisLabelColor": "white",
+      "xAxisTickLabelColor": "white",
+      "yAxisLabelColor": "white",
+      "yAxisTickLabelColor": "white",
+      "attribution_label_height": 10
+    }
+  }
+}

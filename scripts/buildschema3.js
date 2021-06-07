@@ -5,7 +5,7 @@ const interfaces = require("os").networkInterfaces();
 
 const fs = require("fs");
 var debug = false;
-var debugging = false;
+var debugging = true;
 
 const networkInterfaces = [];
 const languages = [];
@@ -412,17 +412,19 @@ form_object_correction.forEach((key) => {
     );
   // module info used
   t.shift();
-  let variable_definition = get_define_info(
-    defines.defined_config[module_define_name],
-    t.join(".")
-  );
-  if (Array.isArray(variable_definition)) {
-    // if it has NOTHING inside
-    if (!variable_definition.length) {
-      // then we can fixup the form to add the editor capabilities
-      if (debug) console.log("found item, key=" + key);
-      updateFormElement(form[0].items[1].items, key, form_code_block);
-      updateValueElement(value, key);
+  if (defines.defined_config[module_define_name] !== undefined) {
+    let variable_definition = get_define_info(
+      defines.defined_config[module_define_name],
+      t.join(".")
+    );
+    if (Array.isArray(variable_definition)) {
+      // if it has NOTHING inside
+      if (!variable_definition.length) {
+        // then we can fixup the form to add the editor capabilities
+        if (debug) console.log("found item, key=" + key);
+        updateFormElement(form[0].items[1].items, key, form_code_block);
+        updateValueElement(value, key);
+      }
     }
   }
 });
@@ -585,8 +587,24 @@ function updateFormElement(data, key, new_attributes) {
 }
 // get the item in an array
 function get_define_info(data, key) {
+  let t = [];
   // get the key parts
-  let t = key.split(".");
+  if (key.includes("..")) {
+    while (true) {
+      let dot_index = key.indexOf(".");
+      let name_index = key.lastIndexOf("..");
+      if (dot_index < name_index) {
+        t.push(key.slice(0, dot_index));
+        key = key.slice(dot_index + 1);
+      } else {
+        t.push(key);
+        break;
+      }
+    }
+  } else {
+    // just single dots, split as usual
+    t = key.split(".");
+  }
   let left = t.shift();
   if (left.endsWith("[]")) left = left.slice(0, -2);
   // if there is more key
@@ -1205,9 +1223,12 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
     );
     let schema_value = r.results;
     if (t !== p) {
-      // need to adda title tring if not present
+      // need to add a title string if not present
       addedTitle = '"title":"' + p + '",';
       mangled_names[m + "." + t] = p;
+      let data = JSON.stringify(value[m.split(".")[0]], tohandler);
+      data = data.replace(new RegExp(p, "g"), t);
+      value[m.split(".")[0]] = JSON.parse(data, fromhandler);
     }
     let variable = p1;
     if (p1 === undefined) variable = p;
@@ -1420,9 +1441,11 @@ function fromhandler(key, value) {
   }
   return value;
 }
-function trimit(str, c) {
+function trimit(str1, c = ".") {
   if (c === undefined) c = ".";
-  while (str.charAt(0) === c) str = str.slice(1);
+  let str = str1.replace(new RegExp("\\" + c, "g"), "%");
+  if (debug) console.log("replacing " + str1 + " with " + str);
+  //while (str.charAt(0) === c) str = str.slice(1);
   return str;
 }
 function getValueObject(key, data) {

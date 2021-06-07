@@ -1,0 +1,139 @@
+{
+  "schema": {
+    "MMM-Config": {
+      "type": "object",
+      "title": "properties for MMM-Config",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MMM-Config",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "showQR": {
+              "type": "boolean"
+            },
+            "force_update": {
+              "type": "boolean"
+            },
+            "restart": {
+              "type": "string",
+              "enum":[
+                "none",
+                "pm2",
+                "static"
+              ],
+              "default":"none"
+            },
+            "debug": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MMM-Config.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "MMM-Config.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MMM-Config.classes",
+      "description": "css classes to use for this module, beyond what MagicMirror uses"
+    },
+    {
+      "key": "MMM-Config.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-Config.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-Config.index",
+      "type": "hidden"
+    },
+    {
+      "type": "section",
+      "title": "config",
+      "items": [
+        {
+          "title": "showQR",
+          "key": "MMM-Config.config.showQR",
+           "description":"show the QR code image if checked"
+        },
+        {
+          "title": "force_update",
+          "key": "MMM-Config.config.force_update",
+          "description":"force MMM-Config to bypass date/time checks on the files used"
+        },
+        {
+          "title": "restart",
+          "key": "MMM-Config.config.restart",
+          "titleMap": {
+            "none": "no restart after save",
+            "pm2": "use pm2 to restart, will autodetect which pm2 instance to restart",
+            "static": "MagicMirror started with npm start, may cause flaky windows",
+            "docker":" not yet implemented, same as none"
+          }
+        },
+        {
+          "title": "debug",
+          "key": "MMM-Config.config.debug",
+          "description":"turn on save debug"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MMM-Config",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "showQR": false,
+      "force_update": true,
+      "restart": "none",
+      "debug": false
+    }
+  }
+}
