@@ -1584,13 +1584,18 @@ function processModule(schema, form, value, defines, module_name) {
       "')};var selection=$(evt.target).prop('checked');var parent =$(evt.target).closest('fieldset');setc(parent,selection);" +
       parents_parent +
       ";var allchecked=parent.find(\"input[name$='disabled']:checked\").length;var count=parent.find(\"input[name$='disabled']\").length;if(selection===true && allchecked!==count){selection=false};setc(parent,selection);}",
-    htmlClass: "disabled_checkbox"
+    htmlClass: "disabled_checkbox",
+    description:
+      "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
   });
   module_form_items.push({
     key: module_name + "." + "position",
     description: "use Module Positions section below to set or change"
   });
-  module_form_items.push({ key: module_name + "." + "classes" });
+  module_form_items.push({
+    key: module_name + "." + "classes",
+    description: "css classes to use for this module, beyond what MM provides"
+  });
   module_form_items.push({ key: module_name + "." + "order", type: "hidden" });
   module_form_items.push({
     key: module_name + "." + "inconfig",

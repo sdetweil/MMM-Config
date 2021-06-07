@@ -19,6 +19,7 @@ const module_positions = JSON.parse(
 );
 const checking_diff = false;
 var socket_io_port = 8200;
+var pm2_id;
 const getPort = require("get-port");
 const closeString =
   ';\n\
@@ -62,27 +63,53 @@ module.exports = NodeHelper.create({
   },
   // module startup after receiving MM ready
   startit() {
-    // if restart is enabled, for npm start invoked MM
-    if (
-      this.config.restart.length &&
-      this.config.restart.toLowerCase() === "static"
-    ) {
-      // setup the handler
-      let ep =
-        __dirname.split(path.sep).slice(0, -2).join(path.sep) +
-        "/node_modules/.bin/electron" +
-        (os.platform() == "win32" ? ".cmd" : "");
-      console.log("electron path=" + ep);
-      require("electron-reload")(oc, {
-        electron: ep,
-        argv: [
+    // if restart is the old pm2: value, fix it
+    if (this.config.restart.toLowerCase().startsWith("pm2:"))
+      this.config.restart = "pm2";
+    // handle how we restart, if any
+    switch (this.config.restart) {
+      case "static":
+        // setup the handler
+        let ep =
           __dirname.split(path.sep).slice(0, -2).join(path.sep) +
-            "/js/electron.js"
-        ],
-        forceHardReset: true,
-        hardResetMethod: "exit"
-      });
+          "/node_modules/.bin/electron" +
+          (os.platform() == "win32" ? ".cmd" : "");
+        console.log("electron path=" + ep);
+        require("electron-reload")(oc, {
+          electron: ep,
+          argv: [
+            __dirname.split(path.sep).slice(0, -2).join(path.sep) +
+              "/js/electron.js"
+          ],
+          forceHardReset: true,
+          hardResetMethod: "exit"
+        });
+        break;
+      case "pm2":
+        if (debug) console.log("getting pm2 process list");
+        exec("pm2 jlist", (error, stdout, stderr) => {
+          if (!error) {
+            let output = JSON.parse(stdout);
+            if (debug)
+              console.log(
+                "processing pm2 jlist output, " + output.length + " entries"
+              );
+            output.forEach((managed_process) => {
+              if (__dirname.startsWith(managed_process.pm2_env.pm_cwd)) {
+                if (debug)
+                  console.log(
+                    "found our pm2 entry, id=" + managed_process.pm_id
+                  );
+                pm2_id = managed_process.pm_id;
+              }
+            });
+          }
+        });
+
+        break;
+      default:
     }
+
     this.command =
       __dirname +
       (os.platform() == "win32" ? "\\test_convert.cmd" : "/test_convert.sh");
@@ -1053,13 +1080,11 @@ module.exports = NodeHelper.create({
         } else {
           // inform the form all went well
           socket.emit("saved", "config.js created successfully");
-          // if ther restart  value is not the default null string
-          if (self.config.restart.length) {
-            // and starts with pm2. then
-            if (self.config.restart.toLowerCase().startsWith("pm2:")) {
-              // exec pm2 restart with the name of the app
-              exec("pm2 restart " + self.config.restart.split(":")[1]);
-            }
+          // and restart with pm2. then
+          if (self.config.restart === "pm2") {
+            if (debug) console.log("restarting using pm2, id=" + pm2_id);
+            // exec pm2 restart with the name of the app
+            exec("pm2 restart " + pm2_id);
           }
         }
       });
