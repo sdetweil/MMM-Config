@@ -1150,7 +1150,7 @@ function fixVariableNames(value_section) {
 function checkMulti(module_name) {
   let result = false;
   for (let m of multi_modules)
-    if (module_name.startsWith(m)) {
+    if (module_name === m) {
       result = true;
       break;
     }

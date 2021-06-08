@@ -18,6 +18,8 @@ Module.register("MMM-Config", {
     debug: false
   },
 
+  image: null,
+  canvas: null,
   getTranslations: function () {
     return {
       en: "translations/en.json",
@@ -41,9 +43,9 @@ Module.register("MMM-Config", {
   },
 
   // return list of other functional scripts to use, if any (like require in node_helper)
-  getScripts: function () {
+  /* getScripts: function () {
     return [this.file("node_modules/qrcode/build/qrcode.min.js")];
-  },
+  }, */
 
   // messages received from other modules and the system (NOT from your node helper)
   // payload is a notification dependent data structure
@@ -84,6 +86,12 @@ Module.register("MMM-Config", {
   // typically you would resume doing UI updates (getDom/updateDom) if the module is shown
   resume: function () {},
 
+  connectToCanvas: (self) => {
+    self.canvas.width = self.image.width; // set canvas size big enough for the image
+    self.canvas.height = self.image.height;
+    var ctx = self.canvas.getContext("2d");
+    ctx.drawImage(self.image, 0, 0);
+  },
   // this is the major worker of the module, it provides the displayable content for this module
   getDom: function () {
     var wrapper = document.createElement("div");
@@ -96,15 +104,22 @@ Module.register("MMM-Config", {
         // config.ipWhitelist &&
         // config.ipWhitelist.length == 0
       ) {
+        this.image = document.createElement("img");
+        this.image.src = this.config.url;
+        this.image.style = "display: none;";
+        this.image.addEventListener("load", () => {
+          this.connectToCanvas(this);
+        });
+        wrapper.appendChild(this.image);
         // using text from module config block in config.js
         //wrapper.innerText = this.config.message;
-        var canvas = document.createElement("canvas");
-        canvas.className = "qr";
-        QRCode.toCanvas(canvas, this.config.url, function (error) {
+        this.canvas = document.createElement("canvas");
+        this.canvas.className = "qr";
+        /*QRCode.toCanvas(canvas, this.config.url, function (error) {
           if (error) Log.error(error);
           if (this.config.debug) Log.log("success!");
-        });
-        wrapper.appendChild(canvas);
+        }); */
+        wrapper.appendChild(this.canvas);
       } else {
         wrapper.classList.add("text");
         wrapper.innerHTML = this.translate("QR_ERROR_MESSAGE");
