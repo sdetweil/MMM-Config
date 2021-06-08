@@ -10,6 +10,7 @@ const remote = new stream.Writable();
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
+
 const fs = require("fs");
 const oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
@@ -17,9 +18,10 @@ const configPath = __dirname + "/schema3.json";
 const module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
+const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
-var pm2_id;
+var pm2_id = -1;
 const getPort = require("get-port");
 const closeString =
   ';\n\
@@ -150,10 +152,21 @@ module.exports = NodeHelper.create({
         this.config.port;
 
       if (this.config.showQR) {
-        this.sendSocketNotification(
-          "qr_url",
-          this.config.url + "/modules/" + this.name + "/review"
-        );
+        let url = this.config.url + "/modules/" + this.name + "/review";
+        let imageurl =
+          this.config.url + "/modules/" + this.name + "/qrfile.png";
+        QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
+          if (!err) {
+            if (debug) console.log("QRCode build done");
+            this.sendSocketNotification(
+              "qr_url",
+              imageurl
+              //this.config.url + "/modules/" + this.name + "/review"
+            );
+          } else {
+            console.log("QR image crate failed =" + JSON.stringif(err));
+          }
+        });
       }
     }
   },
