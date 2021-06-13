@@ -18,8 +18,6 @@ Module.register("MMM-Config", {
     debug: false
   },
 
-  image: null,
-  canvas: null,
   getTranslations: function () {
     return {
       en: "translations/en.json",
@@ -86,40 +84,17 @@ Module.register("MMM-Config", {
   // typically you would resume doing UI updates (getDom/updateDom) if the module is shown
   resume: function () {},
 
-  connectToCanvas: (self) => {
-    self.canvas.width = self.image.width; // set canvas size big enough for the image
-    self.canvas.height = self.image.height;
-    var ctx = self.canvas.getContext("2d");
-    ctx.drawImage(self.image, 0, 0);
-  },
   // this is the major worker of the module, it provides the displayable content for this module
   getDom: function () {
     var wrapper = document.createElement("div");
 
     // if user supplied message text in its module config, use it
     if (this.config.hasOwnProperty("url")) {
-      if (
-        config.address.toLowerCase() !== "localhost"
-        // &&
-        // config.ipWhitelist &&
-        // config.ipWhitelist.length == 0
-      ) {
-        this.image = document.createElement("img");
-        this.image.src = this.config.url;
-        this.image.style = "display: none;";
-        this.image.addEventListener("load", () => {
-          this.connectToCanvas(this);
-        });
-        wrapper.appendChild(this.image);
-        // using text from module config block in config.js
-        //wrapper.innerText = this.config.message;
-        this.canvas = document.createElement("canvas");
-        this.canvas.className = "qr";
-        /*QRCode.toCanvas(canvas, this.config.url, function (error) {
-          if (error) Log.error(error);
-          if (this.config.debug) Log.log("success!");
-        }); */
-        wrapper.appendChild(this.canvas);
+      if (config.address.toLowerCase() !== "localhost") {
+        let image = document.createElement("img");
+        image.src = this.config.url;
+        image.className = "qr";
+        wrapper.appendChild(image);
       } else {
         wrapper.classList.add("text");
         wrapper.innerHTML = this.translate("QR_ERROR_MESSAGE");

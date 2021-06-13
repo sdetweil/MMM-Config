@@ -1085,7 +1085,7 @@ module.exports = NodeHelper.create({
     // false for testing data handling
     if (doSave) {
       // rename curent using ist last mod date as part of the extension name
-      fs.renameSync(oc, oc + "." + d);
+      fs.copyFileSync(oc, oc + "." + d);
       // write out the new config.js
       fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
