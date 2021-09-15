@@ -1,7 +1,7 @@
 const path = require("path");
 let debug = false;
 let add_helper_vars = false;
-let minimized_lines_check = 300;
+let minimized_lines_check = 500;
 let processMinimized = false;
 let counter = 0;
 const module_define_name_special_char = "ς";
@@ -100,9 +100,11 @@ function processMinified(lines) {
 
 function getFileContents(fn) {
   let lines = readFile(fn);
-  if (processMinimized)
+  if (processMinimized) {
     //if (lines.length < minimized_lines_check)
+    if (debug) console.log("processing minimized lines");
     lines = processMinified(lines);
+  }
   return lines;
 }
 function process_main(lines, name) {
