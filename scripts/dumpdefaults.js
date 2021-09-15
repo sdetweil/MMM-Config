@@ -1,7 +1,8 @@
 const path = require("path");
 let debug = false;
 let add_helper_vars = false;
-let minimized_lines_check = 20;
+let minimized_lines_check = 300;
+let processMinimized = false;
 let counter = 0;
 const module_define_name_special_char = "ς";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
@@ -42,7 +43,7 @@ for (let q of defines) {
   console.log(q);
 }
 
-function readeFile(fn) {
+function readFile(fn) {
   if (debug) console.log("file=" + fn);
   let lines = [];
   let fs = require("fs");
@@ -54,7 +55,11 @@ function readeFile(fn) {
       .forEach((line) => {
         //if(debug) console.log("line="+ ++counter +line);
         // and save the lines
-        lines.push(line);
+        if (debug) console.log("line length=" + line.length);
+        if (line.length) {
+          lines.push(line);
+          if (line.length > minimized_lines_check) processMinimized = true;
+        }
       });
   }
   return lines;
@@ -63,7 +68,7 @@ function readeFile(fn) {
 function processMinified(lines) {
   let xlines = [];
   // if there are more than a few lines
-  if (lines.length < minimized_lines_check) {
+  if (processMinimized) {
     // process it
     let newlines = [];
     // loop thru the lines
@@ -94,9 +99,10 @@ function processMinified(lines) {
 }
 
 function getFileContents(fn) {
-  let lines = readeFile(fn);
-
-  if (lines.length < minimized_lines_check) lines = processMinified(lines);
+  let lines = readFile(fn);
+  if (processMinimized)
+    //if (lines.length < minimized_lines_check)
+    lines = processMinified(lines);
   return lines;
 }
 function process_main(lines, name) {
