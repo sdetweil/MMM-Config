@@ -1,6 +1,7 @@
 const path = require("path");
 let debug = false;
 let add_helper_vars = false;
+let minimized_lines_check = 20;
 let counter = 0;
 const module_define_name_special_char = "ς";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
@@ -62,7 +63,7 @@ function readeFile(fn) {
 function processMinified(lines) {
   let xlines = [];
   // if there are more than a few lines
-  if (lines.length < 10) {
+  if (lines.length < minimized_lines_check) {
     // process it
     let newlines = [];
     // loop thru the lines
@@ -95,7 +96,7 @@ function processMinified(lines) {
 function getFileContents(fn) {
   let lines = readeFile(fn);
 
-  if (lines.length < 10) lines = processMinified(lines);
+  if (lines.length < minimized_lines_check) lines = processMinified(lines);
   return lines;
 }
 function process_main(lines, name) {
