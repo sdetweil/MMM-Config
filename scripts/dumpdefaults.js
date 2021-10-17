@@ -1,5 +1,5 @@
-const path = require("path");
 let debug = false;
+let path = require("path");
 let add_helper_vars = false;
 let minimized_lines_check = 500;
 let processMinimized = false;
@@ -160,6 +160,7 @@ function process_main(lines, name) {
       }
       // count any open braces
       if (debug) console.log(" checking line=" + line);
+
       // maybe a template line?
       if (line.includes("{{")) {
         let results = line.match(/((?<![\\])['"])((?:.(?!(?<![\\])\1))*.?)\1/);
@@ -172,6 +173,24 @@ function process_main(lines, name) {
           if (!lr.includes("{")) {
             cache.push(line);
             continue;
+          }
+        }
+      } else {
+        // check for literal with embedded '{' or '}'
+        if (line.includes(":")) {
+          let info = line.split(":")[1].trim();
+          if (info.includes("{") || info.includes("}")) {
+            let r = info.match(/(["'])((?:\\1|(?:(?!\1)).)*)(\1)/);
+            if (r) {
+              if (debug) {
+                console.log("found literal =" + r[0]);
+              }
+              if (info.replace(r[0], "").trim().startsWith(",")) {
+                // consume the whole line
+                cache.push(line);
+                continue;
+              }
+            }
           }
         }
       }
