@@ -1391,7 +1391,7 @@ function copyConfig(defines, schema, form) {
           as = { type: "string", title: setting, enum: languages };
           break;
         case "timeFormat":
-          as = { type: "string", title: setting, enum: [12, 24] };
+          as = { type: "number", title: setting, enum: [12, 24] };
           break;
         case "units":
           as = { type: "string", title: setting, enum: ["imperial", "metric"] };
