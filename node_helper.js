@@ -40,13 +40,13 @@ module.exports = NodeHelper.create({
 
   // collect the data in background
   launchit() {
-    console.log("execing " + this.command);
+    if (debug) console.log("execing " + this.command);
     exec(this.command, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
       }
-      console.log(`stdout: ${stdout}`);
+      if (debug) console.log(`stdout: ${stdout}`);
       if (stderr) console.error(`stderr 2: ${stderr}`);
     });
   },
@@ -427,7 +427,8 @@ module.exports = NodeHelper.create({
 
     if (debug) console.log("\nstart processing form submit\n");
 
-    console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
+    if (debug)
+      console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
 
     if (1) {
       if (debug)
@@ -638,45 +639,6 @@ module.exports = NodeHelper.create({
       }
       delete data.mangled_names;
     }
-    /*  if (0) {
-      // calculate diff   form input with form output
-      // loop thru the defines
-      Object.keys(cfg.defined_config).forEach((module_define) => {
-        // take off the 'defines' suffix
-        let module_name = module_define
-          .slice(0, module_define.lastIndexOf("_"))
-          .replace(/_/g, "-");
-
-        let diff = detailedDiff(
-          cfg.defined_config[module_define],
-          data[module_name].config
-        );
-
-      //  if(this.clean_diff(diff))
-		  //  	console.log("object equal for module="+module_name)
-			//	else
-			//		console.log("define compare for module="+module_name+"="+JSON.stringify(diff,' ',2))
-      });
-
-      // compare returned and cleaned up data with the module defines
-      for (const m of Object.keys(self.config.data.value)) {
-        let cfgmodule = self.getConfigModule(m, cfg.config.modules); will fail
-        //console.log (m !== 'config' && "module "+m+" disabled a="+self.config.data.value[m]['disabled']+" b="+this.getConfigModule(m, cfg.modules)['disabled']+" c="+data[m]['disabled'])
-        if (
-          m !== "config" &&
-          cfgmodule &&
-          self.config.data.value[m]["disabled"] != cfgmodule["disabled"] &&
-          data[m]["disabled"] == false
-        ) {
-          //console.log("comparing "+data[m]+" to "+self.config.data.value[m])
-
-          // comparing submitted values again returned
-          let x = detailedDiff(self.config.data.value[m], data[m]);
-          //if(Object.keys(x).length!=1)
-          //	console.log("diff for module="+m+" = "+JSON.stringify(x))
-        }
-      }
-    } */
 
     // setup the final data to write out
     let r = {};
@@ -831,7 +793,18 @@ module.exports = NodeHelper.create({
               temp[module_property] = merged_module[module_property];
               if (debug) console.log("copied for key=" + module_property);
             }
-            if (temp.position === undefined) temp.position = "none";
+
+            // don't crash for bad positions
+            // add dummy config parm, make bad parm none (same  visual result)
+            if (!module_positions.includes(temp.position)) {
+              temp.bad_position = temp.position;
+              temp.position = "none";
+            }
+
+            // set none if not specified
+            if (temp.position === undefined) {
+              temp.position = "none";
+            }
 
             temp.position = temp.position.replace(" ", "_");
             layout_order[temp.position].push(temp);
