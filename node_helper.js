@@ -182,7 +182,7 @@ module.exports = NodeHelper.create({
         // else return instance of matching index (if any)
         i++;
         if (
-          index === -1 ||
+          index === -2 ||
           (m.index !== undefined && m.index === index) ||
           i === index
         ) {
@@ -339,11 +339,114 @@ module.exports = NodeHelper.create({
   isNumeric: function (n) {
     return !isNaN(parseFloat(n)) && isFinite(parseInt(n));
   },
-  mergeModule(config, data) {
+
+  // check to see if objects are the same, including sub objects..
+  // return a list of flat variables
+  // and subobject/variable name
+  objectsAreSame: function (x, y) {
+    if (debug)
+      console.log(
+        "x=" + JSON.stringify(x.null, 2) + " y=" + JSON.stringify(y, null, 2)
+      );
+    var proplist = [];
+    for (var propertyName in y) {
+      if (
+        typeof x[propertyName] === "object" &&
+        typeof y[propertyName] === "object"
+      ) {
+        if (debug) console.log("comparing objects=" + propertyName);
+        let t = {};
+        let r = this.objectsAreSame(x[propertyName], y[propertyName]);
+        if (r.length) {
+          t[propertyName] = r;
+
+          if (debug) console.log("object list=" + JSON.stringify(t, null, 2));
+          proplist = proplist.concat(t);
+          if (debug)
+            console.log(
+              "concat object list=" + JSON.stringify(proplist, null, 2)
+            );
+        }
+      } else if (x[propertyName] !== y[propertyName]) {
+        if (debug) console.log("comparing prop=" + propertyName);
+        proplist.push(propertyName);
+      }
+    }
+    if (debug)
+      console.log("returning list=" + JSON.stringify(proplist, null, 2));
+    return proplist;
+  },
+
+  merge_nested: function (output, input, changed_vars) {
+    changed_vars.forEach((sub_object) => {
+      // loop thru array of objects
+      if (debug)
+        console.log("changed object=" + JSON.stringify(sub_object, null, 2));
+      Object.keys(sub_object).forEach((entry) => {
+        // e = OS
+        if (debug)
+          console.log(
+            "changed object name=" +
+              entry +
+              " array=" +
+              Array.isArray(sub_object[entry])
+          );
+        if (output[entry] === undefined) output[entry] = {};
+        _.assign(output[entry], _.pick(input[entry], sub_object[entry]));
+        if (debug) console.log(" merged =" + JSON.stringify(output, null, 2));
+        let r = sub_object[entry].filter((x) => {
+          if (debug) console.log("testing item in array=" + typeof x + " " + x);
+          if (typeof x === "object") return true;
+        });
+        if (r.length) {
+          if (debug) console.log("have more to merge for sub_object");
+          this.merge_nested(output[entry], input[entry], r);
+        }
+      });
+    });
+  },
+
+  // we need to figure out what changed in the data
+  // analogSize in config,  but no config object in config.js
+  // so picking the keys for the config doesn't help, not present
+  // and then merge those in.. ( clock, defaults, )
+  mergeModule: function (config, data, defaults) {
+    if (debug) console.log("merge data=" + JSON.stringify(data, null, 2));
     let keys = _.keys(config);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
-    return _.assign(config, _.pick(data, keys));
+    keys = _.without(keys, "config");
+    _.assign(config, _.pick(data, keys));
+    if (debug)
+      console.log(
+        "config after assign=" +
+          JSON.stringify(config, null, 2) +
+          " keys=" +
+          JSON.stringify(keys, null, 2)
+      );
+    let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
+    if (debug)
+      console.log("keydiff after assign=" + JSON.stringify(keydiff, null, 2));
+    if (keydiff.length) {
+      if (debug)
+        console.log("keydiff in merge=" + JSON.stringify(keydiff, null, 2));
+      if (config.config === undefined) config.config = {};
+
+      // assign only dies flat variables, not subobjects (aka shallow assign)
+      _.assign(config.config, _.pick(data.config, keydiff));
+
+      // filter out the flat variables
+      // leaving only sub objects
+      let nested = keydiff.filter((x) => {
+        if (typeof x === "object") return true;
+      });
+      // of ther were any subobjects
+      if (nested.length) {
+        // handle nested objects
+        this.merge_nested(config.config, data.config, nested);
+      }
+    }
+    return config;
   },
 
   fixobject_name: function (object, key, newname) {
@@ -743,7 +846,11 @@ module.exports = NodeHelper.create({
             module_in_config.position = module_form_data.position;
           }
 
-          merged_module = self.mergeModule(module_in_config, module_form_data);
+          merged_module = self.mergeModule(
+            module_in_config,
+            module_form_data,
+            cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
+          );
           merged_module.inconfig = "1";
 
           if (debug)
