@@ -5,9 +5,12 @@ const interfaces = require("os").networkInterfaces();
 var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
+var save_module_form = "";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
-if (process.argv.length > 3 && process.argv[3] === "saveform")
+if (process.argv.length > 3 && process.argv[3] === "saveform") {
   save_jsonform_info = true;
+  if (process.argv.length > 4) save_module_form = process.argv[4];
+}
 
 let multi_modules = [];
 let schema_present = {};
@@ -1757,40 +1760,46 @@ function writeJsonFormInfoFile(
 ) {
   // if we should save the constructed files?
   if (save_jsonform_info) {
-    let module_folder = defaultModules.includes(module_name)
-      ? path.join(__dirname, "../..", "default", module_name)
-      : path.join(__dirname, "../..", module_name);
-    // check to make sure the module folder exists
-    if (fs.existsSync(module_folder)) {
-      // remove the label item if present
-      // only important for the arrayed layout, not the module data
-      let form_info_clone = clone(form_info);
-      for (let i in form_info_clone) {
-        let item = form_info_clone[i];
-        if (item.key !== undefined && item.key.endsWith(".disabled")) {
-          delete item.onChange;
+    // save for all, of only one mdoule if specified
+    if (
+      (save_module_form === "") |
+      (save_module_form !== "" && module_name === save_module_form)
+    ) {
+      let module_folder = defaultModules.includes(module_name)
+        ? path.join(__dirname, "../..", "default", module_name)
+        : path.join(__dirname, "../..", module_name);
+      // check to make sure the module folder exists
+      if (fs.existsSync(module_folder)) {
+        // remove the label item if present
+        // only important for the arrayed layout, not the module data
+        let form_info_clone = clone(form_info);
+        for (let i in form_info_clone) {
+          let item = form_info_clone[i];
+          if (item.key !== undefined && item.key.endsWith(".disabled")) {
+            delete item.onChange;
+          }
+          if (item.key !== undefined && item.key.endsWith(".label")) {
+            form_info_clone.splice(i, 1);
+            break;
+          }
         }
-        if (item.key !== undefined && item.key.endsWith(".label")) {
-          form_info_clone.splice(i, 1);
-          break;
+        // it does
+        let x = {};
+        x[module_name] = schema_info;
+        // build the file structure
+        let jsonform_info = {
+          schema: x,
+          form: form_info_clone,
+          value: value_info[module_name]
+        };
+        // get the file path
+        let fn = path.join(module_folder, module_jsonform_info_name);
+        // if it doesn't exist
+        // don't write over existing
+        if (!fs.existsSync(fn)) {
+          // write out the formatted text
+          fs.writeFileSync(fn, JSON.stringify(jsonform_info, tohandler, 2));
         }
-      }
-      // it does
-      let x = {};
-      x[module_name] = schema_info;
-      // build the file structure
-      let jsonform_info = {
-        schema: x,
-        form: form_info_clone,
-        value: value_info[module_name]
-      };
-      // get the file path
-      let fn = path.join(module_folder, module_jsonform_info_name);
-      // if it doesn't exist
-      // don't write over existing
-      if (!fs.existsSync(fn)) {
-        // write out the formatted text
-        fs.writeFileSync(fn, JSON.stringify(jsonform_info, tohandler, 2));
       }
     }
   }
