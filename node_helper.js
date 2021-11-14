@@ -55,11 +55,8 @@ module.exports = NodeHelper.create({
     this.expressApp.get("/modules/MMM-Config/review", (req, res) => {
       // redirect to config form
       res.redirect(
-        this.config.url +
-          "/modules/" +
-          this.name +
-          "/config.html?port=" +
-          socket_io_port
+        //this.config.url +
+        "/modules/" + this.name + "/config.html?port=" + socket_io_port
       );
     });
   },
@@ -154,7 +151,8 @@ module.exports = NodeHelper.create({
       if (this.config.showQR) {
         let url = this.config.url + "/modules/" + this.name + "/review";
         let imageurl =
-          this.config.url + "/modules/" + this.name + "/qrfile.png";
+          //this.config.url +
+          "/modules/" + this.name + "/qrfile.png";
         QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
           if (!err) {
             if (debug) console.log("QRCode build done");
