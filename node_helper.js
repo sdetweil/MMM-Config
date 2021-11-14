@@ -152,8 +152,7 @@ module.exports = NodeHelper.create({
 
       if (this.config.showQR) {
         let url = this.config.url + "/modules/" + this.name + "/review";
-        let imageurl =
-          this.config.url + "/modules/" + this.name + "/qrfile.png";
+        let imageurl = "/modules/" + this.name + "/qrfile.png";
         QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
           if (!err) {
             if (debug) console.log("QRCode build done");
