@@ -1,5 +1,7 @@
 const path = require("path");
 const defines = require(process.argv[2]);
+// change to debugging if using vscode debugger
+const debugging = false;
 const merge = require("lodash").merge;
 const interfaces = require("os").networkInterfaces();
 var save_jsonform_info = false;
@@ -160,7 +162,7 @@ if (debug)
 //
 // code for use in debugger in another path
 let fp;
-if (!__dirname.includes("MagicMirror"))
+if (debugging && !__dirname.includes("MagicMirror"))
   fp = path.join(
     __dirname.split(path.sep).slice(0, -2).join(path.sep),
     "/MagicMirror",
