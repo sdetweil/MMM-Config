@@ -410,30 +410,43 @@ module.exports = NodeHelper.create({
   // analogSize in config,  but no config object in config.js
   // so picking the keys for the config doesn't help, not present
   // and then merge those in.. ( clock, defaults, )
-  mergeModule: function (config, data, defaults) {
+  mergeModule: function (module_entry, data, defaults) {
     if (debug) console.log("merge data=" + JSON.stringify(data, null, 2));
-    let keys = _.keys(config);
+    let keys = _.keys(module_entry);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
     keys = _.without(keys, "config");
-    _.assign(config, _.pick(data, keys));
+    _.assign(module_entry, _.pick(data, keys));
     if (debug)
       console.log(
         "config after assign=" +
-          JSON.stringify(config, null, 2) +
+          JSON.stringify(module_entry, null, 2) +
           " keys=" +
           JSON.stringify(keys, null, 2)
       );
+    // if the module_entry config section exists
+    if (module_entry["config"] !== undefined) {
+      // loop thru all the items in the existing config
+      if (debug) console.log("checking for deleted items from old config data");
+      Object.keys(module_entry.config).forEach((key) => {
+        // if that key isn't in the new data
+        if (data.config[key] === undefined) {
+          if (debug)
+            console.log("deleting item=" + key + " from old config data");
+          delete module_entry.config[key];
+        }
+      });
+    }
     let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
     if (debug)
       console.log("keydiff after assign=" + JSON.stringify(keydiff, null, 2));
     if (keydiff.length) {
       if (debug)
         console.log("keydiff in merge=" + JSON.stringify(keydiff, null, 2));
-      if (config.config === undefined) config.config = {};
+      if (module_entry.config === undefined) module_entry.config = {};
 
       // assign only dies flat variables, not subobjects (aka shallow assign)
-      _.assign(config.config, _.pick(data.config, keydiff));
+      _.assign(module_entry.config, _.pick(data.config, keydiff));
 
       // filter out the flat variables
       // leaving only sub objects
@@ -443,10 +456,10 @@ module.exports = NodeHelper.create({
       // of ther were any subobjects
       if (nested.length) {
         // handle nested objects
-        this.merge_nested(config.config, data.config, nested);
+        this.merge_nested(module_entry.config, data.config, nested);
       }
     }
-    return config;
+    return module_entry;
   },
 
   fixobject_name: function (object, key, newname) {
