@@ -299,38 +299,6 @@
               "title": "OpenWeatherMap",
               "items":[
                 {
-                  "title":"apiVersion",
-                  "key":"weather.config.apiVersion"
-                },
-                {
-                  "title":"apiBase",
-                  "key":"weather.config.apiBase",
-                  "value":"https://api.openweathermap.org/data/"
-                },
-                {
-                  "type":"selectfieldset",
-                  "title":"weatherEndpoint",
-                  "key":"weather.config.weatherEndpoint",
-                  "items":[
-                    {
-                      "title":"/forecast",
-                      "value":"/forecast"
-                    },
-                    {
-                      "title":"/forecast/daily",
-                      "value":"/forecast/daily"
-                    },
-                    {
-                      "title":"/weather",
-                      "value":"/weather"
-                    },
-                    {
-                      "title":"/onecall",
-                      "value":"/onecall"
-                    }
-                  ]
-                },
-                {
                   "title":"type",
                   "key":"weather.config.type"
                 },
