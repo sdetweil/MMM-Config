@@ -55,7 +55,6 @@ module.exports = NodeHelper.create({
     this.expressApp.get("/modules/MMM-Config/review", (req, res) => {
       // redirect to config form
       res.redirect(
-        this.config.url +
           "/modules/" +
           this.name +
           "/config.html?port=" +
