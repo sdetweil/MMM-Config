@@ -40,13 +40,13 @@ module.exports = NodeHelper.create({
 
   // collect the data in background
   launchit() {
-    console.log("execing " + this.command);
+    if (debug) console.log("execing " + this.command);
     exec(this.command, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
       }
-      console.log(`stdout: ${stdout}`);
+      if (debug) console.log(`stdout: ${stdout}`);
       if (stderr) console.error(`stderr 2: ${stderr}`);
     });
   },
@@ -59,6 +59,24 @@ module.exports = NodeHelper.create({
         "/modules/" + this.name + "/config.html?port=" + socket_io_port
       );
     });
+  },
+  getIPAddress(){
+    const nets = os.networkInterfaces();
+    const results = Object.create(null); // Or just '{}', an empty object
+
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+            // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+            if (net.family === 'IPv4' && !net.internal) {
+                if (!results[name]) {
+                    results[name] = [];
+                }
+                results[name].push(net.address);
+            }
+        }
+    }
+    //console.log(JSON.stringify(results,null,2))
+    return results[Object.keys(results)[0]]
   },
   // module startup after receiving MM ready
   startit() {
@@ -138,7 +156,8 @@ module.exports = NodeHelper.create({
       debug = this.config.debug;
       this.startit();
 
-      this.hostname = os.hostname();
+      this.hostname = //os.hostname();
+      this.getIPAddress()
 
       this.config.url =
         "http://" +
@@ -180,7 +199,7 @@ module.exports = NodeHelper.create({
         // else return instance of matching index (if any)
         i++;
         if (
-          index === -1 ||
+          index === -2 ||
           (m.index !== undefined && m.index === index) ||
           i === index
         ) {
@@ -337,11 +356,127 @@ module.exports = NodeHelper.create({
   isNumeric: function (n) {
     return !isNaN(parseFloat(n)) && isFinite(parseInt(n));
   },
-  mergeModule(config, data) {
-    let keys = _.keys(config);
+
+  // check to see if objects are the same, including sub objects..
+  // return a list of flat variables
+  // and subobject/variable name
+  objectsAreSame: function (x, y) {
+    if (debug)
+      console.log(
+        "x=" + JSON.stringify(x.null, 2) + " y=" + JSON.stringify(y, null, 2)
+      );
+    var proplist = [];
+    for (var propertyName in y) {
+      if (
+        typeof x[propertyName] === "object" &&
+        typeof y[propertyName] === "object"
+      ) {
+        if (debug) console.log("comparing objects=" + propertyName);
+        let t = {};
+        let r = this.objectsAreSame(x[propertyName], y[propertyName]);
+        if (r.length) {
+          t[propertyName] = r;
+
+          if (debug) console.log("object list=" + JSON.stringify(t, null, 2));
+          proplist = proplist.concat(t);
+          if (debug)
+            console.log(
+              "concat object list=" + JSON.stringify(proplist, null, 2)
+            );
+        }
+      } else if (x[propertyName] !== y[propertyName]) {
+        if (debug) console.log("comparing prop=" + propertyName);
+        proplist.push(propertyName);
+      }
+    }
+    if (debug)
+      console.log("returning list=" + JSON.stringify(proplist, null, 2));
+    return proplist;
+  },
+
+  merge_nested: function (output, input, changed_vars) {
+    changed_vars.forEach((sub_object) => {
+      // loop thru array of objects
+      if (debug)
+        console.log("changed object=" + JSON.stringify(sub_object, null, 2));
+      Object.keys(sub_object).forEach((entry) => {
+        // e = OS
+        if (debug)
+          console.log(
+            "changed object name=" +
+              entry +
+              " array=" +
+              Array.isArray(sub_object[entry])
+          );
+        if (output[entry] === undefined) output[entry] = {};
+        _.assign(output[entry], _.pick(input[entry], sub_object[entry]));
+        if (debug) console.log(" merged =" + JSON.stringify(output, null, 2));
+        let r = sub_object[entry].filter((x) => {
+          if (debug) console.log("testing item in array=" + typeof x + " " + x);
+          if (typeof x === "object") return true;
+        });
+        if (r.length) {
+          if (debug) console.log("have more to merge for sub_object");
+          this.merge_nested(output[entry], input[entry], r);
+        }
+      });
+    });
+  },
+
+  // we need to figure out what changed in the data
+  // analogSize in config,  but no config object in config.js
+  // so picking the keys for the config doesn't help, not present
+  // and then merge those in.. ( clock, defaults, )
+  mergeModule: function (module_entry, data, defaults) {
+    if (debug) console.log("merge data=" + JSON.stringify(data, null, 2));
+    let keys = _.keys(module_entry);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
-    return _.assign(config, _.pick(data, keys));
+    keys = _.without(keys, "config");
+    _.assign(module_entry, _.pick(data, keys));
+    if (debug)
+      console.log(
+        "config after assign=" +
+          JSON.stringify(module_entry, null, 2) +
+          " keys=" +
+          JSON.stringify(keys, null, 2)
+      );
+    // if the module_entry config section exists
+    if (module_entry["config"] !== undefined) {
+      // loop thru all the items in the existing config
+      if (debug) console.log("checking for deleted items from old config data");
+      Object.keys(module_entry.config).forEach((key) => {
+        // if that key isn't in the new data
+        if (data.config[key] === undefined) {
+          if (debug)
+            console.log("deleting item=" + key + " from old config data");
+          delete module_entry.config[key];
+        }
+      });
+    }
+    let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
+    if (debug)
+      console.log("keydiff after assign=" + JSON.stringify(keydiff, null, 2));
+    if (keydiff.length) {
+      if (debug)
+        console.log("keydiff in merge=" + JSON.stringify(keydiff, null, 2));
+      if (module_entry.config === undefined) module_entry.config = {};
+
+      // assign only dies flat variables, not subobjects (aka shallow assign)
+      _.assign(module_entry.config, _.pick(data.config, keydiff));
+
+      // filter out the flat variables
+      // leaving only sub objects
+      let nested = keydiff.filter((x) => {
+        if (typeof x === "object") return true;
+      });
+      // of ther were any subobjects
+      if (nested.length) {
+        // handle nested objects
+        this.merge_nested(module_entry.config, data.config, nested);
+      }
+    }
+    return module_entry;
   },
 
   fixobject_name: function (object, key, newname) {
@@ -425,7 +560,8 @@ module.exports = NodeHelper.create({
 
     if (debug) console.log("\nstart processing form submit\n");
 
-    console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
+    if (debug)
+      console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
 
     if (1) {
       if (debug)
@@ -636,45 +772,6 @@ module.exports = NodeHelper.create({
       }
       delete data.mangled_names;
     }
-    /*  if (0) {
-      // calculate diff   form input with form output
-      // loop thru the defines
-      Object.keys(cfg.defined_config).forEach((module_define) => {
-        // take off the 'defines' suffix
-        let module_name = module_define
-          .slice(0, module_define.lastIndexOf("_"))
-          .replace(/_/g, "-");
-
-        let diff = detailedDiff(
-          cfg.defined_config[module_define],
-          data[module_name].config
-        );
-
-      //  if(this.clean_diff(diff))
-		  //  	console.log("object equal for module="+module_name)
-			//	else
-			//		console.log("define compare for module="+module_name+"="+JSON.stringify(diff,' ',2))
-      });
-
-      // compare returned and cleaned up data with the module defines
-      for (const m of Object.keys(self.config.data.value)) {
-        let cfgmodule = self.getConfigModule(m, cfg.config.modules); will fail
-        //console.log (m !== 'config' && "module "+m+" disabled a="+self.config.data.value[m]['disabled']+" b="+this.getConfigModule(m, cfg.modules)['disabled']+" c="+data[m]['disabled'])
-        if (
-          m !== "config" &&
-          cfgmodule &&
-          self.config.data.value[m]["disabled"] != cfgmodule["disabled"] &&
-          data[m]["disabled"] == false
-        ) {
-          //console.log("comparing "+data[m]+" to "+self.config.data.value[m])
-
-          // comparing submitted values again returned
-          let x = detailedDiff(self.config.data.value[m], data[m]);
-          //if(Object.keys(x).length!=1)
-          //	console.log("diff for module="+m+" = "+JSON.stringify(x))
-        }
-      }
-    } */
 
     // setup the final data to write out
     let r = {};
@@ -779,7 +876,11 @@ module.exports = NodeHelper.create({
             module_in_config.position = module_form_data.position;
           }
 
-          merged_module = self.mergeModule(module_in_config, module_form_data);
+          merged_module = self.mergeModule(
+            module_in_config,
+            module_form_data,
+            cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
+          );
           merged_module.inconfig = "1";
 
           if (debug)
@@ -829,7 +930,18 @@ module.exports = NodeHelper.create({
               temp[module_property] = merged_module[module_property];
               if (debug) console.log("copied for key=" + module_property);
             }
-            if (temp.position === undefined) temp.position = "none";
+
+            // don't crash for bad positions
+            // add dummy config parm, make bad parm none (same  visual result)
+            if (!module_positions.includes(temp.position)) {
+              temp.bad_position = temp.position;
+              temp.position = "none";
+            }
+
+            // set none if not specified
+            if (temp.position === undefined) {
+              temp.position = "none";
+            }
 
             temp.position = temp.position.replace(" ", "_");
             layout_order[temp.position].push(temp);

@@ -1,0 +1,622 @@
+{
+  "schema": {
+    "weather": {
+      "type": "object",
+      "title": "properties for weather",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "weather",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "weatherProvider": {
+              "type": "string",
+              "enum":[
+                 "darksky",
+                 "envcanada",
+                 "openweathermap",
+                 "smhi",
+                 "ukmetofficedatahub",
+                 "ukmetoffice",
+                 "weatherbit",
+                 "weathergov"
+              ]
+            },
+            "apiBase": {
+              "type":"string"              
+            },
+            "apiVersion": {
+              "type":"string",
+              "default":"2.5"
+            },
+            "weatherEndpoint" :{
+              "type": "string"
+            },
+            "apiKey": {
+              "type":"string",
+              "default":""
+            },
+            "apiSecret": {
+              "type":"string",
+              "default":""
+            },
+            "lat": {
+              "type": "number",
+              "default":0
+            },
+            "lon": {
+              "type": "number",
+              "default":0
+            },
+            "siteCode": {
+              "type":"string",
+              "default":"s1234567"
+            },
+            "provCode": {
+              "type":"string",
+              "default":"ON"
+            },
+            "locationID": {
+              "type":"string",
+              "default":""
+            },
+            "location": {
+              "type":"string",
+              "default":""
+            },
+            "precipitationValue": {
+              "type":"string",
+              "default":"pmedian"
+            },
+            "windUnits": {
+              "type":"string",
+              "enum":[
+                "mph",
+                "kph"
+              ]
+            },
+            "roundTemp": {
+              "type": "boolean"
+            },
+            "type": {
+              "type": "string",
+              "enum":[
+                "current",
+                "forecast",
+                "daily",
+                "hourly"
+              ]
+            },
+            "units": {
+              "type": "string"
+            },
+            "useKmh": {
+              "type": "boolean"
+            },
+            "tempUnits": {
+              "type": "string"
+            },
+            "updateInterval": {
+              "type": "integer"
+            },
+            "animationSpeed": {
+              "type": "integer"
+            },
+            "timeFormat": {
+              "type": "integer"
+            },
+            "showPeriod": {
+              "type": "boolean"
+            },
+            "showPeriodUpper": {
+              "type": "boolean"
+            },
+            "showWindDirection": {
+              "type": "boolean"
+            },
+            "showWindDirectionAsArrow": {
+              "type": "boolean"
+            },
+            "useBeaufort": {
+              "type": "boolean"
+            },
+            "lang": {
+              "type": "string"
+            },
+            "showHumidity": {
+              "type": "boolean"
+            },
+            "showSun": {
+              "type": "boolean"
+            },
+            "degreeLabel": {
+              "type": "string"
+            },
+            "decimalSymbol": {
+              "type": "string"
+            },
+            "showIndoorTemperature": {
+              "type": "boolean"
+            },
+            "showIndoorHumidity": {
+              "type": "boolean"
+            },
+            "maxNumberOfDays": {
+              "type": "integer"
+            },
+            "maxEntries": {
+              "type": "integer"
+            },
+            "fade": {
+              "type": "boolean"
+            },
+            "fadePoint": {
+              "type": "integer"
+            },
+            "initialLoadDelay": {
+              "type": "integer"
+            },
+            "appendLocationNameToHeader": {
+              "type": "boolean"
+            },
+            "calendarClass": {
+              "type": "string"
+            },
+            "tableClass": {
+              "type": "string"
+            },
+            "onlyTemp": {
+              "type": "boolean"
+            },
+            "showPrecipitationAmount": {
+              "type": "boolean"
+            },
+            "colored": {
+              "type": "boolean"
+            },
+            "showFeelsLike": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "weather.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "weather.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "weather.classes",
+      "description": "css classes to use for this module, beyond what MM provides"
+    },
+    {
+      "key": "weather.order",
+      "type": "hidden"
+    },
+    {
+      "key": "weather.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "weather.index",
+      "type": "hidden"
+    },
+    {
+      "type": "section",
+      "title": "config",
+      "items": [
+        {
+          "type": "selectfieldset",
+          "title": "weatherProvider",
+          "key":"weather.config.weatherProvider",
+          "items": [
+            {
+              "type":"section",
+              "title":"Dark Sky",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value": "https://cors-anywhere.herokuapp.com/https://api.darksky.net"
+                },
+                {
+                  "title":"weatherEndpoint",
+                  "value":"/forecast",
+                  "key":"weather.config.weatherEndpoint",
+                  "readonly":"true"
+                },
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "value":"Darksky API Key"
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat"
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon"
+                }
+              ]
+            },
+            {
+              "type":"section",
+              "title": "Environment Canada",
+              "items":[
+                {
+                  "title":"siteCode",    
+                  "key":"weather.config.siteCode"
+                },
+                {
+                  "title":"provCode",                 
+                  "key":"weather.config.provCode"
+                }
+              ]
+            },          
+            {
+              "type":"section",
+              "title": "OpenWeatherMap",
+              "items":[
+                {
+                  "title":"type",
+                  "key":"weather.config.type"
+                },
+                {
+                  "title":"apiKey",                    
+                  "key":"weather.config.apiKey",
+                  "value":"OpenWeatherMap apikey"
+                },
+                {
+                  "title":"locationID",                  
+                  "key":"weather.config.locationID"
+                },  
+                {                  
+                  "title":"location",                  
+                  "key":"weather.config.location"
+                }
+              ]
+            },
+            {
+              "type":"section",
+              "title": "smhi",
+              "items":[
+                {
+                  "title":"lat",                  
+                  "key":"weather.config.lat"
+                },
+                {
+                  "title":"lon",                  
+                  "key":"weather.config.lon"
+                },
+                {
+                  "title":"precipitationValue",                  
+                  "key":"weather.config.precipitationValue"
+                }                 
+              ]
+            },
+            {
+              "type":"section",
+              "title": "UK Met Office (DataHub)",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value": "https://api-metoffice.apiconnect.ibmcloud.com/metoffice/production/v0/forecasts/point/"
+                },
+                {
+                  "title":"apiKey",                    
+                  "key":"weather.config.apiKey",
+                  "value":"UK Met Office (DataHub) API Key"
+                }, 
+                {
+                  "title":"apiSecret",                    
+                  "key":"weather.config.apiSecret"
+                },                               
+                {
+                  "title":"lat",                  
+                  "key":"weather.config.lat"
+                },
+                {
+                  "title":"lon",                  
+                  "key":"weather.config.lon"
+                },
+                {
+                  "title":"windUnits",                  
+                  "key":"weather.config.windUnits"
+                }                 
+              ]
+            },         
+            {
+              "type":"section",
+              "title": "UK Met Office",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value": "http://datapoint.metoffice.gov.uk/public/data/val/wxfcs/all/json/"
+                },                
+                {
+                  "title":"apiKey",                    
+                  "key":"weather.config.apiKey",
+                  "value":"UK Met Office API Key"
+                },
+                {
+                  "title":"locationID",                  
+                  "key":"weather.config.locationID"
+                }
+              ]
+            },
+            {
+              "type":"section",
+              "title": "Weatherbit",
+              "items":[               
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value": "https://api.weatherbit.io/v2.0"                   
+                },
+                {
+                  "title":"weatherEndpoint",                
+                  "value":"/current",
+                  "key":"weather.config.weatherEndpoint",
+                  "readonly":"true"
+                },
+                {
+                  "title":"apiKey",                    
+                  "key":"weather.config.apiKey",
+                  "value":"Weatherbit API Key"
+                },
+                {
+                  "title":"lat",                  
+                  "key":"weather.config.lat"
+                },
+                {
+                  "title":"lon",                  
+                  "key":"weather.config.lon"
+                }
+              ]
+            },    
+            {
+              "type":"section",
+              "title": "Weather.gov",
+              "items":[               
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value": "https://api.weather.gov/points/"
+                },
+                {
+                  "title":"weatherEndpoint",
+                  "value":"/forecast",
+                  "key":"weather.config.weatherEndpoint",
+                  "readonly":"true"
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat"
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "roundTemp",
+          "key": "weather.config.roundTemp"
+        },
+        {
+          "title": "units",
+          "key": "weather.config.units"
+        },
+        {
+          "title": "useKmh",
+          "key": "weather.config.useKmh"
+        },
+        {
+          "title": "tempUnits",
+          "key": "weather.config.tempUnits"
+        },
+        {
+          "title": "windUnits",
+          "key": "weather.config.windUnits"
+        },
+        {
+          "title": "updateInterval",
+          "key": "weather.config.updateInterval"
+        },
+        {
+          "title": "animationSpeed",
+          "key": "weather.config.animationSpeed"
+        },
+        {
+          "title": "timeFormat",
+          "key": "weather.config.timeFormat"
+        },
+        {
+          "title": "showPeriod",
+          "key": "weather.config.showPeriod"
+        },
+        {
+          "title": "showPeriodUpper",
+          "key": "weather.config.showPeriodUpper"
+        },
+        {
+          "title": "showWindDirection",
+          "key": "weather.config.showWindDirection"
+        },
+        {
+          "title": "showWindDirectionAsArrow",
+          "key": "weather.config.showWindDirectionAsArrow"
+        },
+        {
+          "title": "useBeaufort",
+          "key": "weather.config.useBeaufort"
+        },
+        {
+          "title": "lang",
+          "key": "weather.config.lang"
+        },
+        {
+          "title": "showHumidity",
+          "key": "weather.config.showHumidity"
+        },
+        {
+          "title": "showSun",
+          "key": "weather.config.showSun"
+        },
+        {
+          "title": "degreeLabel",
+          "key": "weather.config.degreeLabel"
+        },
+        {
+          "title": "decimalSymbol",
+          "key": "weather.config.decimalSymbol"
+        },
+        {
+          "title": "showIndoorTemperature",
+          "key": "weather.config.showIndoorTemperature"
+        },
+        {
+          "title": "showIndoorHumidity",
+          "key": "weather.config.showIndoorHumidity"
+        },
+        {
+          "title": "maxNumberOfDays",
+          "key": "weather.config.maxNumberOfDays"
+        },
+        {
+          "title": "maxEntries",
+          "key": "weather.config.maxEntries"
+        },
+        {
+          "title": "fade",
+          "key": "weather.config.fade"
+        },
+        {
+          "title": "fadePoint",
+          "key": "weather.config.fadePoint"
+        },
+        {
+          "title": "initialLoadDelay",
+          "key": "weather.config.initialLoadDelay"
+        },
+        {
+          "title": "appendLocationNameToHeader",
+          "key": "weather.config.appendLocationNameToHeader"
+        },
+        {
+          "title": "calendarClass",
+          "key": "weather.config.calendarClass"
+        },
+        {
+          "title": "tableClass",
+          "key": "weather.config.tableClass"
+        },
+        {
+          "title": "onlyTemp",
+          "key": "weather.config.onlyTemp"
+        },
+        {
+          "title": "showPrecipitationAmount",
+          "key": "weather.config.showPrecipitationAmount"
+        },
+        {
+          "title": "colored",
+          "key": "weather.config.colored"
+        },
+        {
+          "title": "showFeelsLike",
+          "key": "weather.config.showFeelsLike"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "weather",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "weatherProvider": "openweathermap",
+      "roundTemp": false,
+      "type": "current",
+      "units": "metric",
+      "useKmh": false,
+      "tempUnits": "metric",
+      "windUnits": "metric",
+      "updateInterval": 600000,
+      "animationSpeed": 1000,
+      "timeFormat": 24,
+      "showPeriod": true,
+      "showPeriodUpper": false,
+      "showWindDirection": true,
+      "showWindDirectionAsArrow": false,
+      "useBeaufort": true,
+      "lang": "en",
+      "showHumidity": false,
+      "showSun": true,
+      "degreeLabel": false,
+      "decimalSymbol": ".",
+      "showIndoorTemperature": false,
+      "showIndoorHumidity": false,
+      "maxNumberOfDays": 5,
+      "maxEntries": 5,
+      "ignoreToday": false,
+      "fade": true,
+      "fadePoint": 0.25,
+      "initialLoadDelay": 0,
+      "appendLocationNameToHeader": true,
+      "calendarClass": "calendar",
+      "tableClass": "small",
+      "onlyTemp": false,
+      "showPrecipitationAmount": false,
+      "colored": false,
+      "showFeelsLike": true
+    }
+  }
+}
