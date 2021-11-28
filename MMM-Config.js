@@ -97,7 +97,7 @@ Module.register("MMM-Config", {
         wrapper.appendChild(image);
       } else {
         wrapper.classList.add("text");
-        wrapper.innerHTML = this.translate("QR_ERROR_MESSAGE");
+        wrapper.innerHTML = this.translate("QR_ERROR_MESSAGE").replace('8080',config.port);
       }
     }
     return wrapper;
