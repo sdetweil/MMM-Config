@@ -55,13 +55,28 @@ module.exports = NodeHelper.create({
     this.expressApp.get("/modules/MMM-Config/review", (req, res) => {
       // redirect to config form
       res.redirect(
-        this.config.url +
-          "/modules/" +
-          this.name +
-          "/config.html?port=" +
-          socket_io_port
+        //this.config.url +
+        "/modules/" + this.name + "/config.html?port=" + socket_io_port
       );
     });
+  },
+  getIPAddress(){
+    const nets = os.networkInterfaces();
+    const results = Object.create(null); // Or just '{}', an empty object
+
+    for (const name of Object.keys(nets)) {
+        for (const net of nets[name]) {
+            // Skip over non-IPv4 and internal (i.e. 127.0.0.1) addresses
+            if (net.family === 'IPv4' && !net.internal) {
+                if (!results[name]) {
+                    results[name] = [];
+                }
+                results[name].push(net.address);
+            }
+        }
+    }
+    //console.log(JSON.stringify(results,null,2))
+    return results[Object.keys(results)[0]]
   },
   // module startup after receiving MM ready
   startit() {
@@ -141,7 +156,8 @@ module.exports = NodeHelper.create({
       debug = this.config.debug;
       this.startit();
 
-      this.hostname = os.hostname();
+      this.hostname = //os.hostname();
+      this.getIPAddress()
 
       this.config.url =
         "http://" +
@@ -154,7 +170,8 @@ module.exports = NodeHelper.create({
       if (this.config.showQR) {
         let url = this.config.url + "/modules/" + this.name + "/review";
         let imageurl =
-          this.config.url + "/modules/" + this.name + "/qrfile.png";
+          //this.config.url +
+          "/modules/" + this.name + "/qrfile.png";
         QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
           if (!err) {
             if (debug) console.log("QRCode build done");
