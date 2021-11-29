@@ -34,7 +34,7 @@ A dynamically built form, based on modules installed (git cloned at least) into 
 | **Option** | **Default** | **Default** | **Info**
 | --- | --- | --- | --- |
 | `showQR` | OPTIONAL | `false` | Show a QR code on the MM screen to allow quick access to the configuration form |
-| | | | Otherwise, use a browser to open http://machine_name:MM_Port/modules/MMM-Config/review |
+| | | | Otherwise, use a browser to open http://MM_IP_Address:MM_Port/modules/MMM-Config/review |
 | | | | `Note:` If MagicMirror is configured for `'address:"localhost"`, you `MUST use a browser ON the same system as MM`, and the QR code will be replaced by text on the screen explaining why the QRCode is not displayed
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
 | `restart` | OPTIONAL | none, static pm2, or docker | If not none, on save of config.js, MM will be restarted to use that new config file |
