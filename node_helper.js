@@ -363,7 +363,7 @@ module.exports = NodeHelper.create({
   objectsAreSame: function (x, y) {
     if (debug)
       console.log(
-        "x=" + JSON.stringify(x.null, 2) + " y=" + JSON.stringify(y, null, 2)
+        "objectsAreSame x=" + JSON.stringify(x,null, 2) + " y=" + JSON.stringify(y, null, 2)
       );
     var proplist = [];
     for (var propertyName in y) {
@@ -445,6 +445,7 @@ module.exports = NodeHelper.create({
     if (module_entry["config"] !== undefined) {
       // loop thru all the items in the existing config
       if (debug) console.log("checking for deleted items from old config data");
+      // loop thru the config.js version of the module config
       Object.keys(module_entry.config).forEach((key) => {
         // if that key isn't in the new data
         if (data.config[key] === undefined) {
@@ -454,7 +455,15 @@ module.exports = NodeHelper.create({
         }
       });
     }
+    // compare the form data with the info from the defaults..
     let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
+    if(module_entry.config !== undefined){
+      let keydiff2=this.objectsAreSame(data.config,module_entry.config)
+      keydiff2.forEach(k=>{
+        if(!keydiff.includes(k))
+                keydiff.push(k);
+      })
+    }
     if (debug)
       console.log("keydiff after assign=" + JSON.stringify(keydiff, null, 2));
     if (keydiff.length) {
@@ -462,7 +471,7 @@ module.exports = NodeHelper.create({
         console.log("keydiff in merge=" + JSON.stringify(keydiff, null, 2));
       if (module_entry.config === undefined) module_entry.config = {};
 
-      // assign only dies flat variables, not subobjects (aka shallow assign)
+      // assign only does flat variables, not subobjects (aka shallow assign)
       _.assign(module_entry.config, _.pick(data.config, keydiff));
 
       // filter out the flat variables
@@ -1194,6 +1203,8 @@ module.exports = NodeHelper.create({
     // if we are doing the actual save
     // false for testing data handling
     if (doSave) {
+      if(debug)
+        console.log("saving to new config.js")
       // rename curent using ist last mod date as part of the extension name
       fs.copyFileSync(oc, oc + "." + d);
       // write out the new config.js
