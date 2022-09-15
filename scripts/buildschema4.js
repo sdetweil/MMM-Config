@@ -8,10 +8,16 @@ var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
 var save_module_form = "";
-if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
+console.log("parms=", process.argv)
+if (process.argv.length > 3 && process.argv[3] === "debug") {
+  console.log("setting debug = true")
+  debug = true;
+}
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
   save_jsonform_info = true;
-  if (process.argv.length > 4) save_module_form = process.argv[4];
+  if (process.argv.length > 4) { 
+    save_module_form = process.argv[4];
+  }
 }
 
 let multi_modules = [];
@@ -72,14 +78,19 @@ const form_code_block = {
   width: "100%",
   height: "100px"
 };
+// turn off multi-instance
 let v4_active = false;
+// is there a list of modules that supports multi-instance 
 if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
+  // turn on multi-instance
   v4_active = true;
+  // get the list of modules
   multi_modules = fs
     .readFileSync(path.join(__dirname, "../modules_list.txt"))
     .toString()
     .split("\n");
   for (let i in multi_modules) {
+    // make sure no leading.trailing spaces
     multi_modules[i] = multi_modules[i].trim();
   }
   // if the last entry is empty string
@@ -99,7 +110,7 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
       "../modules_list.txt"
     );
 }
-// get the default modules list
+// get the default modules list from the MM core 
 const defaultModules = require("../../default/defaultmodules.js");
 if (debug)
   console.log(
@@ -108,7 +119,7 @@ if (debug)
 
 //
 //  lets auto detect multiple instances of the same module
-//  being used
+//  being used in config.js now
 //
 let module_instance_counter = {};
 defines.config.modules.forEach((module_instance) => {
@@ -118,13 +129,18 @@ defines.config.modules.forEach((module_instance) => {
 });
 Object.keys(module_instance_counter).forEach((m) => {
   if (module_instance_counter[m] > 1) {
+    // we found more than one instance
+    // but its not in the modules list,
+    // add it
     if (!multi_modules.includes(m)) multi_modules.push(m);
   }
 });
 
+// if there is a custom config file for the jsonform editor
 if (fs.existsSync(path.join(__dirname, "editorinfo.json"))) {
   let editor_setup = require(path.join(__dirname, "editorinfo.json"));
   Object.keys(editor_setup).forEach((key) => {
+    // use they info for form building
     switch (key) {
       case "mode":
         form_code_block["aceMode"] = editor_setup[key];
@@ -228,6 +244,7 @@ const module_form_template = {
 };
 
 var array_template = { type: "array", title: "name" };
+
 var object_template = {
   type: "array",
   title: "foo",
@@ -255,7 +272,6 @@ let empty_objects = [];
 let empty_arrays = [];
 let mangled_names = {};
 let form_object_correction = [];
-if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 
 let results = [];
 
@@ -270,7 +286,7 @@ copyConfig(defines, schema, form);
 
 //
 //	loop thru the modules in the defaults collection list
-//  and process as 'modules', build what they 'look like'
+//  and process as 'modules', build what they might 'look like'
 //  what they ARE in config.js added later
 //
 Object.keys(defines.defined_config).forEach((module_definition) => {
@@ -295,21 +311,25 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     value[module_name] = [];
   // one
   else value[module_name] = {};
+
+  // indicate we didn't find a module specific schema
   schema_present[module_name] = false;
 
   // if it exists
   let fn = check_for_schema(module_name);
   if (debug) console.log("looking for module's schema file=" + fn);
-
+  //if we found a module schema file 
   if (true && fn !== null) {
+    // set flag we found something
     moduleIndex[module_name] = 0;
 
     if (debug) console.log("processing using the schema file =" + fn);
 
     // lets use it
-    let jsonform_info = require(fn);
+    let jsonform_info = require(fn);  // is a json file, so importable
+    // indicate we found schema
     schema_present[module_name] = true;
-    // if the module have mangled names
+    // if the module has mangled names
     if (jsonform_info.mangled_names !== undefined) {
       // record them in the list for correction on save
       Object.keys(jsonform_info.mangled_names).forEach((k) => {
@@ -801,7 +821,7 @@ multi_modules.forEach((module_name) => {
 // to make these items work as we want
 // author said [].. what the heck goes there?   many times an array of objects {....},{....},
 // we don't know what that looks like, or we would make the form
-// so, create an editor window
+// so, create an editor window for some object type
 //
 //
 
@@ -825,7 +845,7 @@ form_object_correction.forEach((key) => {
     console.log(
       "looking for define info for module=" + module_define_name + " key=" + key
     );
-  // if a module snuck into conig.js but is noyt installed in modules  folder,
+  // if a module snuck into conig.js but is not installed in modules folder,
   // skip fiddling with it
   if (defines.defined_config[module_define_name] !== undefined) {
     // module info used
@@ -863,7 +883,8 @@ for (let k of Object.keys(defines.config)) {
     base[k] = clone(defines.config[k]);
   }
 }
-//let x = value
+
+// save the the base MM values in the value section of the form
 value["config"] = base;
 
 //
