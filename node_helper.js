@@ -1086,7 +1086,8 @@ module.exports = NodeHelper.create({
       .replace(new RegExp("config:"), "var config =")
       .replace(/=:=/g, "::")
       .replace(/~~/g, "f:")
-      .replace(/\^::\^/g, ': ":"');
+      .replace(/\^::\^/g, ': ":"')
+      .replace(/\\"/g, '');
     // find any function invocations (parms)=> ...
     // loop thru them to take out embedded text return/nl, and escaped quotes
     // old (: "\(|: "function\().*$
