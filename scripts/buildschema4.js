@@ -2349,9 +2349,13 @@ function checkForPair(data) {
     } else {
       // if the object has one element and it is an array, can't be pair
       if(Array.isArray(data[c[0]])){
+        let element_array =data[c[0]]
+        if(element_array.length>0){
+          if(typeof element_array[0] =="string" )
         if(debug)
-          console.log("pair detected object with one element which IS an array, can't be pair, key=",c[0])
+          console.log("pair detected object with one element which IS an array of strings, can't be pair, key=",c[0])
         result=false
+        }
       }
     }
   }
