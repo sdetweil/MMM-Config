@@ -2297,14 +2297,22 @@ function checkForPair(data) {
   let keys = {};
   // if this is an array
   if (Array.isArray(data)) {
+    if(debug) 
+      console.log("pair detected array, length= "+data.length)
     // loop thru the elements
     if (data.length) {
       for (let i in data) {
         // if the item is an object
         if (typeof data[i] === "object") {
           keys[i] = Object.keys(data[i]);
+          if(debug)
+            console.log("pair detected object in array ", data[i], " keys=",keys[i])
         } // can't be a pair
-        else return false;
+        else {
+          if(debug)
+            console.log("pair detected NOT object in array, can't be pair", data[i])          
+          return false;
+        }
       }
       let first_element = keys[0];
       if (Object.keys(keys).length === 1 && first_element.length === 1)
@@ -2318,19 +2326,36 @@ function checkForPair(data) {
         }
       }
       // empty array, guess...
-    } else result = false;
+    } else {
+      if(debug)
+        console.log("pair detected empty array, will have to guess")
+      result = false;
+    }
   } else if (typeof data === "object") {
     let c = Object.keys(data);
+    if(debug)
+      console.log("pair detected object", data, "keys=",c)
     // if more keys than 1
     result = true;
     if (c.length !== 1) {
       for (let k of Object.keys(data)) {
         if (typeof data[k] !== "string") {
+          if(debug)
+            console.log("pair detected object element is not a string, can't be pair", data[k]," key=",k)
           result = false;
           break;
         }
       }
+    } else {
+      // if the object has one element and it is an array, can't be pair
+      if(Array.isArray(data[c[0]])){
+        if(debug)
+          console.log("pair detected object with one element which IS an array, can't be pair, key=",c[0])
+        result=false
+      }
     }
   }
+  if(debug)
+      console.log("pair returning ", result)
   return result;
 }
