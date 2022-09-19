@@ -885,11 +885,17 @@ module.exports = NodeHelper.create({
             module_in_config.position = module_form_data.position;
           }
 
-          merged_module = self.mergeModule(
-            module_in_config,
-            module_form_data,
-            cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
-          );
+          // don't crash if module not installed
+          if(cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]){
+            merged_module = self.mergeModule(
+              module_in_config,
+              module_form_data,
+              cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
+            );
+          }
+          else {
+            merged_module=module_in_config;
+          }
           merged_module.inconfig = "1";
 
           if (debug)

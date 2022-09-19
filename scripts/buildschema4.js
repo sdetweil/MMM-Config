@@ -387,6 +387,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       mform.items.push({
         type: "array",
         draggable: false,
+        deleteCurrent:false,
         minItems: 1,
         items: [
           {
@@ -1259,6 +1260,7 @@ function updateFormElement(data, key, new_attributes, top_level) {
       if (debug)
         console.log(" updating the item we are looking for =" + left[0]);
       form_entry["draggable"] = false;
+      form_entry["deleteCurrent"] = false;
       Object.keys(new_attributes).forEach((key) => {
         form_entry.items[0][key] = new_attributes[key];
       });
@@ -1447,6 +1449,7 @@ function copyConfig(defines, schema, form) {
       case "array":
         form[0].items[0].items.push({
           type: "array",
+          deleteCurrent: false,
           title: setting,
           items: [
             {
@@ -1741,6 +1744,7 @@ function processModule(schema, form, value, defines, module_name) {
     mform.items.push({
       type: "array",
       draggable: false,
+      deleteCurrent: false,
       minItems: 1,
       items: [
         {
@@ -1929,8 +1933,10 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
               (typeof r.mform === "string" ? r.mform : JSON.stringify(r.mform))
           );
         if (Array.isArray(r.mform)) {
-          if (r.mform[0].type !== undefined && r.mform[0].type === "ace")
+          if (r.mform[0].type !== undefined && r.mform[0].type === "ace"){
             r.mform["draggable"] = false;
+            r.mform["deleteCurrent"] = false;
+          }
           for (let f of r.mform) vform.items.push(f);
         } else vform.items.push(r.mform);
       }
@@ -1993,6 +1999,7 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
   let vform = {
     type: "array",
     title: formtitle,
+    deleteCurrent: false,
     items: [
       {
         key: m + "." + trimit(formtitle),
@@ -2091,8 +2098,10 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
       } else {
         if (JSON.stringify(variable) === "[]" && r.mform.title.endsWith("[]"))
           delete r.mform.title;
-        if (JSON.stringify(r.mform, tohandler).includes("aceMode"))
+        if (JSON.stringify(r.mform, tohandler).includes("aceMode")){
           vform["draggable"] = false;
+          vform["deleteCurrent"] = false;
+        }
         vform.items = JSON.parse(JSON.stringify(r.mform, tohandler));
       }
     }
@@ -2179,6 +2188,7 @@ function processPairObject(m, p, v, mform, checkPair, recursive, wasObject) {
   let vform = {
     type: "array",
     title: p,
+    deleteCurrent:false,
     items: [
       {
         key: m + "." + trimit(p) + "[]",
