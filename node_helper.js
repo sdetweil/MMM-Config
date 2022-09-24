@@ -444,11 +444,11 @@ module.exports = NodeHelper.create({
     // if the module_entry config section exists
     if (module_entry["config"] !== undefined) {
       // loop thru all the items in the existing config
-      if (debug) console.log("checking for deleted items from old config data");
+      if (debug) console.log("checking for items in old config data, same as defaults");
       // loop thru the config.js version of the module config
-      Object.keys(module_entry.config).forEach((key) => {
+      Object.keys(data.config).forEach((key) => {
         // if that key isn't in the new data
-        if (data.config[key] === undefined) {
+        if (module_entry.config[key] === defaults[key]) {
           if (debug)
             console.log("deleting item=" + key + " from old config data");
           delete module_entry.config[key];
