@@ -8,9 +8,9 @@ var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
 var save_module_form = "";
-console.log("parms=", process.argv)
+//console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "debug") {
-  console.log("setting debug = true")
+  //console.log("setting debug = true")
   debug = true;
 }
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
