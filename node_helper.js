@@ -444,11 +444,11 @@ module.exports = NodeHelper.create({
     // if the module_entry config section exists
     if (module_entry["config"] !== undefined) {
       // loop thru all the items in the existing config
-      if (debug) console.log("checking for deleted items from old config data");
+      if (debug) console.log("checking for items in old config data, same as defaults");
       // loop thru the config.js version of the module config
-      Object.keys(module_entry.config).forEach((key) => {
+      Object.keys(data.config).forEach((key) => {
         // if that key isn't in the new data
-        if (data.config[key] === undefined) {
+        if (module_entry.config[key] === defaults[key]) {
           if (debug)
             console.log("deleting item=" + key + " from old config data");
           delete module_entry.config[key];
@@ -885,11 +885,17 @@ module.exports = NodeHelper.create({
             module_in_config.position = module_form_data.position;
           }
 
-          merged_module = self.mergeModule(
-            module_in_config,
-            module_form_data,
-            cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
-          );
+          // don't crash if module not installed
+          if(cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]){
+            merged_module = self.mergeModule(
+              module_in_config,
+              module_form_data,
+              cfg.defined_config[module_name.replace(/-/g, "_") + "_defaults"]
+            );
+          }
+          else {
+            merged_module=module_in_config;
+          }
           merged_module.inconfig = "1";
 
           if (debug)
