@@ -8,7 +8,7 @@
       "items": [
         {
           "type":"tabarray",
-          "draggable":"false",
+          "draggable":false,
           "items":[
             {
               "type":"section",
