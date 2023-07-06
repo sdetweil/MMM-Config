@@ -39,12 +39,12 @@
                        {
                         "key":"positions[].instance_info[].position",
                        "description":"module position in MagicMirror regions",
-                       "onChange":"(evt,node)=>{var value=$(evt.target).val();let parts=$(evt.target).attr('name').split('.');let idx='';let nameitem =$(\"[name*='\"+parts[0]+\".name']\");let m = $(nameitem).val();let ul=$(nameitem).closest('.possibly-hidden-tab').find('ul.nav-tabs');let l=$(ul).find('li').length;if(l!==1){l=$(ul).find('li.active').attr('data-idx');idx='['+parseInt(l)+']';};let target=\"[name*='\"+m+idx+\".position']\";$(target).val(value)}"
+                       "onChange": "(evt, node) => {var value=$(evt.target).val();let parts=$(evt.target).attr('name').split('.');let nameitem =$(\"[name*='\"+parts[0]+\".name']\");let m = $(nameitem).val();let ul=$(nameitem).closest('.possibly-hidden-tab').find('ul.nav-tabs');let idx ='['+parseInt($(ul).find('li.active').attr('data-idx'))+']';let target=null;for (let i=0;i<2;i++){target=$(\"[name*='\"+m+idx+\".position']\");if(target.length==0){idx='';continue;}$(target).val(value);break;};}"
                        },
                        {
                        "key":"positions[].instance_info[].order",
                        "description":"position order in MagicMirror region, 1 is 1st, 2 is second, and so on, * is don't care",
-                       "onChange":"(evt,node)=>{var value=$(evt.target).val();let parts=$(evt.target).attr('name').split('.');let idx='';let nameitem =$(\"[name*='\"+parts[0]+\".name']\");let m = $(nameitem).val();let ul=$(nameitem).closest('.possibly-hidden-tab').find('ul.nav-tabs');let l=$(ul).find('li').length;if(l!==1){l=$(ul).find('li.active').attr('data-idx');idx='['+parseInt(l)+']';};$(\"[name*='\"+m+idx+\".order']\").val(value)}"
+                       "onChange": "(evt, node) => {var value=$(evt.target).val();let parts=$(evt.target).attr('name').split('.');let nameitem =$(\"[name*='\"+parts[0]+\".name']\");let m = $(nameitem).val();let ul=$(nameitem).closest('.possibly-hidden-tab').find('ul.nav-tabs');let idx ='['+parseInt($(ul).find('li.active').attr('data-idx'))+']';let target=null;for (let i=0;i<2;i++){target=$(\"[name*='\"+m+idx+\".order']\");if(target.length==0){idx='';continue;}$(target).val(value);break;};}"
                        }
                      ]
                     }

@@ -66,6 +66,6 @@ background-color: lightgray;
   color: blue ;
 }
 
-.possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item 1"] {
+.possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item%201"] {
   display: none;
 }
