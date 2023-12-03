@@ -1641,7 +1641,7 @@ function processModule(schema, form, value, defines, module_name) {
         "(evt,node)=>{let value=$(evt.target).val();let p=$(evt.target).attr('name').split('[');let n=p[0];let i=parseInt(p[1]);$(\"[value*='\"+n+\"']\").closest('.tab-pane').find('.tab-content').find(\"[data-idx='\"+i+\"'] >div >input \").val(value).trigger('change')}"
     });
   }
-  module_form_items.push({ type: "section", title: "config", items: [] });
+  module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
   let ptr = -1;
   for (let i in module_form_items) {
     if (Object.keys(module_form_items[i]).includes("title")) {

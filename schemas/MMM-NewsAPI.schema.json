@@ -1,0 +1,268 @@
+{
+  "schema": {
+    "MMM-NewsAPI": {
+      "type": "object",
+      "title": "properties for MMM-NewsAPI",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MMM-NewsAPI",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "apiKey": {
+              "type": "string"
+            },
+            "type": {
+              "type": "string"
+            },
+            "choice": {
+              "type": "string"
+            },
+            "pageSize": {
+              "type": "integer"
+            },
+            "sortBy": {
+              "type": "string"
+            },
+            "timeFormat": {
+              "type": "string"
+            },
+            "templateFile": {
+              "type": "string"
+            },
+            "drawInterval": {
+              "type": "integer"
+            },
+            "fetchInterval": {
+              "type": "integer"
+            },
+            "debug": {
+              "type": "boolean"
+            },
+            "QRCode": {
+              "type": "boolean"
+            },
+            "query": {
+               "type": "object",
+               "title": "query",
+               "properties": {
+                  "country":  {
+                      "type":"string",
+                      "default":"us"
+                  },
+                  "category":  {
+                      "type":"string",
+                      "default":""
+                  },
+                  "q": {
+                      "type":"string",
+                      "default":""
+                  },
+
+                  "qInTitle": {
+                      "type":"string",
+                      "default":""
+                  },
+                  "sources": {
+                      "type":"string",
+                      "default":""
+                  },
+                    "domains": {
+                      "type":"string",
+                      "default":""
+                  },
+                    "excludeDomains": {
+                      "type":"string",
+                      "default":""
+                  },
+                  "language": {
+                      "type":"string",
+                      "default":"en"
+                  }
+               }
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MMM-NewsAPI.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "MMM-NewsAPI.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MMM-NewsAPI.classes",
+      "description": "css classes to use for this module, beyond what MM provides"
+    },
+    {
+      "key": "MMM-NewsAPI.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-NewsAPI.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-NewsAPI.index",
+      "type": "hidden"
+    },
+    {
+      "type": "fieldset",
+      "title": "config",
+      "items": [
+        {
+          "title": "apiKey",
+          "key": "MMM-NewsAPI.config.apiKey"
+        },
+        {
+          "title": "type",
+          "key": "MMM-NewsAPI.config.type"
+        },
+        {
+          "title": "choice",
+          "key": "MMM-NewsAPI.config.choice"
+        },
+        {
+          "title": "pageSize",
+          "key": "MMM-NewsAPI.config.pageSize"
+        },
+        {
+          "title": "sortBy",
+          "key": "MMM-NewsAPI.config.sortBy"
+        },
+        {
+          "title": "timeFormat",
+          "key": "MMM-NewsAPI.config.timeFormat"
+        },
+        {
+          "title": "templateFile",
+          "key": "MMM-NewsAPI.config.templateFile"
+        },
+        {
+          "title": "drawInterval",
+          "key": "MMM-NewsAPI.config.drawInterval"
+        },
+        {
+          "title": "fetchInterval",
+          "key": "MMM-NewsAPI.config.fetchInterval"
+        },
+        {
+          "title": "debug",
+          "key": "MMM-NewsAPI.config.debug"
+        },
+        {
+          "title": "QRCode",
+          "key": "MMM-NewsAPI.config.QRCode"
+        },
+        {
+          "title": "query",
+          "type": "fieldset",
+          "title": "query",
+          "items": [
+            {
+              "title": "country",
+              "key": "MMM-NewsAPI.config.query.country"
+            },
+            {
+              "title": "category",
+              "key": "MMM-NewsAPI.config.query.category"
+            },
+                                    {
+              "title": "q",
+              "key": "MMM-NewsAPI.config.query.q"
+            },
+            {
+              "title": "qInTitle",
+              "key": "MMM-NewsAPI.config.query.qInTitle"
+            },
+            {
+              "title": "sources",
+              "key": "MMM-NewsAPI.config.query.sources"
+            },
+            {
+              "title": "domains",
+              "key": "MMM-NewsAPI.config.query.domains"
+            },
+                                    {
+              "title": "excludeDomains",
+              "key": "MMM-NewsAPI.config.query.excludeDomains"
+            },
+            {
+              "title": "language",
+              "key": "MMM-NewsAPI.config.query.language"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MMM-NewsAPI",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "apiKey": "",
+      "type": "horizontal",
+      "choice": "headlines",
+      "pageSize": 20,
+      "sortBy": "publishedAt",
+      "timeFormat": "relative",
+      "templateFile": "template.html",
+      "drawInterval": 30000,
+      "fetchInterval": 3600000,
+      "debug": false,
+      "QRCode": false,
+      "query": {
+        "country": "us",
+        "category": "",
+        "q": "",
+        "qInTitle": "",
+        "sources": "",
+        "domains": "",
+        "excludeDomains": "",
+        "language": "en"
+      }
+    }
+  }
+}
