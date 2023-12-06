@@ -272,6 +272,7 @@ let empty_objects = [];
 let empty_arrays = [];
 let mangled_names = {};
 let form_object_correction = [];
+const module_variable_usage = {};
 
 let results = [];
 
@@ -292,6 +293,7 @@ copyConfig(defines, schema, form);
 Object.keys(defines.defined_config).forEach((module_definition) => {
   let r = "";
   let stack = [];
+
   if (debug) console.log("processing for module " + module_definition);
 
   let module_name = module_definition
@@ -305,6 +307,22 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         JSON.stringify(defines.defined_config[module_definition], tohandler) +
         "\n"
     );
+   try {
+    let isDefault = defaultModules.includes(module_name);
+    let fn = isDefault
+    ? path.join(
+        __dirname,
+        "../..",
+        "default",
+        module_name,
+        "MMM-Config.json"
+      )
+    :path.join(__dirname, "../..", module_name,"MMM-Config.json")
+    module_variable_usage[module_name]=require(fn)
+    if(debug)
+       console.log("found variable usage info for module "+module_name+" "+JSON.stringify(module_variable_usage[module_name],null,2))
+   }
+   catch{}
   // set the data output area structure, many or one
   if (checkMulti(module_name))
     // many
@@ -1855,9 +1873,8 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
   vform["items"] = [];
   vform["title"] = formtitle;
   let isPair = false;
-  if (checkPair) isPair = checkForPair(v);
+  if (checkPair) isPair = checkForPair(v,m,p);
   if (isPair) {
-    //v=v[Object.keys(v)[0]]
     type = "objectPair";
     let x = m.split(".");
     if (checkMulti(x[0])) {
@@ -1870,6 +1887,27 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
       );
     pairVariables[x + "." + p] = 1;
     return processTable[type](m, p, v, [], false, true, false);
+  }
+
+  let usage_defined=module_variable_usage[m]
+  if (debug)
+      console.log(
+        "object checking for user custom variable usage =" + m + "." + p + " module=" + m
+      );
+  // if user created usage definition for this object variable
+  if(usage_defined && usage_defined[variable_name]){
+    // AND the existing definition is empty
+    if (Object.keys(v).length==0){
+      // if there IS an object definition
+      if(usage_defined[variable_name].object){
+        if (debug)
+          console.log(
+            "object using user custom variable usage =" + m + "." + p + " module=" + m
+          );
+        // use it instead of empty
+        v=usage_defined[variable_name].object
+      }
+    }
   }
   if (Object.keys(v).length) {
     for (let p1 of Object.keys(v)) {
@@ -2018,7 +2056,7 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
         " for property " +
         JSON.stringify(p1, tohandler, 2)
     );
-  let isPair = checkPair ? checkForPair(v) : checkPair;
+  let isPair = checkPair ? checkForPair(v,m,p) : checkPair;
   if (isPair) {
     // drop the other array objects, we only need 1
     //v=v.slice(0,1)
@@ -2034,16 +2072,47 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
       results:
         '"' + trimit(p) + '":{"type": "array","items": {' + results + "}}"
     };
+  } else {
+    if(debug)
+    console.log("array, pair is false")
+    let mparts=m.split('.')
+    let usage_defined=module_variable_usage[mparts[0]]
+    if(usage_defined && usage_defined[p]){
+     if (debug)
+        console.log(
+          "array checking for user custom variable usage =" + m + "." + p + " module=" + mparts[0]+ " "+JSON.stringify(usage_defined,null,2)+
+           " "+ "var="+p+" value="+JSON.stringify(usage_defined[p],null,2)
+        );
+    // if user created usage definition for this object variable
+      if(debug)
+      console.log("checking for object")
+      // AND the existing definition is empty
+      if (Object.keys(usage_defined[p]).length){
+        // if there IS an object definition
+        if(usage_defined[p].object){
+          if (debug)
+              console.log(
+                "array using user custom variable usage =" + m + "." + p + " module=" + m
+              );
+          // use it instead of empty
+          v=usage_defined[p].object
+          p1 = v
+        }
+      }
+    }
   }
 
   // get the first item in array
   let temp = JSON.stringify(v);
-  if (debug) console.log("checking array item contents=" + v);
+  if (debug) console.log("checking array item contents=" + temp);
   // also used below on 'else'
   if (v !== "[[]]" && v !== "[]") {
     // get its type
+    if(debug)
+      console.log("array of something")
     type = getType(p1, p, wasObject);
-
+    if(debug)
+      console.log("type ="+type)
     let r = processTable[type](
       m,
       trimit(p) + "[]",
@@ -2053,6 +2122,8 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
       true,
       wasObject
     );
+    if(debug)
+      console.log("processTable results="+JSON.stringify(r,null,2))
     let schema_value = r.results;
     if (t !== p) {
       // need to add a title string if not present
@@ -2323,10 +2394,29 @@ function setValueObject(key, data, v) {
 //  check data item to see if we should make this our custom pair variable
 //
 
-function checkForPair(data) {
+function checkForPair(data,module_name,variable_name) {
   result = false;
   let keys = {};
   // if this is an array
+  let mname=module_name.split('.')[0]
+  if(debug)
+  console.log(" checkforpair modulename="+mname+" loaded config="+JSON.stringify(module_variable_usage[module_name]))
+
+  let usage_defined=module_variable_usage[mname]
+  if(usage_defined && usage_defined[variable_name]){
+    if(debug)
+    console.log("MMM-Config.json config record for variable "+variable_name+"="+JSON.stringify(usage_defined[variable_name],null,2)+" info="+usage_defined[variable_name].type)
+    if ( usage_defined[variable_name].type === "pairs"){
+        if(debug)
+          console.log("check for pair custom returning true")
+       return true
+    }
+    else{
+      if(debug)
+        console.log("check for pair custom returning false")
+      return false;
+    }
+  }
   if (Array.isArray(data)) {
     if(debug) 
       console.log("pair detected array, length= "+data.length)

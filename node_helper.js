@@ -527,7 +527,19 @@ module.exports = NodeHelper.create({
     let left = key;
     if (key.includes(".")) {
       let v = key.split(".");
-      left = v.shift();
+      // check for any array notation
+      let li=v[0].split('[')
+      // if there WAS an arry index, then rest is in the next element
+      if(li.length >1){
+         // make it numeric
+         let index= parseInt(li[1])
+         // get the left edge
+         datasource= datasource[li[0]]
+         // look only at this instance
+         left = index
+         v.shift()
+      } else
+        left = v.shift();
       if (v.length) {
         if (datasource[left] === undefined)
           datasource[left] = self.clone({}, self);
@@ -535,6 +547,8 @@ module.exports = NodeHelper.create({
         return self.getpair(datasource[left], v.join("."), self);
       }
     }
+    if(debug)
+      console.log("left="+left+" datasource="+JSON.stringify(datasource,null,2))
     if (datasource[left] == undefined) datasource[left] = self.clone({}, self);
     return datasource[left];
   },
@@ -543,7 +557,21 @@ module.exports = NodeHelper.create({
     let left = key;
     if (key.includes(".")) {
       let v = key.split(".");
-      left = v.shift();
+      // check for any array notation
+      let li=v[0].split('[')
+      // if there WAS an arry index, then rest is in the next element
+      if(li.length >1){
+         // make it numeric
+         let index= parseInt(li[1])
+         // get the left edge
+         datasource= datasource[li[0]]
+         // look only at this instance
+         left = index
+         // discard the 1st array element
+         v.shift()
+      } else
+        // use and discard the 1st element
+        left = v.shift();
       if (v.length) {
         if (datasource[left] === undefined)
           datasource[left] = self.clone({}, self);
@@ -748,7 +776,8 @@ module.exports = NodeHelper.create({
         let modified_value = {};
 
         let j = self.getpair(data, p, self);
-
+        if(debug)
+          console.log("found data for key="+p+"="+JSON.stringify(data['calendar'],null,2))
         if (debug)
           console.log("data 1=" + JSON.stringify(j, self.tohandler, 2));
 
