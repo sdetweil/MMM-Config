@@ -270,6 +270,7 @@ var value = {};
 var convertedObjects = [];
 let empty_objects = [];
 let empty_arrays = [];
+let forced_not_arrays= [];
 let mangled_names = {};
 let form_object_correction = [];
 const module_variable_usage = {};
@@ -278,7 +279,7 @@ let results = [];
 
 // processing starts here
 // loop thru the defines and build a schema and form
-// and a prototype data item in teh value section that looks like the define
+// and a prototype data item in the value section that looks like the define
 
 //
 //	copy the info from config.js before the modules list
@@ -315,9 +316,10 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         "../..",
         "default",
         module_name,
-        "MMM-Config.json"
+        "MMM-Config.overrides.json"
       )
-    :path.join(__dirname, "../..", module_name,"MMM-Config.json")
+    :path.join(__dirname, "../..", module_name,"MMM-Config.overrides.json")
+    if (debug) console.log("looking for module's MMM-Config override file=" + fn);
     module_variable_usage[module_name]=require(fn)
     if(debug)
        console.log("found variable usage info for module "+module_name+" "+JSON.stringify(module_variable_usage[module_name],null,2))
@@ -792,6 +794,8 @@ Object.keys(value).forEach((module_name) => {
       // means supports multi-module
       if (Array.isArray(value[module_name])) {
         // loop thru the instances
+        if(debug)
+            console.log("finding arrays for instance module="+module_name)
         for (let i in value[module_name]) {
           let instance = value[module_name][i];
           module_arrays = find_empty_arrays(
@@ -802,11 +806,15 @@ Object.keys(value).forEach((module_name) => {
           empty_arrays.push.apply(empty_arrays, module_arrays);
         }
       } else {
+        if(debug)
+            console.log("finding arrays for module="+module_name)
         module_arrays = find_empty_arrays(
           value[module_name],
           [module_name],
           []
         );
+        if(debug)
+          console.log("module "+module_name+" empty variables="+JSON.stringify(module_arrays,null,2))
         // add these on to the end
         empty_arrays.push.apply(empty_arrays, module_arrays);
       }
@@ -1346,8 +1354,12 @@ function find_empty_arrays(obj, stack, hash) {
       if (t.endsWith(".[]")) t = t.replace(".[]", "[]");
       if (t.includes(".[]")) t = t.replace(".[]", "");
       if (!form_object_correction.includes(t)) {
-        form_object_correction.push(t);
-        if (debug) console.log("saving key for editor conversion =" + t);
+        if(!forced_not_arrays.includes(t)){
+          form_object_correction.push(t);
+          if (debug) console.log("saving key for editor conversion =" + t);
+        } else {
+          if(debug) console.log("array "+t+" forced to other schema type, skipping save")
+        }
       }
       for (let i in hash) {
         if (hash[i].startsWith(t)) {
@@ -1356,7 +1368,14 @@ function find_empty_arrays(obj, stack, hash) {
         }
       }
 
-      if (!hash.includes(t)) hash.push(t);
+      if (!hash.includes(t)) {
+        if(!forced_not_arrays.includes(t)){
+          if(debug)
+            console.log("adding variable="+t+" to hash")
+          hash.push(t);
+        }
+
+      }
       //	}
     } else {
       if (obj) {
@@ -2019,6 +2038,7 @@ function processObject(m, p, v, mform, checkPair, recursive, wasObject) {
 //  contains a list of some type properties, string, int, Object!
 //
 function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
+  let definedSchema= false;
   let results = "";
   if (debug)
     console.log(
@@ -2056,6 +2076,7 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
         " for property " +
         JSON.stringify(p1, tohandler, 2)
     );
+  let usage_defined
   let isPair = checkPair ? checkForPair(v,m,p) : checkPair;
   if (isPair) {
     // drop the other array objects, we only need 1
@@ -2074,9 +2095,9 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
     };
   } else {
     if(debug)
-    console.log("array, pair is false")
+    	console.log("array, pair is false")
     let mparts=m.split('.')
-    let usage_defined=module_variable_usage[mparts[0]]
+    usage_defined=module_variable_usage[mparts[0]]
     if(usage_defined && usage_defined[p]){
      if (debug)
         console.log(
@@ -2097,7 +2118,21 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
           // use it instead of empty
           v=usage_defined[p].object
           p1 = v
-        }
+        } else if(usage_defined[p].enum){
+            definedSchema=true;
+            v=usage_defined[p]
+            if(debug)
+              console.log("user_defined for enum="+JSON.stringify(v,null,2)+" variable="+m + "." + p)
+            forced_not_arrays.push(m + "." + p)
+            vform = {
+                    key: m + "." + trimit(formtitle),
+            };
+            return {
+              mform: vform,
+              results:
+                /*'"' + trimit(p) + '":"'+*/JSON.stringify(v).slice(1,-1)
+  	    };
+	}
       }
     }
   }
@@ -2145,7 +2180,11 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
       if (debug) console.log("post fixing array info =" + schema_value);
       addedTitle = "";
     }
-    results += schema_value;
+    results += definedSchema?JSON.stringify(usage_defined[p]):schema_value;
+    if(definedSchema){
+      if(debug)
+        console.log("forced results="+JSON.stringify(results,null,2))
+    }
     if (r.mform) {
       if (debug)
         console.log(
@@ -2189,7 +2228,7 @@ function processArray(m, p, v, mform, checkPair, recursive, wasObject) {
     results = '"type":"array","items":{"type":"string"}';
   }
   if (debug)
-    console.log("array results=" + results + " = " + JSON.stringify(results));
+    console.log("m mform=" + results + " = " + JSON.stringify(results));
 
   if (recursive && (type === "object" || type === "array"))
     return {
@@ -2223,8 +2262,19 @@ function processBoolean(m, p, v, mform, checkPair, recursive, wasObject) {
 }
 function processString(m, p, v, mform, checkPair, recursive, wasObject) {
   if (debug) console.log("processing string " + p + " for module " + m);
+  let x='"type": "string"'
   mform.push({ title: p, key: m + "." + trimit(p) });
-  return { mform: mform, results: '"type": "string"' };
+  let mparts=m.split('.')
+  let usage_defined=module_variable_usage[mparts[0]]
+  try{
+    if(debug)
+      console.log("forced def="+JSON.stringify(usage_defined[p]) + " for variable="+p)
+    if(usage_defined && usage_defined[p] && usage_defined[p].enum ){
+      x = JSON.stringify(usage_defined[p]).slice(1,-1)
+    }
+  }
+  catch{}
+  return { mform: mform, results: x };
 }
 function processTextarea(m, p, v, mform, checkPair, recursive, wasObject) {
   if (debug) console.log("processing string " + p + " for module " + m);
@@ -2400,23 +2450,28 @@ function checkForPair(data,module_name,variable_name) {
   // if this is an array
   let mname=module_name.split('.')[0]
   if(debug)
-  console.log(" checkforpair modulename="+mname+" loaded config="+JSON.stringify(module_variable_usage[module_name]))
+  console.log(" checkforpair modulename="+mname+" loaded config="+JSON.stringify(module_variable_usage[mname]))
 
   let usage_defined=module_variable_usage[mname]
-  if(usage_defined && usage_defined[variable_name]){
+  try {
     if(debug)
-    console.log("MMM-Config.json config record for variable "+variable_name+"="+JSON.stringify(usage_defined[variable_name],null,2)+" info="+usage_defined[variable_name].type)
-    if ( usage_defined[variable_name].type === "pairs"){
-        if(debug)
-          console.log("check for pair custom returning true")
-       return true
-    }
-    else{
+      console.log("MMM-Config.overrides.json config record for variable "+variable_name+"="+JSON.stringify(usage_defined[variable_name],null,2)+" info="+usage_defined[variable_name].type)
+    if(usage_defined && usage_defined[variable_name]){
       if(debug)
-        console.log("check for pair custom returning false")
-      return false;
+      console.log("MMM-Config.overrides.json config record for variable "+variable_name+"="+JSON.stringify(usage_defined[variable_name],null,2)+" info="+usage_defined[variable_name].type)
+      if ( usage_defined[variable_name].type === "pairs"){
+          if(debug)
+            console.log("check for pair custom returning true")
+         return true
+      }
+      else{
+        if(debug)
+          console.log("check for pair custom returning false")
+        return false;
+      }
     }
   }
+  catch{}
   if (Array.isArray(data)) {
     if(debug) 
       console.log("pair detected array, length= "+data.length)
