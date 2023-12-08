@@ -48,6 +48,8 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as windows will not allow a filename with ':'.
 
+MMM-Config uses the [jsonform](https://github.com/jsonform/jsonform/wiki) library to construct, present and operate  the form
+
 ### The form looks like this
 
 Main form page. The form colors can be set in webform.css
