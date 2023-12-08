@@ -246,3 +246,72 @@ so in summary
 #### schema.json in the module folder, 
     OR
 ####  modulename.schema.json in the schemas folder of MMM-Config	
+
+
+## overrides definitions
+the override file is a json file, so it starts with {}
+
+then there is a row for each variable to be overridden.(everything in double quotes, per JSON, blank lines are acceptable, and ignored. no comments are allowed)
+
+1. ### "variable name"  // always, from the module defaults section
+   ### :                   <------- required by json
+2. ### simple type definition   
+
+   {"type":"pairs"}  // use this if the 'object' is a list of key/value pairs (like titleReplace in calendar)
+
+   or 
+
+   {"type":"object"}  // use this when the object is correct, not expandable 
+    
+3. ### type with explicit definition	
+
+    {"type":"object", "object":{xxxxxxx}}
+	where xxxxxxx is the definition of the variables in the object 
+
+	for excludedEvents it looks like this 
+
+	{"type":"object",
+	
+		"object":{
+			"filterBy": "", 
+			"until": "nn day(s)/week(s)/month(s)", 
+			"caseSensitive": false, 
+			"regex":false
+		}
+	},
+
+	// use this when the module doesn't declare the contents of the object, but its described in the doc or code
+	     excludedEvents:{}
+
+4. ### string with a selection list 		 
+
+	{"type":"string",
+
+		"enum":[comma separated list of choices]
+		       [ "a", "b", "c", "foo" ]  // for example
+	},
+
+	// use this when the module has a string variable 
+	something:"" or something:null (but usage implies string and a choice)
+
+		like removeStartTags in newsfeed 
+
+	looking at the code, there are only three choices		
+
+		if (this.config.removeStartTags === "title" || this.config.removeStartTags === "both") { 
+
+			or
+
+		if (this.config.removeStartTags === "description" || this.config.removeStartTags === "both") {
+
+		so the list would be 
+		"enum":["title","description","both"]
+
+		final definition 
+		"removeStartTags":{"type":"string","enum":["title","description","both"]}
+
+		you can add a "default":"xxxx", where "xxxx" is one of the choices, for example
+
+		"removeStartTags":{"type":"string","enum":["title","description","both"]}
+
+		the first entry in the enum[] list will be the default value (selected if no value found in the current config.js) 
