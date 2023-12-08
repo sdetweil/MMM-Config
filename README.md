@@ -183,7 +183,7 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 			 
 if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes of eliminates custom efditing of then
 schema.json file
-https://forum.magicmirror.builders/topic/4528/how-to-create-a-working-config-for-absolute-beginners
+
 ### a few examples for the MMM-Config.overrides.json:
 
 in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs
