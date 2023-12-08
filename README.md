@@ -76,7 +76,7 @@ if u don't care, select * (the default)**
 **Disabled modules are left in config.js, just disabled.  Otherwise, we would lose the configuration information , like api keys, latitude/longitude, etc.**
 
 
-## correcting or improving module presentation
+# correcting or improving module presentation
 
 There are no specific programmming guidelines or standards for how to write a MagicMirror module. Just Javascript and a little on module layout.
 
