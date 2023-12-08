@@ -72,3 +72,176 @@ Module names in blue are in config.js and enabled.
 if u don't care, select * (the default)**
 
 **Disabled modules are left in config.js, just disabled.  Otherwise, we would lose the configuration information , like api keys, latitude/longitude, etc.**
+
+
+## correcting or improving module presentation
+
+There are no specific programmming guidelines or standards for how to write a MagicMirror module. Just Javascript and a little on module layout.
+
+to support configuration overrides, each module needs to create a defaults:{} list of the variables to be used as overridable parameters (from config.js)
+
+MMM-Config uses that defaults:{} object list to construct the form for editing.
+
+### however some defintions are ambiguous
+
+in the default calendar the 
+```
+		titleReplace: {
+			"De verjaardag van ": "",
+			"'s birthday": ""
+		},
+```			
+			object is a list of words in the event Title to replace with a different string. (a key/value pair)
+
+			this list can be customized by the user in config.js by adding or removing specific strings
+			
+			so its treated as an array (the form library supports adding/removing things from an array)
+
+
+the MMM-NewsAPI module uses the the similar query structure
+```
+		 query: {
+					country: "us",
+					category: "",
+					q: "",
+					qInTitle: "",
+					sources: "",
+					domains: "",
+					excludeDomains: "",
+					language: "en"
+			}
+```
+to document chracteristics of a search process over news articles.
+BUT the structure is a fixed size. the user cannot ADD a new field to this structuture
+
+
+another example is in the default calendar, Using a list (array) 
+```  
+		customEvents: []
+```
+this an array of objects of a particular format.	
+
+         {keyword: "", symbol: "", color: "", eventClass: ""}
+
+but not listed in the defaults section (because Javascript doesn't provide a template/model type syntax)
+
+another is 
+```
+		excludedEvents: [] 
+```
+this is also array of objects of a particular format.	 
+		
+	a list of words in event titles AND/OR
+    a list of OBJECTS {}
+      which describe a filter 
+			
+			from the doc 
+				['Birthday', 
+				 	'Hide This Event', 
+				  {filterBy: 'Payment', until: '6 days', caseSensitive: true}, 
+				  {filterBy: '^[0-9]{1,}.*', regex: true}
+				]
+				
+
+
+				
+in each of these cases , and more across many modules, MMM-Config cannot construct a proper form for creating the definitions for those fields.  
+
+but.. the form library DOES provide support for those types of entries, if the definition is created correctly.  
+
+### building the form customization 
+
+This custom schema file process requires someone: module author, or module user, to create the proper form definition file (schema.json in the module folder), and if present MMM-Config will use that instead of creating the structure dynamically.
+
+
+To minimize the customization effort, MMM-Config provides two different but complimentary approaches to custominzing the generated for content
+
+1. a file in the module folder called MMM-Config.overrides.json, can provide the desired layout for the fields    we discussed above
+	 
+2. MMM-Config provides a command to generate the entire module schema that can be customized
+
+```
+  create_form_for_module.sh (or .cmd on windows)  modulename
+```
+
+   this will generate and create the file **schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL overwrite the same named file without warning)
+	 
+	 if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this schema.json file, then the form editor/author can submit the updated form (schema.json)  as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
+	 
+	 
+	 the schema.json file has 3 sections
+	 1. "schema"
+	     used to define the variables and data types 
+		 and organziation of the defaults section
+	 2. "form"
+	     used to define the presentation of the form, 
+		 fields, dropdown, checkboxes, etc
+   	 3. "value"
+	     used to define the default values to be presented 
+		 in the form if no value is supplied from config.js
+			 
+if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes of eliminates custom efditing of then
+schema.json file
+
+### a few examples for the MMM-Config.overrides.json:
+
+in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs
+
+
+``````
+    {
+		"titleReplace":"type":"pairs"},
+		"locationTitleReplace":{"type":"pairs"},
+		"excludedEvents":{"type":"object","object":{
+			"filterBy": "", 
+			"until": "nn day(s)/week(s)/month(s)", 
+			"caseSensitive": false, 
+			"regex":false}},
+        "customEvents":{"type":"object","object":{
+			"keyword": "", 
+			"symbol": "", 
+			"color": "", 
+			"eventClass": ""}}
+	}
+``````		
+for the **customEvents** and **excludedEvents** we describe the structures that will appear in the array.
+
+Now MMM-Config can generate fields for the two structures 
+
+in the **excludedEvents** structure, one can use the filterBy field in each instance the same as the 'string' of words  
+
+#### changing text field in defaults to operate as a dropdown selection list
+
+another instance of customization would be a selection list instead of just string that the user would enter
+
+for example,  in MMM-NewsAPI there are four fields that are used as selection lists
+
+**choice, type, sortBy and country,**
+
+and we need to clarify that query is an object
+the overrides file for MMM-NewsApi would be
+```
+   {
+        "query":{"type":"object"},
+        "choice":{"type":"string","enum":["headlines","everything"]},
+        "type":{"type":"string","enum":["horizontal","vertical"]},
+        "sortBy":{"type":"string","enum":[" ","relevancy", "popularity", "publishedAt"]},
+        "country":{"type":"string","enum":[
+			" ","ae","ar","at","au","be","bg","br","ca","ch","cn","co","cu","cz","de","eg","fr","gb",
+			"gr","hk","hu","id","ie","ve","za","il","in","it","jp","kr","lt","lv","ma","mx","my","ng",
+			"nl","no","nz","ph","pl","pt","ro","rs","ru","sa","se","sg","si","sk","th","tr","tw","ua","us"]}
+	}
+```
+
+all we had to do was copy the text from the MMM-NewsAPI README.md file for the text of the choices. and change the single backtic quote to double quotes require by JSON
+
+these selection list fields now make the data entry easier for the user, and provide data integrity for the author as the data will be as expected (no typos etc)
+
+
+so in summary
+
+#### MMM-Config.overrides.json in the module folder
+	and/or
+#### schema.json in the module folder, 
+    OR
+####  modulename.schema.json in the schemas folder of MMM-Config	
