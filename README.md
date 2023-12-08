@@ -166,7 +166,8 @@ To minimize the customization effort, MMM-Config provides two different but comp
 
    this will generate and create the file **schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL overwrite the same named file without warning)
 	 
-	 if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this schema.json file, then the form editor/author can submit the updated form (schema.json)  as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
+
+if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this schema.json file, then the form editor/author can submit the updated form (schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
 	 
 	 
 	 the schema.json file has 3 sections
@@ -182,7 +183,7 @@ To minimize the customization effort, MMM-Config provides two different but comp
 			 
 if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes of eliminates custom efditing of then
 schema.json file
-
+https://forum.magicmirror.builders/topic/4528/how-to-create-a-working-config-for-absolute-beginners
 ### a few examples for the MMM-Config.overrides.json:
 
 in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs
@@ -197,7 +198,7 @@ in the 1st example in the calendar module, the titleReplace and locationTitleRep
 			"until": "nn day(s)/week(s)/month(s)", 
 			"caseSensitive": false, 
 			"regex":false}},
-        "customEvents":{"type":"object","object":{
+	        "customEvents":{"type":"object","object":{
 			"keyword": "", 
 			"symbol": "", 
 			"color": "", 
