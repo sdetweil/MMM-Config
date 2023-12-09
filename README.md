@@ -182,7 +182,7 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 	     used to define the default values to be presented 
 		 in the form if no value is supplied from config.js
 			 
-if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes of eliminates custom efditing of then
+if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the
 schema.json file
 
 ### a few examples for the MMM-Config.overrides.json:
