@@ -93,11 +93,11 @@ in the default calendar the
 			"'s birthday": ""
 		},
 ```			
-			object is a list of words in the event Title to replace with a different string. (a key/value pair)
+object is a list of words in the event Title to replace with a different string. (a key/value pair)
 
-			this list can be customized by the user in config.js by adding or removing specific strings
+this list can be customized by the user in config.js by adding or removing specific strings
 			
-			so its treated as an array (the form library supports adding/removing things from an array)
+so its treated as an array (the form library supports adding/removing things from an array)
 
 
 the MMM-NewsAPI module uses the the similar query structure
