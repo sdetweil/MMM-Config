@@ -93,14 +93,13 @@ in the default calendar the
 			"'s birthday": ""
 		},
 ```			
-object is a list of words in the event Title to replace with a different string. (a key/value pair)
+titleReplace object is a list of words in the event Title to replace with a different string. (a key/value pair)
 
 this list can be customized by the user in config.js by adding or removing specific strings
 			
 so its treated as an array (the form library supports adding/removing things from an array)
 
-
-the MMM-NewsAPI module uses the the similar query structure
+the MMM-NewsAPI module uses the similar query structure
 ```
 		 query: {
 					country: "us",
@@ -114,6 +113,7 @@ the MMM-NewsAPI module uses the the similar query structure
 			}
 ```
 to document chracteristics of a search process over news articles.
+
 BUT the structure is a fixed size. the user cannot ADD a new field to this structuture
 
 
@@ -144,7 +144,6 @@ this is also array of objects of a particular format.
 				  {filterBy: '^[0-9]{1,}.*', regex: true}
 				]
 				
-
 
 				
 in each of these cases , and more across many modules, MMM-Config cannot construct a proper form for creating the definitions for those fields.  
