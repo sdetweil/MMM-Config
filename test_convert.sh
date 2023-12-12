@@ -74,16 +74,12 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		# all done with error file
 		error=$(grep  "^\s" -m1 sss)
 		printf '%.s-' {1..20}
-		echo MMM-Config
-		echo module $mname has an error in the construction of its defaults section
-		echo the error line is "$error"
-		echo please change it to the literal value of the referenced defaults variable
-		echo and restart MagicMirror
+
 		printf '%.s-' {1..20}
 		echo MMM-Config
 		# copy the build error schema for form presentation
 		cp schemas/MMM-Config-build-error.json schema3.json
-		#rm sss
+		rm sss
 		# we cant continue
 		exit 0
 	fi

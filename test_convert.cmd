@@ -107,6 +107,8 @@ if exist sss (
 				echo and restart MagicMirror
 				FOR /L %%G IN (1,1,20) DO  echo | set /p=-
 				echo MMM-Config
+				rem copy the build error schema for form presentation
+				copy schemas\MMM-Config-build-error.json schema3.json
 				)
 			   )
 			)
