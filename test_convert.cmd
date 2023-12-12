@@ -67,55 +67,58 @@ rem
 	   set changed=1
 )
 rem check the generated defaults.js for errors
-node scripts\test.js %defaults_file% 2>sss >nul
+node scripts\test.js !defaults_file! 2>sss >nul
 rem
-# if the file exists and the line count is greater than 0
+rem if the file exists and the line count is greater than 0
 if exist sss (
 	set lc=0
-	FOR /F "tokens=* USEBACKQ" %%F IN (`type sss ^| find /c /v ""`) DO (
+	FOR /F "tokens=* usebackq" %%F IN (`type sss ^| find /c /v ""`) DO (
 		SET lc=%%F
 	)
-	rem echo !lc!
+	rem echo line count =!lc!
   	 if !lc! NEQ 0 (
 	   rem echo have error file
 	   rem ln=$(cat sss | awk -F: '{print $2}' | grep -m1 .)
-	   for /f "tokens=1 delims=\ usebackq" %%i in (`type sss  ^| find "/modules/MMM-Config/defaults" ^| head -n 1`) do set firstline=%%i
-	   rem echo line=%firstline%
-	   for /f "tokens=2 delims=:" %%a in ("%firstline%") do (
-	    set ln=%%a
-	   )
-	   rem echo line number = !ln!
+	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\modules\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
+	   rem echo line=!firstline!
+	   rem for /f "tokens=2 delims=:" %%a in ("%firstline%") do (
+	    set ln=!firstline!
+	   rem )
+	    rem echo line number = !ln!
 	   rem get the module name from the defaults file
 	   rem mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' |  awk -F: '$1<'$ln | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
-	   findstr /r /n /c:"_defaults:" defaults.js >sss1
+	   findstr /r /n /c:"_defaults:" defaults.js | perl -e "print reverse <>" >sss1
+	   set firsttime=0
 	   for /f "tokens=1,2 delims=:" %%a in (sss1) do (
 	     set ml=%%a
-		set mname=%%b
-		if !ml! LEQ !ln! (
-			for /f "tokens=1,2 delims=_"  %%a in ("!mname!") do (
-			   set mname1=%%a-%%b
-			   rem echo module name =!mname1!
+		 set mname=%%b
+		 if !ml! LEQ !ln! (
+			if !firsttime!==0 (
+				set firsttime=1
+				for /f "tokens=1,2 delims=_"  %%a in ("!mname!") do (
+				   set mname1=%%a-%%b
+				   rem echo module name =!mname1!
 
-			   del sss1
-			   FOR /f "tokens=1* delims=:" %%a IN ('findstr /n "^" "sss"') DO (
-				IF %%a==2 (
-				FOR /L %%G IN (1,1,20) DO  echo | set /p=-
-				echo MMM-Config
-				echo module !mname1! has an error in the construction of its defaults section
-				echo the error line is %%b
-				echo please change it to the literal value of the referenced defaults variable
-				echo and restart MagicMirror
-				FOR /L %%G IN (1,1,20) DO  echo | set /p=-
-				echo MMM-Config
-				rem copy the build error schema for form presentation
-				copy schemas\MMM-Config-build-error.json schema3.json
+				   del sss1
+				   FOR /f "tokens=1* delims=:" %%a IN ('findstr /n "^" "sss"') DO (
+					   IF %%a==2 (
+						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
+						echo MMM-Config
+						echo module !mname1! has an error in the construction of its defaults section
+						echo the error line is %%b
+						echo please change it to the literal value of the referenced defaults variable
+						echo and restart MagicMirror
+						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
+						echo MMM-Config
+					   )
+				   )
 				)
-			   )
 			)
-		)
+		 )
 	   )
 	)
-	del sss
+	rem del sss
+	goto :done
 )
 rem proces for the web page in either modules list or config.js changed
 if %config_lastsaved% neq %config_lastchanged%  (set changed=1)

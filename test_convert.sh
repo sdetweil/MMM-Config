@@ -70,11 +70,15 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		# find the lines with the module names as first character on line (not blank)
 		# AND the line number is less than in the reported error
 		# extract and reconstruct the module name
-		mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' |  awk -F: '$1<'$ln | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
+		mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' | tac | awk -F: '$1<'$ln | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
 		# all done with error file
 		error=$(grep  "^\s" -m1 sss)
 		printf '%.s-' {1..20}
-
+		echo MMM-Config
+		echo module $mname has an error in the construction of its defaults section
+		echo the error line is "$error"
+		echo please change it to the literal value of the referenced defaults variable
+		echo and restart MagicMirror
 		printf '%.s-' {1..20}
 		echo MMM-Config
 		# copy the build error schema for form presentation
