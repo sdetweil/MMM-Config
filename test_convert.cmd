@@ -110,6 +110,8 @@ if exist sss (
 						echo and restart MagicMirror
 						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
 						echo MMM-Config
+						rem copy the build error schema for form presentation
+						copy /y schemas\MMM-Config-build-error.json schema3.json
 					   )
 				   )
 				)
@@ -117,7 +119,7 @@ if exist sss (
 		 )
 	   )
 	)
-	rem del sss
+	del sss
 	goto :done
 )
 rem proces for the web page in either modules list or config.js changed
