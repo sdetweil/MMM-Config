@@ -1,0 +1,21 @@
+{
+  "schema": {
+    "error": {
+      "type": "string",
+      "title": "MagicMirror form builder",
+      "default":"builder encountered a problem, see MagicMirror messages for info"
+    }
+  },
+  "form":[
+    {
+      "title": "Settings",
+      "type": "fieldset",
+      "items": [
+            {
+              "key": "error",
+              "readonly":true
+            }
+       ]
+    }
+  ]
+}
