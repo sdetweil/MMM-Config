@@ -12,10 +12,11 @@ A dynamically built form, based on modules installed (git cloned at least) into 
 
 ## Installation
 
-1. Clone this repo into `~/MagicMirror/modules` directory.
-2. `cd MMM-Config`
-3. `npm install`
-4. Configure your `~/MagicMirror/config/config.js`: (via editor for the last time)
+1. `cd ~/MagicMirror/modules`
+2. `git clone https://github.com/sdetweil/MMM-Config`
+3. `cd MMM-Config`
+4. `npm install`
+5. Configure your `~/MagicMirror/config/config.js`: (via editor for the last time)
 
     ```
 		{
