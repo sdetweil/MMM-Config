@@ -70,14 +70,24 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		# find the lines with the module names as first character on line (not blank)
 		# AND the line number is less than in the reported error
 		# extract and reconstruct the module name
-		mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' | tac | awk -F: '$1<'$ln | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
+		mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' | tac | awk -F: '$1<'$ln| head -n1 | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
 		# all done with error file
 		error=$(grep  "^\s" -m1 sss)
+		nerror=$(echo $error | awk -F: '{print $1}')
+		if [ -n "$nerror" ] && [ "$nerror" -eq "$nerror" ] 2>/dev/null; then
+		  isnumber=true
+		else
+		  isnumber=false
+		fi
 		printf '%.s-' {1..20}
 		echo MMM-Config
 		echo module $mname has an error in the construction of its defaults section
 		echo the error line is "$error"
-		echo please change it to the literal value of the referenced defaults variable
+		if [ $isnumber == false ]; then
+			echo please change it to the literal value of the referenced defaults variable
+		else
+			echo config variables with numbers as names are not supported, please contact the module author
+		fi
 		echo and restart MagicMirror
 		printf '%.s-' {1..20}
 		echo MMM-Config
