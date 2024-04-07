@@ -156,7 +156,7 @@ but.. the form library DOES provide support for those types of entries, if the d
 This custom schema file process requires someone: module author, or module user, to create the proper form definition file (schema.json in the module folder), and if present MMM-Config will use that instead of creating the structure dynamically.
 
 
-To minimize the customization effort, MMM-Config provides two different but complimentary approaches to custominzing the generated for content
+To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
 
 1. a file in the module folder called MMM-Config.overrides.json, can provide the desired layout for the fields    we discussed above
 	 
@@ -175,7 +175,7 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 	 the schema.json file has 3 sections
 	 1. "schema"
 	     used to define the variables and data types 
-		 and organziation of the defaults section
+		 and organization of the defaults section
 	 2. "form"
 	     used to define the presentation of the form, 
 		 fields, dropdown, checkboxes, etc
@@ -183,8 +183,7 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 	     used to define the default values to be presented 
 		 in the form if no value is supplied from config.js
 			 
-if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the
-schema.json file
+if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the schema.json file
 
 ### a few examples for the MMM-Config.overrides.json:
 
