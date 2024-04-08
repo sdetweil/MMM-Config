@@ -81,7 +81,7 @@ if u don't care, select * (the default)**
 
 There are no specific programmming guidelines or standards for how to write a MagicMirror module. Just Javascript and a little on module layout.
 
-to support configuration overrides, each module needs to create a defaults:{} list of the variables to be used as overridable parameters (from config.js)
+to support configuration overrides, each module needs to create a [defaults:{}](https://docs.magicmirror.builders/development/core-module-file.html#available-module-instance-properties) list of the variables to be used as overridable parameters (from config.js)
 
 MMM-Config uses that defaults:{} object list to construct the form for editing.
 
