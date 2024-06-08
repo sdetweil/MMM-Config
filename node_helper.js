@@ -1122,7 +1122,7 @@ module.exports = NodeHelper.create({
       .replace(/=:=/g, "::")
       .replace(/~~/g, "f:")
       .replace(/\^::\^/g, ': ":"')
-      .replace(/\\"/g, '');
+      .replace(/\\"/g, '"');  // put back unescaped quote
     // find any function invocations (parms)=> ...
     // loop thru them to take out embedded text return/nl, and escaped quotes
     // old (: "\(|: "function\().*$

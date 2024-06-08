@@ -1,13 +1,13 @@
 {
   "schema": {
-    "MMM-pages": {
+    "MMM-Pages": {
       "type": "object",
-      "title": "properties for MMM-pages",
+      "title": "properties for MMM-Pages",
       "properties": {
         "module": {
           "type": "string",
           "title": "module",
-          "default": "MMM-pages",
+          "default": "MMM-Pages",
           "readonly": true
         },
         "disabled": {
@@ -97,28 +97,28 @@
   },
   "form": [
     {
-      "key": "MMM-pages.disabled",
+      "key": "MMM-Pages.disabled",
       "htmlClass": "disabled_checkbox",
       "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
     },
     {
-      "key": "MMM-pages.position",
+      "key": "MMM-Pages.position",
       "description": "use Module Positions section below to set or change"
     },
     {
-      "key": "MMM-pages.classes",
+      "key": "MMM-Pages.classes",
       "description": "css classes to use for this module, beyond what MM provides"
     },
     {
-      "key": "MMM-pages.order",
+      "key": "MMM-Pages.order",
       "type": "hidden"
     },
     {
-      "key": "MMM-pages.inconfig",
+      "key": "MMM-Pages.inconfig",
       "type": "hidden"
     },
     {
-      "key": "MMM-pages.index",
+      "key": "MMM-Pages.index",
       "type": "hidden"
     },
     {
@@ -128,7 +128,7 @@
         {
           "type": "array",
           "title": "modules (aka pages)",
-          "key": "MMM-pages.config.modules[]",
+          "key": "MMM-Pages.config.modules[]",
           "items": [
             {
               "type": "array",
@@ -136,7 +136,7 @@
               "items": [
                 {
                   "notitle": true,
-                  "key": "MMM-pages.config.modules[][]"
+                  "key": "MMM-Pages.config.modules[][]"
                 }
               ]
             }
@@ -148,7 +148,7 @@
           "items": [
             {
               "title": "excludes {{idx}}",
-              "key": "MMM-pages.config.excludes[]"
+              "key": "MMM-Pages.config.excludes[]"
             }
           ]
         },
@@ -158,7 +158,7 @@
           "items": [
             {
               "title": "fixed {{idx}}",
-              "key": "MMM-pages.config.fixed[]"
+              "key": "MMM-Pages.config.fixed[]"
             }
           ]
         },
@@ -167,45 +167,45 @@
           "title": "hiddenPages",
           "items": [
             {
-              "key": "MMM-pages.config.hiddenPages[]",
+              "key": "MMM-Pages.config.hiddenPages[]",
               "title": "hiddenPage {{idx}}"
             }
           ]
         },
         {
           "title": "animationTime",
-          "key": "MMM-pages.config.animationTime"
+          "key": "MMM-Pages.config.animationTime"
         },
         {
           "title": "rotationTime",
-          "key": "MMM-pages.config.rotationTime"
+          "key": "MMM-Pages.config.rotationTime"
         },
         {
           "title": "rotationFirstPage",
-          "key": "MMM-pages.config.rotationFirstPage"
+          "key": "MMM-Pages.config.rotationFirstPage"
         },
         {
           "title": "rotationHomePage",
-          "key": "MMM-pages.config.rotationHomePage"
+          "key": "MMM-Pages.config.rotationHomePage"
         },
         {
           "title": "rotationDelay",
-          "key": "MMM-pages.config.rotationDelay"
+          "key": "MMM-Pages.config.rotationDelay"
         },
         {
           "title": "homePage",
-          "key": "MMM-pages.config.homePage"
+          "key": "MMM-Pages.config.homePage"
         },
         {
           "title": "useLockString",
-          "key": "MMM-pages.config.useLockString"
+          "key": "MMM-Pages.config.useLockString"
         }
       ]
     }
   ],
   "value": {
     "disabled": true,
-    "module": "MMM-pages",
+    "module": "MMM-Pages",
     "position": "none",
     "order": "*",
     "inconfig": "0",

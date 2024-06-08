@@ -347,6 +347,8 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
 
     // lets use it
     let jsonform_info = require(fn);  // is a json file, so importable
+    if(debug)
+      console.log("loaded schema ="+JSON.stringify(jsonform_info,tohandler))
     // indicate we found schema
     schema_present[module_name] = true;
     // if the module has mangled names
@@ -453,7 +455,11 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       mform.items = jsonform_info.form;
 
       form[0].items[1].items.push(mform);
+      if(debug)
+        console.log(" fixing var names pre="+JSON.stringify(jsonform_info.value,tohandler))
       temp_value[module_name] = fixVariableNames(jsonform_info.value);
+      if(debug)
+        console.log(" fixing var names post="+JSON.stringify(temp_value[module_name],tohandler))
       checkObjects(
         module_name,
         schema[module_name].properties.config,
@@ -543,7 +549,14 @@ schema["positions"] = module_position_schema;
 //
 // get a copy of what we built from define info
 //
+if(debug){
+  console.log("pre clone defines "+JSON.stringify(temp_value,tohandler))
+  console.log(" pre-defines, value = "+JSON.stringify(value['MMM-WeatherBackground'],tohandler))
+}
+
 let installed_modules = clone(temp_value);
+if(debug)
+  console.log("post clone defines "+JSON.stringify(installed_modules,tohandler))
 // loop thru the config.js modules list
 for (let m of defines.config.modules) {
   if (value[m.module] === undefined) {
@@ -1065,9 +1078,15 @@ while ((index = str.indexOf('".', start)) !== -1) {
   // look for more, after this one
   start = endstr + 1;
 }
+if(debug)
+  console.log("special char convert back regex="+special_variable_name_char)
+str = str.replace( new RegExp("\\^", "g"), ".")
 // restore the value section with modifications
 value = JSON.parse(str, fromhandler);
-
+if(debug){
+  console.log("after special char convert back regex="+special_variable_name_char)
+  console.log(str)
+}
 //
 // OK, now done building
 // create the big object that we will emit
