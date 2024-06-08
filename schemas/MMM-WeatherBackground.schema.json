@@ -1,0 +1,375 @@
+{
+  "schema": {
+    "MMM-WeatherBackground": {
+      "type": "object",
+      "title": "properties for MMM-WeatherBackground",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "MMM-WeatherBackground",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "verbose": {
+              "type": "boolean"
+            },
+            "source": {
+              "type": "string",
+              "enum":[
+                "weather",
+                "MMM-NOAA3",
+                "MMM-DarkSkyForecast",
+                "MMM-OpenWeatherForecast",
+                "other"
+              ]
+            },
+            "size": {
+              "type": "string"
+            },
+            "hemisphere": {
+              "type": "string"
+            },
+            "monthMap": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "targetDOM": {
+              "type": "string"
+            },
+            "notification": {
+              "type": "string"
+            },
+            "payloadConverter": {
+              "type": "string"
+            },
+            "defaultCollection": {
+              "type": "string"
+            },
+            "externalCollections": {
+              "type": "string"
+            },
+            "collections": {
+              "type": "array",
+              "items": {
+                "type": "pair"
+              }
+            },
+            "sources": {
+              "type": "object",
+              "title": "sources",
+              "properties": {
+                "weather": {
+                  "type": "object",
+                  "properties": {
+                    "notification": {
+                      "type": "string"
+                    },
+                    "payloadConverter": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "MMM-NOAA3": {
+                  "type": "object",
+                  "properties": {
+                    "notification": {
+                      "type": "string"
+                    },
+                    "payloadConverter": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "MMM-DarkSkyForecast": {
+                  "type": "object",
+                  "properties": {
+                    "notification": {
+                      "type": "string"
+                    },
+                    "payloadConverter": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "MMM-OpenWeatherForecast": {
+                  "type": "object",
+                  "properties": {
+                    "notification": {
+                      "type": "string"
+                    },
+                    "payloadConverter": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "MMM-WeatherBackground.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "MMM-WeatherBackground.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "MMM-WeatherBackground.classes",
+      "description": "css classes to use for this module, beyond what MM provides"
+    },
+    {
+      "key": "MMM-WeatherBackground.order",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-WeatherBackground.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "MMM-WeatherBackground.index",
+      "type": "hidden"
+    },
+    {
+      "type": "fieldset",
+      "title": "config",
+      "items": [
+        {
+          "title": "verbose",
+          "key": "MMM-WeatherBackground.config.verbose"
+        },
+        {
+          "title": "source",
+          "key": "MMM-WeatherBackground.config.source"
+        },
+        {
+          "title": "size",
+          "key": "MMM-WeatherBackground.config.size"
+        },
+        {
+          "title": "hemisphere",
+          "key": "MMM-WeatherBackground.config.hemisphere"
+        },
+        {
+          "type": "array",
+          "title": "monthMap",
+          "deleteCurrent": false,
+          "items": [
+            {
+              "title": "monthMap {{idx}}",
+              "key": "MMM-WeatherBackground.config.monthMap[]"
+            }
+          ]
+        },
+        {
+          "title": "targetDOM",
+          "key": "MMM-WeatherBackground.config.targetDOM"
+        },
+        {
+          "title": "notification",
+          "key": "MMM-WeatherBackground.config.notification"
+        },
+        {
+          "title": "payloadConverter",
+          "key": "MMM-WeatherBackground.config.payloadConverter",
+          "type": "ace",
+          "aceMode": "json",
+          "aceTheme": "twilight",
+          "width": "100%",
+          "height": "100px"
+        },
+        {
+          "title": "defaultCollection",
+          "key": "MMM-WeatherBackground.config.defaultCollection"
+        },
+        {
+          "title": "externalCollections",
+          "key": "MMM-WeatherBackground.config.externalCollections"
+        },
+        {
+          "type": "array",
+          "title": "collections",
+          "deleteCurrent": false,
+          "items": [
+            {
+              "key": "MMM-WeatherBackground.config.collections[]",
+              "title": "collection {{idx}}"
+            }
+          ]
+        },
+        {
+          "type": "fieldset",
+          "title": "sources",
+          "items": [
+            {
+              "type": "fieldset",
+              "title": "weather",
+              "items": [
+                {
+                  "title": "notification",
+                  "key": "MMM-WeatherBackground.config.sources.weather.notification"
+                },
+                {
+                  "title": "payloadConverter",
+                  "key": "MMM-WeatherBackground.config.sources.weather.payloadConverter",
+                  "type": "ace",
+                  "aceMode": "json",
+                  "aceTheme": "twilight",
+                  "width": "100%",
+                  "height": "100px"
+                }
+              ]
+            },
+            {
+              "type": "fieldset",
+              "title": "MMM-NOAA3",
+              "items": [
+                {
+                  "title": "notification",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-NOAA3.notification"
+                },
+                {
+                  "title": "payloadConverter",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-NOAA3.payloadConverter",
+                  "type": "ace",
+                  "aceMode": "json",
+                  "aceTheme": "twilight",
+                  "width": "100%",
+                  "height": "100px"
+                }
+              ]
+            },
+            {
+              "type": "fieldset",
+              "title": "MMM-DarkSkyForecast",
+              "items": [
+                {
+                  "title": "notification",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-DarkSkyForecast.notification"
+                },
+                {
+                  "title": "payloadConverter",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-DarkSkyForecast.payloadConverter",
+                  "type": "ace",
+                  "aceMode": "json",
+                  "aceTheme": "twilight",
+                  "width": "100%",
+                  "height": "100px"
+                }
+              ]
+            },
+            {
+              "type": "fieldset",
+              "title": "MMM-OpenWeatherForecast",
+              "items": [
+                {
+                  "title": "notification",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-OpenWeatherForecast.notification"
+                },
+                {
+                  "title": "payloadConverter",
+                  "key": "MMM-WeatherBackground.config.sources.MMM-OpenWeatherForecast.payloadConverter",
+                  "type": "ace",
+                  "aceMode": "json",
+                  "aceTheme": "twilight",
+                  "width": "100%",
+                  "height": "100px"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "MMM-WeatherBackground",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "verbose": false,
+      "source": "weather",
+      "size": null,
+      "hemisphere": "n",
+      "monthMap": [
+        "NewYear",
+        "winter",
+        "spring",
+        "spring flower",
+        "bright",
+        "summer heat",
+        "summer beach",
+        "summer vacation",
+        "autumn",
+        "autumn leaves",
+        "winter",
+        "christmas"
+      ],
+      "targetDOM": ".fullscreen.below",
+      "notification": null,
+      "payloadConverter": null,
+      "defaultCollection": null,
+      "externalCollections": "collections.json",
+      "collections": {},
+      "sources": {
+        "weather": {
+          "notification": "CURRENTWEATHER_TYPE",
+          "payloadConverter": "(payload) =>  {\n          return payload.type.replaceAll(\"_\", \" \");\n\t\t}"
+        },
+        "MMM-NOAA3": {
+          "notification": "WEATHER",
+          "payloadConverter": "(payload) =>  {\n          var now = new Date();\n          if (payload.sunset != null)  {\n            var sunset = payload.sunset.split(\":\");\n            var sunsetTime = new Date(\n              now.getFullYear(),\n              now.getMonth(),\n              now.getDate(),\n              sunset[0],\n              sunset[1]\n            );\n\t\t}\n else  {\n            var sunsetTime = new Date(\n              now.getFullYear(),\n              now.getMonth(),\n              now.getDate(), 17,1)\n\t\t}\n          \n          var n = now.getTime() >= sunsetTime.getTime() ? \"night\" : \"day\";\n          var ret = payload.icon;\n          var iconMap =  {\n            tstorms: \"thunderstorm\",\n            chancesnow: \"snow\"\n\t\t}\n;\n          if (ret in iconMap)  {\n            ret = iconMap[ret];\n\t\t}\n          return ret + \" \" + n;\n\t\t}"
+        },
+        "MMM-DarkSkyForecast": {
+          "notification": "DARK_SKY_FORECAST_WEATHER_UPDATE",
+          "payloadConverter": "(payload) =>  {\n          console.log(\"Payload: \" + payload.currently.icon);\n          return payload.currently.icon;\n\t\t}"
+        },
+        "MMM-OpenWeatherForecast": {
+          "notification": "OPENWEATHER_FORECAST_WEATHER_UPDATE",
+          "payloadConverter": "(payload) =>  {\n          console.log(\"Payload: \" + payload.current.weather[0].description);\n          return payload.current.weather.description;\n\t\t}"
+        }
+      }
+    }
+  }
+}
