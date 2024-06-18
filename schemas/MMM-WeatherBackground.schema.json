@@ -186,16 +186,20 @@
           "key": "MMM-WeatherBackground.config.size"
         },
         {
-          "title": "hemisphere",
+          "title": "hemisphere - deprecated, do not use",
           "key": "MMM-WeatherBackground.config.hemisphere"
         },
         {
           "type": "array",
           "title": "monthMap",
           "deleteCurrent": false,
+          "draggable": false,
+          "minItems":12,
+          "maxItems":12,
+          "hide_add_remove": true,
           "items": [
             {
-              "title": "monthMap {{idx}}",
+              "notitle":true,
               "key": "MMM-WeatherBackground.config.monthMap[]"
             }
           ]

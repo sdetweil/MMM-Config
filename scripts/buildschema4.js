@@ -21,6 +21,7 @@ if (process.argv.length > 3 && process.argv[3] === "saveform") {
 }
 
 let multi_modules = [];
+let module_scripts = {};
 let schema_present = {};
 let moduleIndex = {};
 const networkInterfaces = [];
@@ -29,7 +30,7 @@ const sort = false;
 const special_variable_name_char = "^";
 const module_define_name_special_char = "ς";
 const module_jsonform_info_name = "schema.json";
-
+const module_jsonform_converter = "_converter.js"
 var schema = {};
 var form = [
   {
@@ -268,6 +269,7 @@ var temp_value = {};
 var value = {};
 // items used for data restoration
 var convertedObjects = [];
+var scriptConvertedObjects = {};
 let empty_objects = [];
 let empty_arrays = [];
 let forced_not_arrays= [];
@@ -285,6 +287,10 @@ let results = [];
 //	copy the info from config.js before the modules list
 //
 copyConfig(defines, schema, form);
+
+if(debug){
+  console.log("form before looping thru defines @290="+JSON.stringify(form,tohandler,2))
+}
 
 //
 //	loop thru the modules in the defaults collection list
@@ -336,7 +342,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   schema_present[module_name] = false;
 
   // if it exists
-  let fn = check_for_schema(module_name);
+  let fn = check_for_module_file(module_name, 'schema');
   if (debug) console.log("looking for module's schema file=" + fn);
   //if we found a module schema file 
   if (true && fn !== null) {
@@ -351,6 +357,21 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       console.log("loaded schema ="+JSON.stringify(jsonform_info,tohandler))
     // indicate we found schema
     schema_present[module_name] = true;
+
+    fn=check_for_module_file(module_name,'converter')
+    try {
+      if(fn){
+        if(debug)
+           console.log("loading module converter script for module="+module_name)
+        module_scripts[module_name]= require(fn)
+        if(debug){
+          console.log("functions exported="+JSON.stringify(Object.keys(module_scripts[module_name])))
+        }
+      }
+    }
+    catch(error){
+        console.log("failed loading converter script for module="+module_name+" error="+JSON.stringify(error))
+    }
     // if the module has mangled names
     if (jsonform_info.mangled_names !== undefined) {
       // record them in the list for correction on save
@@ -362,7 +383,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     if (jsonform_info.pairs !== undefined) {
       // record them in the list for correction on save
       Object.keys(jsonform_info.pairs).forEach((k) => {
-        pairVariables[k] = 4; // indicate came from moduel schema file
+        pairVariables[k] = 4; // indicate came from module schema file
       });
     }
     // if this module supports multi-instance
@@ -422,8 +443,8 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       });
       mform.items = JSON.parse(
         JSON.stringify(mform.items, tohandler).replace(
-          new RegExp(module_name + "\\.", "g"),
-          module_name + "[]."
+          new RegExp('"'+module_name + "\\.", "g"),
+          '"'+module_name + "[]."
         ),
         fromhandler
       );
@@ -522,6 +543,9 @@ if (true) {
     id: "submit_button"
   });
 }
+if(debug){
+  console.log("form finished="+JSON.stringify(form,tohandler,2))
+}
 
 // form built now, cleanup data and set additional info
 // positions
@@ -592,6 +616,18 @@ for (let m of defines.config.modules) {
       );
     // merge the values from defaults and actual
     let tt = merge(clone(temp_value[m.module]), x);
+    // if there is a converter script for this module
+    if(module_scripts[m.module] !== undefined ){
+      if(debug)
+        console.log("calling module data converter script for module="+m.module)
+      // call it to convert from config format to form format (object to array for example)
+      tt.config = module_scripts[m.module].converter(tt.config,'toForm')
+      scriptConvertedObjects[m.module]='config'
+      if(debug){
+        console.log("converted config data ="+JSON.stringify(tt,fromhandler,2))
+
+      }
+    }
     // delete the defined version, this will help us know what is not used
     //delete temp_value[m.module];
     // mark it as in config if not already
@@ -894,9 +930,15 @@ form_object_correction.forEach((key) => {
       defines.defined_config[module_define_name],
       t.join(".")
     );
-    if (Array.isArray(variable_definition)) {
+    if(debug){
+      console.log("module define name="+module_define_name +" variable name definition ="+variable_definition)
+    }
+    if ((typeof variable_definition == 'Object') &&  Array.isArray(variable_definition)) {
+      if(debug){
+        console.log("variable definition "+variable_definition+" IS an array")
+      }
       // if it has NOTHING inside
-      if (!variable_definition.length) {
+      if (!variable_definition.length ) {
         // then we can fixup the form to add the editor capabilities
         if (debug) console.log("found empty array item, key=" + key);
         if (!schema_present[key.split(".")[0].split("[")[0]]) {
@@ -1048,6 +1090,7 @@ Object.keys(value).forEach((mv) => {
 
 // get the value section as a string
 let str = JSON.stringify(value, tohandler);
+
 let index = -1;
 let start = 0;
 // loop thru looking for leading dot (after ")
@@ -1057,36 +1100,34 @@ while ((index = str.indexOf('".', start)) !== -1) {
   // find the closing quote (all json items)
   let endstr = str.indexOf('"', index + 1);
   // get the string quote to quote
-  let workstring = str.slice(index, endstr + 1);
-  // and its data length
-  let l = workstring.length - 2; // (length without quotes)
-  if (l !== 1) {
-    // if its not a single character
-    // and it doesn't include a path char
-    if (!workstring.includes("/")) {
-      if (debug) console.log("work string is '" + workstring + "'");
-      // replace the . with the special character
-      workstring = workstring.replace(
-        new RegExp("\\.", "g"),
-        special_variable_name_char
-      );
-      if (debug) console.log("replacement string is '" + workstring + "'");
-      // put the variable back in the value section string
-      str = str.slice(0, index) + workstring + str.slice(endstr + 1);
+  let workstring = str.slice(index, endstr + 2);
+  // only check for the key with embedded dots
+  if(workstring.slice(-1) === ':'){
+    // and its data length
+    let l = workstring.length - 3; // (length without quotes)
+    if (l !== 1) {
+      // if its not a single character
+      // and it doesn't include a path char
+      if (!workstring.includes("/")) {
+        if (debug) console.log("work string is '" + workstring + "'");
+        // replace the . with the special character
+        workstring = workstring.replace(
+          new RegExp("\\.", "g"),
+          special_variable_name_char
+        );
+        if (debug) console.log("replacement string is '" + workstring + "'");
+        // put the variable back in the value section string
+        str = str.slice(0, index) + workstring + str.slice(endstr + 1);
+      }
     }
   }
   // look for more, after this one
   start = endstr + 1;
+
 }
-if(debug)
-  console.log("special char convert back regex="+special_variable_name_char)
-str = str.replace( new RegExp("\\^", "g"), ".")
 // restore the value section with modifications
 value = JSON.parse(str, fromhandler);
-if(debug){
-  console.log("after special char convert back regex="+special_variable_name_char)
-  console.log(str)
-}
+
 //
 // OK, now done building
 // create the big object that we will emit
@@ -1101,7 +1142,9 @@ let combined = {
   arrays: empty_arrays,
   objects: empty_objects,
   mangled_names: mangled_names,
-  convertedObjects: convertedObjects
+  convertedObjects: convertedObjects,
+  scriptConvertedObjects: scriptConvertedObjects
+
 };
 // get the string value of the object
 let cc = JSON.stringify(combined, tohandler, 2).slice(1, -1);
@@ -1114,30 +1157,56 @@ console.log("{" + cc + "}");
 //
 //  check_for_schema
 //
-function check_for_schema(module_name) {
+function check_for_module_file(module_name,type) {
   // get the name of the module schema file
   // check in the module folder
+  let fn
   let isDefault = defaultModules.includes(module_name);
-  let fn = isDefault
-    ? path.join(
-        __dirname,
-        "../..",
-        "default",
-        module_name,
-        module_jsonform_info_name
-      )
-    : path.join(__dirname, "../..", module_name, module_jsonform_info_name);
-  // if the module doesn't supply a schema file
-  if (!fs.existsSync(fn)) {
-    fn = path.join(
-      __dirname,
-      "../schemas",
-      //"../../MagicMirror/modules",
-      module_name + "." + module_jsonform_info_name
-    );
-    // check to see if we have one
+  if(type === 'schema'){
+    fn = isDefault
+      ? path.join(
+          __dirname,
+          "../..",
+          "default",
+          module_name,
+          module_jsonform_info_name
+        )
+      : path.join(__dirname, "../..", module_name, module_jsonform_info_name);
+    // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
-      fn = null;
+      fn = path.join(
+        __dirname,
+        "../schemas",
+        //"../../MagicMirror/modules",
+        module_name + "." + module_jsonform_info_name
+      );
+      // check to see if we have one
+      if (!fs.existsSync(fn)) {
+        fn = null;
+      }
+    }
+  } else if(type=='converter'){
+    fn = isDefault
+      ? path.join(
+          __dirname,
+          "../..",
+          "default",
+          module_name,
+          module_jsonform_converter
+        )
+      : path.join(__dirname, "../..", module_name, module_jsonform_converter);
+    // if the module doesn't supply a schema file
+    if (!fs.existsSync(fn)) {
+      fn = path.join(
+        __dirname,
+        "../schemas",
+        //"../../MagicMirror/modules",
+        module_name + module_jsonform_converter
+      );
+      // check to see if we have one
+      if (!fs.existsSync(fn)) {
+        fn = null;
+      }
     }
   }
   return fn;
@@ -1154,44 +1223,46 @@ function checkObjects(module_name, schema, define) {
     }
   }
 
-  Object.keys(define).forEach((property_name) => {
-    let dtype = getType(define[property_name], property_name, false);
-    let stype = findVar(property_name, schema.properties);
+  if(module_scripts[module_name] == undefined){
+    Object.keys(define).forEach((property_name) => {
+      let dtype = getType(define[property_name], property_name, false);
+      let stype = findVar(property_name, schema.properties);
 
     //if(stype !==dtype){
     if (!module_name.includes(".config")) module_name = module_name + ".config";
-    switch (dtype) {
-      case "object":
-        switch (stype) {
-          case "array":
-            if (debug)
-              console.log(
-                " schema and define object types don't match " +
-                  stype +
-                  " <> " +
-                  dtype +
-                  " for " +
-                  module_name +
-                  ".config." +
-                  property_name
+      switch (dtype) {
+        case "object":
+          switch (stype) {
+            case "array":
+              if (debug)
+                console.log(
+                  " schema and define object types don't match " +
+                    stype +
+                    " <> " +
+                    dtype +
+                    " for " +
+                    module_name +
+                    ".config." +
+                    property_name
+                );
+              convertedObjects.push(module_name + "." + property_name);
+              // if we haven't already pushed the parent
+              if (!empty_objects.includes(module_name + "." + property_name))
+                // do it now
+                empty_objects.push(module_name + "." + property_name);
+              break;
+            case "object":
+              checkObjects(
+                module_name + ".config." + property_name,
+                schema.properties[property_name],
+                define[property_name]
               );
-            convertedObjects.push(module_name + "." + property_name);
-            // if we haven't already pushed the parent
-            if (!empty_objects.includes(module_name + "." + property_name))
-              // do it now
-              empty_objects.push(module_name + "." + property_name);
-            break;
-          case "object":
-            checkObjects(
-              module_name + ".config." + property_name,
-              schema.properties[property_name],
-              define[property_name]
-            );
-        }
-        break;
-    }
-    // }
-  });
+          }
+          break;
+      }
+      // }
+    });
+  }
 }
 
 //
@@ -1813,8 +1884,8 @@ function processModule(schema, form, value, defines, module_name) {
     });
     mform.items = JSON.parse(
       JSON.stringify(mform.items, tohandler).replace(
-        new RegExp(module_name + "\\.", "g"),
-        module_name + "[]."
+        new RegExp('"'+module_name + "\\.", "g"),
+        '"'+module_name + "[]."
       ),
       fromhandler
     );
@@ -2424,10 +2495,10 @@ function fromhandler(key, value) {
 
 function trimit(str1, c = ".") {
   if (c === undefined) c = ".";
-  let str = str1.replace(new RegExp("\\" + c, "g"), special_variable_name_char);
-  if (debug) console.log("replacing " + str1 + " with " + str);
+  //let str = str1.replace(new RegExp("\\" + c, "g"), special_variable_name_char);
+  //if (debug) console.log("replacing " + str1 + " with " + str);
   //while (str.charAt(0) === c) str = str.slice(1);
-  return str;
+  return str1;
 }
 //
 // get the pointer to the object in the value section

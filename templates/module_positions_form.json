@@ -9,6 +9,7 @@
         {
           "type":"tabarray",
           "draggable":false,
+          "hide_add_remove":true,
           "items":[
             {
               "type":"section",

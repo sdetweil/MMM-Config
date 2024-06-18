@@ -18,6 +18,9 @@ const configPath = __dirname + "/schema3.json";
 const module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
+// get the default modules list from the MM core
+const defaultModules = require("../default/defaultmodules.js");
+const module_jsonform_converter = "_converter.js"
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -37,6 +40,7 @@ let doSave = true;
 
 module.exports = NodeHelper.create({
   config: {},
+  module_scripts: {},
 
   // collect the data in background
   launchit() {
@@ -200,9 +204,13 @@ module.exports = NodeHelper.create({
         i++;
         if (
           index === -2 ||
-          (m.index !== undefined && m.index === index) ||
-          i === index
+          (m.index !== undefined && m.index === index)
+          //||          i === index
         ) {
+          /*if(m.index && index != m.index )
+          {
+            continue
+          }*/
           //console.log(" getconf="+ x.module)
           return x;
         }
@@ -372,17 +380,25 @@ module.exports = NodeHelper.create({
         typeof y[propertyName] === "object"
       ) {
         if (debug) console.log("comparing objects=" + propertyName);
-        let t = {};
-        let r = this.objectsAreSame(x[propertyName], y[propertyName]);
-        if (r.length) {
-          t[propertyName] = r;
+        if(Array.isArray(x[propertyName]) && Array.isArray(y[propertyName])){
+          if(JSON.stringify(x[propertyName])!==JSON.stringify(y[propertyName])){
+            proplist.push(propertyName)
+          }
+        }
+        else // is object, not array
+        {
+          let t = {};
+          let r = this.objectsAreSame(x[propertyName], y[propertyName]);
+          if (r.length) {
+            t[propertyName] = r;
 
-          if (debug) console.log("object list=" + JSON.stringify(t, null, 2));
-          proplist = proplist.concat(t);
-          if (debug)
-            console.log(
-              "concat object list=" + JSON.stringify(proplist, null, 2)
-            );
+            if (debug) console.log("object list=" + JSON.stringify(t, null, 2));
+            proplist = proplist.concat(t);
+            if (debug)
+              console.log(
+                "concat object list=" + JSON.stringify(proplist, null, 2)
+              );
+          }
         }
       } else if (x[propertyName] !== y[propertyName]) {
         if (debug) console.log("comparing prop=" + propertyName);
@@ -586,7 +602,59 @@ module.exports = NodeHelper.create({
     datasource[left] = self.clone(value, self);
     return datasource[left];
   },
-
+  check_for_module_file: function(module_name,type) {
+    // get the name of the module schema file
+    // check in the module folder
+    let fn
+    let isDefault = defaultModules.includes(module_name);
+    if(type === 'schema'){
+      fn = isDefault
+        ? path.join(
+            __dirname,
+            "..",
+            "default",
+            module_name,
+            module_jsonform_info_name
+          )
+        : path.join(__dirname, "..", module_name, module_jsonform_info_name);
+      // if the module doesn't supply a schema file
+      if (!fs.existsSync(fn)) {
+        fn = path.join(
+          __dirname,
+          "schemas",
+          //"../../MagicMirror/modules",
+          module_name + "." + module_jsonform_info_name
+        );
+        // check to see if we have one
+        if (!fs.existsSync(fn)) {
+          fn = null;
+        }
+      }
+    } else if(type=='converter'){
+      fn = isDefault
+        ? path.join(
+            __dirname,
+            "..",
+            "default",
+            module_name,
+            module_jsonform_converter
+          )
+        : path.join(__dirname, "..", module_name, module_jsonform_converter);
+      // if the module doesn't supply a schema file
+      if (!fs.existsSync(fn)) {
+        fn = path.join(
+          __dirname,
+          "schemas",
+          module_name + module_jsonform_converter
+        );
+        // check to see if we have one
+        if (!fs.existsSync(fn)) {
+          fn = null;
+        }
+      }
+    }
+    return fn;
+  },
   //
   // handle form submission from web browser
   //
@@ -811,6 +879,16 @@ module.exports = NodeHelper.create({
       delete data.mangled_names;
     }
 
+    // process for any script modified objects
+    Object.keys(data.scriptConvertedObjects).forEach(module_name => {
+      this.module_scripts[module_name] = require(this.check_for_module_file(module_name,'converter'))
+      if(debug){
+          console.log("functions exported="+JSON.stringify(Object.keys(this.module_scripts[module_name])))
+      }
+    })
+
+    delete data.scriptConvertedObjects
+
     // setup the final data to write out
     let r = {};
     // save the config info
@@ -856,27 +934,41 @@ module.exports = NodeHelper.create({
             // remember that.. will have to adjust later
             module_form_data = data[module_name][mm_index[module_name]++];
         }
+
+        // if a converter script was loaded for ths module
+        if(this.module_scripts[module_name] !== undefined){
+          // call it
+          if(module_form_data && module_form_data.config){
+            if(debug)
+              console.log("module form data for module="+module_name+"="+JSON.stringify(module_form_data,self.tohandler,2))
+            if(debug)
+              console.log("calling converter for module="+module_name)
+            module_form_data.config=this.module_scripts[module_name].converter(module_form_data.config,'toConfig')
+          }
+        }
         // default is what the form has
         merged_module = module_form_data;
-        if (debug)
+        if (debug){
           console.log(
             "checking for module=" +
               module_name +
               " in config.js , have form data=" +
               JSON.stringify(module_form_data, self.tohandler, 2)
           );
+        }
         // find the config.js entry, if present
-        if (debug)
+        if (debug){
           console.log(
             "going to get entry for " +
               module_name +
               " from config.js with index=" +
-              mm_index[module_name]
+              (mm_index[module_name]-1)
           );
+        }
         let module_in_config = self.getConfigModule(
           module_name,
           cfg.config.modules,
-          mm_index[module_name] - 1 // have to adjust index
+          (mm_index[module_name] - 1) // have to adjust index
         );
         // if present, merge from the form
         if (module_in_config) {
@@ -884,13 +976,17 @@ module.exports = NodeHelper.create({
           // data in value section, so config data present
           // name (data object key is present)
           // but no data..
-          if (module_form_data === undefined)
+          if (module_form_data === undefined){
+            if(debug)
+              console.log("no form data found for module="+module_name+" using config info index="+mm_index[module_name] - 1)
             // copy config entry to form entry
             module_form_data = module_in_config;
+
+          }
           if (debug)
             console.log(
               "looking for modules=" +
-                module_name +
+                module_name +" at index="+(mm_index[module_name] - 1)+
                 " in config.js , have config data=" +
                 JSON.stringify(module_in_config, self.tohandler, 2)
             );
@@ -1089,7 +1185,7 @@ module.exports = NodeHelper.create({
       if (debug) console.log(" quote around leading symbol test=" + match);
       // split and get the quoted keyword
       let t = match.split(":");
-      // remove andy leading spaces
+      // remove any leading spaces
       t[0] = t[0].trimStart();
       //console.log("match="+match + " keyword="+t[0])
       // don't remove quotes around keyword if it contains or starts with specific characters

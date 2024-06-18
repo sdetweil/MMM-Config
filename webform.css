@@ -69,3 +69,12 @@ background-color: lightgray;
 .possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item%201"] {
   display: none;
 }
+
+/* for compliments indent heading and add/remove buttons */
+.compliments_list label , ._jsonform-array-buttons {
+  margin-left: 5em;
+ }
+
+.jsonform-error-config---logLevel .controls {
+    margin-left: 3em;
+}

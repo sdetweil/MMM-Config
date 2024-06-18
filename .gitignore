@@ -5,3 +5,5 @@ package-lock.json
 node_modules
 defaults.js
 .vscode
+*.txt
+*.png

@@ -111,6 +111,7 @@ $(function () {
     let objects = data.objects;
     let mangled_names = data.mangled_names;
     let convertedObjects = data.convertedObjects;
+    let scriptConverted = data.scriptConvertedObjects
     $("#outmessage").text("");
     try {
       data.onSubmitValid = function (values) {
@@ -120,6 +121,7 @@ $(function () {
         values["objects"] = objects;
         values["mangled_names"] = mangled_names;
         values["convertedObjects"] = convertedObjects;
+        values["scriptConvertedObjects"]=scriptConverted
 
         activesocket.emit("saveConfig", values);
         $("#outmessage").html(

@@ -1,0 +1,208 @@
+{
+  "schema": {
+    "compliments": {
+      "type": "object",
+      "title": "properties for compliments",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "compliments",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "compliments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "type": "string"
+                  },
+                  "list": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+            "updateInterval": {
+              "type": "integer"
+            },
+            "remoteFile": {
+              "type": "string"
+            },
+            "fadeSpeed": {
+              "type": "integer"
+            },
+            "morningStartTime": {
+              "type": "integer"
+            },
+            "morningEndTime": {
+              "type": "integer"
+            },
+            "afternoonStartTime": {
+              "type": "integer"
+            },
+            "afternoonEndTime": {
+              "type": "integer"
+            },
+            "random": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "compliments.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "compliments.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "compliments.classes",
+      "description": "css classes to use for this module, beyond what MM provides"
+    },
+    {
+      "key": "compliments.order",
+      "type": "hidden"
+    },
+    {
+      "key": "compliments.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "compliments.index",
+      "type": "hidden"
+    },
+    {
+      "type": "fieldset",
+      "title": "config",
+      "items": [
+        {
+          "type": "array",
+          "title": "compliments",
+          "deleteCurrent": true,
+          "draggable":false,
+          "items": {
+            "type": "fieldset",
+            "items": [
+              {
+                "title": "when to show",
+                "key": "compliments.config.compliments[].when"
+              },
+              {
+                "type": "array",
+                "title":"list of phases to show for this time",
+                "deleteCurrent": true,
+                "draggable":false,
+                "htmlClass":"compliments_list",
+                "items": [
+                  {
+                    "notitle": true,
+                    "key": "compliments.config.compliments[].list[]"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "title": "updateInterval",
+          "key": "compliments.config.updateInterval"
+        },
+        {
+          "title": "remoteFile",
+          "key": "compliments.config.remoteFile"
+        },
+        {
+          "title": "fadeSpeed",
+          "key": "compliments.config.fadeSpeed"
+        },
+        {
+          "title": "morningStartTime",
+          "key": "compliments.config.morningStartTime"
+        },
+        {
+          "title": "morningEndTime",
+          "key": "compliments.config.morningEndTime"
+        },
+        {
+          "title": "afternoonStartTime",
+          "key": "compliments.config.afternoonStartTime"
+        },
+        {
+          "title": "afternoonEndTime",
+          "key": "compliments.config.afternoonEndTime"
+        },
+        {
+          "title": "random",
+          "key": "compliments.config.random"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "compliments",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "compliments": {
+        "anytime": ["Hey there sexy!"],
+        "morning": ["Good morning, handsome!", "Enjoy your day!", "How was your sleep?"],
+        "afternoon": ["Hello, beauty!", "You look sexy!", "Looking good today!"],
+        "evening": ["Wow, you look hot!", "You look nice!", "Hi, sexy!"],
+        "....-01-01": ["Happy new year!"]
+      },
+      "updateInterval": 30000,
+      "remoteFile": null,
+      "fadeSpeed": 4000,
+      "morningStartTime": 3,
+      "morningEndTime": 12,
+      "afternoonStartTime": 12,
+      "afternoonEndTime": 17,
+      "random": true
+    }
+  }
+}
