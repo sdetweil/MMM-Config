@@ -121,7 +121,7 @@
         {
           "type": "array",
           "title": "compliments",
-          "deleteCurrent": true,
+          "deleteCurrent": false,
           "draggable":false,
           "items": {
             "type": "fieldset",
@@ -133,12 +133,13 @@
               {
                 "type": "array",
                 "title":"list of phases to show for this time",
-                "deleteCurrent": true,
+                "deleteCurrent": false,
                 "draggable":false,
                 "htmlClass":"compliments_list",
                 "items": [
                   {
                     "notitle": true,
+                    "deleteCurrent": false,
                     "key": "compliments.config.compliments[].list[]"
                   }
                 ]
