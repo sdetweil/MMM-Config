@@ -346,7 +346,8 @@ then there is a row for each variable to be overridden.(everything in double quo
 	}
 	```
 	the schema might look like this 
-	```json 
+
+	    ```json 
             "compliments": {
               "type": "array",
               "items": {
@@ -365,8 +366,10 @@ then there is a row for each variable to be overridden.(everything in double quo
               }
             },
 		```
+
 		and the config data like this 
-		```json 
+
+		```json 		
 		"compliments": [
             {
               "when": "anytime",
