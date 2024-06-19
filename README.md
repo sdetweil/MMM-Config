@@ -316,3 +316,187 @@ then there is a row for each variable to be overridden.(everything in double quo
 		"removeStartTags":{"type":"string","enum":["title","description","both"]}
 
 		the first entry in the enum[] list will be the default value (selected if no value found in the current config.js) 
+
+5. ### sometimes none of the the choices seem to work, for  example the compliments module 
+
+	in javascript, the list of compliments it is an object '{....}', which is fixed in size
+	```js 
+		compliments: {
+			anytime: [..,''..],
+			morning: [..,..,..],
+			afternoon: [..,..,..],
+			evening: [..,..,..],
+			"....-01-01": [..,..,..]
+		}
+	```
+	but in reality the structure is an extendable list, more like an array '[...]', but arrays in json have a different structure
+	[ 
+		fieldname: field_value,
+		fieldname: field_value
+	]
+
+	the compliments object key (anytime, morning...) isn't named..
+
+	so, how can we get from one format to the other? 
+	a workable format might be an array of objects 
+	```json
+	{
+		"when":"anytime",
+		"list": [...,...,...]
+	}
+	```
+	the schema might look like this 
+	```json 
+            "compliments": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "type": "string"
+                  },
+                  "list": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            },
+		```
+		and the config data like this 
+		```json 
+		"compliments": [
+            {
+              "when": "anytime",
+              "list": [
+                "Hey there sexy!"
+              ]
+            },
+            {
+              "when": "morning",
+              "list": [
+                "Good morning, handsome!",
+                "Enjoy your day!",
+                "How was your sleep?"
+              ]
+            },
+            {
+              "when": "afternoon",
+              "list": [
+                "Hello, beauty!",
+                "You look sexy!",
+                "Looking good today!"
+              ]
+            },
+            {
+              "when": "evening",
+              "list": [
+                "Wow, you look hot!",
+                "You look nice!",
+                "Hi, sexy!"
+              ]
+            },
+            {
+              "when": "....-01-01",
+              "list": [
+                "Happy new year!"
+              ]
+            }
+		]
+		```
+
+    **we can't change the module config format in config.js as we would have to rewrite the code**
+
+	we **CAN** make a custom schema, and just need to convert the config/defaults values to this form format and back to config.js format
+
+	enter the converter script in js
+	a new file, named _converter.js , located in the module folder, same as the schema file 
+			
+	```js
+	  // you MUST convert all the multiple module config data items that need converting in this one function ca
+	  some_function_name: function(config_data, direction){
+		if(direction == 'toForm'){
+           // here you would do whatever conversions are required for the data 
+		   // in compliments , we need to change the object to an  array 
+		   let new_compliments = []
+		   Object.keys(config_data.compliments).forEach(when=>{
+                // we have the object key 
+				// now we need to create a little 'object' for each element in the array
+				// so we will add to the array for each entry in the object
+                new_compliments.push(
+					{
+						// the schema says the element has a when value (the anytime....)
+						"when":when,
+						"list":config_data.compliments[when] // and a list value (trhe stuff to the right of the ':')
+					}
+				)  
+		   })
+		   // done processing all the entries in the config format object
+		   // now update the passed in config data
+		   // we want the data to survive, so cant be local, the JSON library will let us make a copy 
+		   config_data.compliments = JSON.parse(JSON.stringify(new_compliments))
+		}
+		else if direction == 'toConfig'){
+           // we need to go from form format (array), back to expected config.js format object 
+		   // setup the empty object
+		   let config_compliments = {}
+		   // loop thru each array element
+		   confg_data.compliments.forEach(element=>{
+			   // create a keyed entry in the old format, by using the two parts of the array entry
+               config_compliments[element.when] = element.list
+		   })
+		   // all done with the array 
+		   // save the modified data 
+		   config_data.compliments = JSON.parse(JSON.stringify(config__compliments))
+		}
+		return confg_data // modified
+	  }	
+	  // this line is critical, we need to tell MMM-Config what the function is
+	  // MMM-Config EXPECTS the name to be 'converter', so the export allows you to name your function
+	  // any way you like
+    exports.converter=some_function_name
+	```
+
+    then you can create a custom form section (in the schema.json file (section :schema, form, value ))
+	note: compliments supports multiple instances in config.js so THAT is an array too.. 
+
+	 here is the config section of the module definition, 
+	 
+	 **comments are not allowed in json
+	 but I will put them here for some better explanation**
+	```json 
+      "title": "config",
+      "items": [
+        {
+          "type": "array",
+          "title": "compliments",
+          "deleteCurrent": false,  // if you want the user to delete ANY item in the list, not just the last  set to true (default)
+          "draggable":false,       // if you want the user to be able to reorganize the list, set to true (default)
+          "items": {
+            "type": "fieldset",    // collection of fields with header
+            "items": [             // start of list of fields to show in this connection
+			                       // the field display will be taken from the schema definition , string, number, .....
+              {
+                "title": "when to show",  
+                "key": "compliments.config.compliments[].when"  // where to get/set the data for this field
+              },
+              {
+                "type": "array",
+                "title":"list of phases to show for this time",
+                "deleteCurrent": false, // same as above
+                "draggable":false,      // same as above
+                "htmlClass":"compliments_list",   // in this case I want a custom field class so I can address it in css
+                "items": [
+                  {
+                    "notitle": true,         // dont display any title over this entry
+                    "deleteCurrent": false,  // same as above.. altho this might be useful as true, it DOES add a new separate row with the delete button on EACH element
+                    "key": "compliments.config.compliments[].list[]"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+	```

@@ -32,4 +32,4 @@ function converter(config_data, direction){
 		return config_data	
 	}
 }
-module.exports={converter}
+exports.converter=converter
