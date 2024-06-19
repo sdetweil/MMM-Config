@@ -504,3 +504,8 @@ then there is a row for each variable to be overridden.(everything in double quo
           }
         },
 	```
+	so at the end the compliments format in the form looks like this , with the add/remove buttons for the list of phrases
+	![main page](./doc_images/new_config_top.png)
+
+	and at the bottom of this section is another add/remove, for the 'when' 
+	![main page](./doc_images/new_config2.png)
