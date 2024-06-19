@@ -347,29 +347,29 @@ then there is a row for each variable to be overridden.(everything in double quo
 	```
 	the schema might look like this 
 
-	    ```json 
-            "compliments": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "when": {
-                    "type": "string"
-                  },
-                  "list": {
-                    "type": "array",
-                    "items": {
-                      "type": "string"
-                    }
-                  }
-                }
-              }
-            },
-		```
+	```json 
+		"compliments": {
+			"type": "array",
+			"items": {
+			"type": "object",
+			"properties": {
+				"when": {
+				"type": "string"
+				},
+				"list": {
+				"type": "array",
+				"items": {
+					"type": "string"
+				}
+				}
+			}
+			}
+		},
+	```
 
 		and the config data like this 
 
-		```json 		
+	```json 		
 		"compliments": [
             {
               "when": "anytime",
@@ -408,7 +408,7 @@ then there is a row for each variable to be overridden.(everything in double quo
               ]
             }
 		]
-		```
+	```
 
     **we can't change the module config format in config.js as we would have to rewrite the code**
 
