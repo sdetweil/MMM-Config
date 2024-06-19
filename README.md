@@ -320,6 +320,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 5. ### sometimes none of the the choices seem to work, for  example the compliments module 
 
 	in javascript, the list of compliments it is an object '{....}', which is fixed in size
+
 	```js 
 		compliments: {
 			anytime: [..,''..],
@@ -351,18 +352,18 @@ then there is a row for each variable to be overridden.(everything in double quo
 		"compliments": {
 			"type": "array",
 			"items": {
-			"type": "object",
-			"properties": {
-				"when": {
-				"type": "string"
-				},
-				"list": {
-				"type": "array",
-				"items": {
-					"type": "string"
+				"type": "object",
+				"properties": {
+					"when": {
+						"type": "string"
+					},
+					"list": {
+						"type": "array",
+						"items": {
+							"type": "string"
+						}
+					}
 				}
-				}
-			}
 			}
 		},
 	```
