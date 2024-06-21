@@ -48,7 +48,21 @@
                 "type": "object",
                 "properties": {
                   "when": {
-                    "type": "string"
+                    "type": "string",
+                    "enum":[
+                      "anytime",
+                      "morning",
+                      "afternoon",
+                      "evening",
+                      "date-format",
+                      "date-time-format"
+                    ]
+                  },
+                  "date-format":{
+                    "type":"string"
+                  },
+                  "date-time-format":{
+                    "type":"string"
                   },
                   "list": {
                     "type": "array",
@@ -128,11 +142,32 @@
             "items": [
               {
                 "title": "when to show",
-                "key": "compliments.config.compliments[].when"
+                "key": "compliments.config.compliments[].when",
+                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
+              },
+              {
+                "key": "compliments.config.compliments[].date-format",
+                "title":"date to show",
+                "placeholder":"YYYY-MM-DD",
+                "fieldHtmlClass":"date-format",
+                "type": "text",
+                "description": "YYYY-MM-DD, use .(dot) for any value you don't care, for birthday, don't care about year so ....-MM-DD",
+                "required":true,
+                "onInput":"(evt,node)=>{let value=evt.target.value;if(!date_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
+              },
+              {
+                "key": "compliments.config.compliments[].date-time-format",
+                "title":"date/time to show",
+                "placeholder":"min hour day_of_month month dow",
+                "type": "text",
+                "fieldHtmlClass":"date-time-format",
+                "description": "see <a href=\"https://crontab.cronhub.io/\">cron schedule creator</a>",
+                "required":true,
+                "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
               },
               {
                 "type": "array",
-                "title":"list of phases to show for this time",
+                "title":"list of phrases to show for this time",
                 "deleteCurrent": false,
                 "draggable":false,
                 "htmlClass":"compliments_list",

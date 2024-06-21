@@ -1,0 +1,18 @@
+/* for compliments indent heading and add/remove buttons */
+.m_compliments .compliments_list label , ._jsonform-array-buttons {
+  margin-left: 5em;
+ }
+
+.m_compliments fieldset div[class$="format"] {
+  display:none;
+}
+
+.m_compliments .fieldError {
+  border-color:red;
+}
+
+.m_compliments .fieldError::before {
+    content: ' * incorrect format';
+    color: red;
+    display: block;
+}

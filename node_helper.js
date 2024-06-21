@@ -198,13 +198,15 @@ module.exports = NodeHelper.create({
     let i = -1;
     for (let x of source) {
       if (x.module === m) {
+        if(debug)
+          console.log("found module "+m+" in config.js search for index="+index+" has index="+x.index-1)
         // if we didn't care which module instance
         // return first
         // else return instance of matching index (if any)
         i++;
         if (
           index === -2 ||
-          (m.index !== undefined && m.index === index)
+          (x.index !== undefined && x.index-1 === index)
           //||          i === index
         ) {
           /*if(m.index && index != m.index )
@@ -371,7 +373,7 @@ module.exports = NodeHelper.create({
   objectsAreSame: function (x, y) {
     if (debug)
       console.log(
-        "objectsAreSame x=" + JSON.stringify(x,null, 2) + " y=" + JSON.stringify(y, null, 2)
+        "objectsAreSame x=" + JSON.stringify(x,this.tohandler, 2) + " y=" + JSON.stringify(y, this.tohandler, 2)
       );
     var proplist = [];
     for (var propertyName in y) {
@@ -444,11 +446,14 @@ module.exports = NodeHelper.create({
   // so picking the keys for the config doesn't help, not present
   // and then merge those in.. ( clock, defaults, )
   mergeModule: function (module_entry, data, defaults) {
-    if (debug) console.log("merge data=" + JSON.stringify(data, null, 2));
+    if (debug) console.log("merge data=" + JSON.stringify(data, this.tohandler, 2));
     let keys = _.keys(module_entry);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
     keys = _.without(keys, "config");
+    if(debug){
+      console.log("merge keys for fields="+JSON.stringify(keys))
+    }
     _.assign(module_entry, _.pick(data, keys));
     if (debug)
       console.log(
@@ -464,17 +469,27 @@ module.exports = NodeHelper.create({
       // loop thru the config.js version of the module config
       Object.keys(data.config).forEach((key) => {
         // if that key isn't in the new data
-        if (module_entry.config[key] === defaults[key]) {
+        if(debug){
+          console.log("comparing module data with defaults for key="+key+ " new="+JSON.stringify(module_entry.config[key])+" default="+JSON.stringify(defaults[key]))
+        }
+        if (JSON.stringify(module_entry.config[key],this.tohandler) === JSON.stringify(defaults[key],this.tohandler)) {
           if (debug)
             console.log("deleting item=" + key + " from old config data");
           delete module_entry.config[key];
+        } else{
+          if(debug)
+            console.log("data not equal for key="+key)
         }
       });
     }
     // compare the form data with the info from the defaults..
     let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
+    if(debug)
+      console.log("keys different data vs defaults="+JSON.stringify(keydiff))
     if(module_entry.config !== undefined){
       let keydiff2=this.objectsAreSame(data.config,module_entry.config)
+      if(debug)
+        console.log("keys different data vs prior config="+JSON.stringify(keydiff2))
       keydiff2.forEach(k=>{
         if(!keydiff.includes(k))
                 keydiff.push(k);
@@ -968,7 +983,7 @@ module.exports = NodeHelper.create({
         let module_in_config = self.getConfigModule(
           module_name,
           cfg.config.modules,
-          (mm_index[module_name] - 1) // have to adjust index
+          (mm_index[module_name] -1) // have to adjust index
         );
         // if present, merge from the form
         if (module_in_config) {
@@ -986,7 +1001,7 @@ module.exports = NodeHelper.create({
           if (debug)
             console.log(
               "looking for modules=" +
-                module_name +" at index="+(mm_index[module_name] - 1)+
+                module_name +" at index="+(mm_index[module_name])+
                 " in config.js , have config data=" +
                 JSON.stringify(module_in_config, self.tohandler, 2)
             );
@@ -1327,6 +1342,39 @@ module.exports = NodeHelper.create({
         xx = xx.replace(saved, expression);
       });
     }
+    //
+    // lets construct the config.html to include extension files from module authors
+    //
+    // get the ones from this module distro folder (js and css files both)
+    var files = fs.readdirSync(__dirname+'/schemas').filter(fn => fn.includes('_extension.'));
+    var mfiles= []
+    // loop thru the modules list
+    r.config.modules.forEach(m =>{
+      // if not disabled
+      if(m.disabled==false && !defaultModules.includes(m.module)){
+        // get a list of any extension files in the module folder
+        mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+m.module).filter(fn => fn.startsWith('_extension.')));
+        // if we found some
+        if(mfiles.length)
+          // add them to the global list
+          files.concat(mfiles)
+      }
+    })
+
+    let htmlfile_lines=fs.readFileSync(__dirname+"/templates/config.html").toString().split("\n");
+    files.forEach(f=>{
+      if(f.endsWith('.css')){
+        if(debug)
+          console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</head>'))
+        htmlfile_lines.splice(htmlfile_lines.indexOf('</head>'),0,'  <link rel="stylesheet" type="text/css" href="'+'schemas/'+f+'" />')
+      }
+      if(f.endsWith('.js')){
+        if(debug)
+          console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</body>'))
+         htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <script type="text/javascript" src="'+'schemas/'+f+'"></script>')
+      }
+    })
+    fs.writeFileSync(__dirname+'/config.html',htmlfile_lines.join("\n"))
 
     // get the last mod date of the current config.js
     let d = JSON.stringify(fs.statSync(oc).mtime)

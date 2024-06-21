@@ -411,14 +411,14 @@ then there is a row for each variable to be overridden.(everything in double quo
 		]
 	```
 
-    **we can't change the module config format in config.js as we would have to rewrite the code**
+    **we can't change the module config format in config.js as we would have to rewrite the module code**
 
 	we **CAN** make a custom schema, and just need to convert the config/defaults values to this form format and back to config.js format
 
 	enter the converter script in js
-	a new file, named _converter.js , located in the module folder, same as the schema file 
-			
-	```js
+	a new file, named _converter.js , located in the module folder, same location as the schema file
+
+```js
 	  // you MUST convert all the multiple module config data items that need converting in this one function ca
 	  some_function_name: function(config_data, direction){
 		if(direction == 'toForm'){
@@ -461,7 +461,8 @@ then there is a row for each variable to be overridden.(everything in double quo
 	  // MMM-Config EXPECTS the name to be 'converter', so the export allows you to name your function
 	  // any way you like
     exports.converter=some_function_name
-	```
+
+```
 
     then you can create a custom form section (in the schema.json file (section :schema, form, value ))
 	note: compliments supports multiple instances in config.js so THAT is an array too.. 
@@ -470,7 +471,9 @@ then there is a row for each variable to be overridden.(everything in double quo
 	 
 	 **comments are not allowed in json
 	 but I will put them here for some better explanation**
-	```json 
+
+```json 
+
       "title": "config",
       "items": [
         {
@@ -503,9 +506,276 @@ then there is a row for each variable to be overridden.(everything in double quo
             ]
           }
         },
-	```
+```
+
 	so at the end the compliments format in the form looks like this , with the add/remove buttons for the list of phrases
 	![main page](./doc_images/new_config_top.png)
 
 	and at the bottom of this section is another add/remove, for the 'when' 
 	![main page](./doc_images/new_config2.png)
+
+6. ### All that is really cool, but, 
+
+the custom date format YYY-MM-DD doesn't work properly.. the schema says there is ONE format ....-01-01, but really, thats just one of many.  the form handler can't match data (....-04-03 with ....-01-01)
+
+SO.. if we had ANOTHER field we could use for the actual data then the drop down selection for date-format could expose the other field for data entry
+and our conversion script could handle the changes
+
+so the schema and form sections get some improvements
+
+##the schema section
+
+```json
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "when": {
+                    "type": "string",
+                    "enum":[
+                      "anytime",
+                      "morning",
+                      "afternoon",
+                      "evening",
+                      "date-format",
+                      "date-time-format"
+                    ]
+                  },
+                  "date-format":{
+                    "type":"string"
+                  },
+                  "date-time-format":{
+                    "type":"string"
+                  },
+                  "list": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+```
+##the form section
+
+```json
+          "type": "array",
+          "title": "compliments",
+          "deleteCurrent": false,
+          "draggable":false,
+          "items": {
+            "type": "fieldset",
+            "items": [
+              {
+                "title": "when to show",
+                "key": "compliments.config.compliments[].when",
+                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
+              },
+              {
+                "key": "compliments.config.compliments[].date-format",
+                "title":"date to show",
+                "placeholder":"YYYY-MM-DD",
+                "fieldHtmlClass":"date-format",
+                "type": "text",
+                "description": "YYYY-MM-DD, use .(dot) for any value you don't care, for birthday, don't care about year so ....-MM-DD",
+                "required":true,
+                "onInput":"(evt,node)=>{let value=evt.target.value;if(!date_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
+              },
+              {
+                "key": "compliments.config.compliments[].date-time-format",
+                "title":"date/time to show",
+                "placeholder":"min hour day_of_month month dow",
+                "type": "text",
+                "fieldHtmlClass":"date-time-format",
+                "description": "see <a href=\"https://crontab.cronhub.io/\">cron schedule creator</a>",
+                "required":true,
+                "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
+              },
+```
+now there is a some extra work to do..
+we need to hide the field(s) if not used by the selection
+
+so css helps here , we'll hide the 1st div under the fieldset for this modules form contents (the developers window can show the html layout generated)
+```css
+.m_compliments fieldset div[class$="format"] {
+  display:none;
+}
+```
+
+this is really a module specific css.. hm.. how to add to the form page?
+
+now the custom fields are hidden..   oops..  IF the fields WERE set, then the selection list (when) should be set to 'date-format'
+AND the field with the actual data should be shown WHEN the form is opened..
+
+hmm, can't do that without code.. (css doesn't have a field contents operator yet)
+
+this is really module specific js code.. hm.. how to add to the form page? AND how does it get invoked..
+
+
+for both these problems, I have extended MMM-Config to support 2 new files in the module folder
+```text
+_extension.css
+_extension.js
+```
+
+the form builder will locate and add these to the html file used to launch the config form.
+and will do the same for any module with an extension..
+
+ok, now have the fields hidden....
+
+we cant use the browser document.on('ready') event , because this happens WAY before the form is built..
+
+turns out one can make custom events..
+
+so after the form is generated into the web page, the event 'form_loaded' is fired,
+
+so for compliments a little event handler in _extension.js can process when the form is loaded..
+here JQuery makes quick work
+find **all** the elements in the document, wherever they are, that are the selected option of the select list
+in the m_compliments document tree with a classname specfied that ends with '---when' (that json form generated, from our property name ('when') )
+and then LOOP thru those
+if the selected option ends with '-format', its one of the special types, and we need to surface the extra input field (change its display style setting)
+
+so, look back UP te document tree for the first fieldset element (see the generated html) and then find (downward) the div with a class name that ends with the text of the selection entry (JSON form generated from out fieldHtmlClass value) 
+
+and set it display attribute to not none to make it visible again (in this case display:block works)
+
+the cool part of JQuery here is that this one 'search' will return ALL instances of this selected option across as many compliments form elements in the entire doc, across multiple instances, etc.. no special coding required.
+```js
+// on form_loaded event
+$(document).on('form_loaded', function () {
+	// find all the elements of our when selection list and get the selected option in each
+	$('.m_compliments div[class$="---when"]  option:selected').each(
+		// process each 
+		function(){
+			// get its selected option text
+			var o=$(this).text();
+			// if its one of the special fields 
+			if(o.endsWith('-format')){
+				// look above the select to the next element that encloses select and the custom fields
+				// find below the fieldset to find the appropriate div with the right class, and set its display style property to block
+				// previously set to display:none by _extension.css
+				$(this).closest('fieldset').find('div[class$="'+o+'"]').css('display','block')
+			}
+		}
+	)
+})
+```
+
+so, we have our custom fields,
+	the form loader will put the right data in the fields(schema and form),
+	they all will be hidden(css, _extension.css).
+	and some will be shown when used.. (form_loaded event handler, _extenstion.js)<br>
+
+oops.. NOW we have to fix the converter to handle putting/getting the JS object data to/from the form layout
+
+it now looks like this
+```js
+function converter(config_data, direction){
+
+	if (direction == 'toForm'){ // convert FROM native object format to form schema array format
+		// create entry array
+		let nc = []
+		// config format is an object, need an extendable array
+		Object.keys(config_data.compliments).forEach(c =>{
+			// for each key (morning, afternoon, eventing, date... )
+			// push an object onto the 'array '
+			// the object must match the custom schema definition
+			let x = c
+
+			if(c.includes("^"))
+				x = c.replace(new RegExp("\\^", "g"),'.')
+			let when
+			let df=null
+			let field=null
+			let entry = { when : x,  list: config_data.compliments[c]}
+			// if the key contains space a space, then its the cron date/time type format
+			if(x.includes(' ')){
+				field='date-time-format'
+				df=x
+			}// if the object key contains a . or starts with a number, THEN its a date field
+			 else if(x.includes('.') || !isNan(parseInt(x[0]))){
+				field='date-format'
+				df=x
+			}
+			// if we found a custom field, then fix the entry structure
+			if(df){
+				entry.when=field
+				entry[field]=df
+			}
+			// save the new field structure in the array
+			nc.push( entry)
+		})
+		// pass back a good copy of the data
+		config_data.compliments= JSON.parse(JSON.stringify(nc))
+		return config_data
+	}
+	else if (direction == 'toConfig'){  // convert TO native object from form array
+		// create empty object
+		let nc = {}
+		// form format is an array , need an object for config.js
+		config_data.compliments.forEach(e =>{
+			// for each key (morning, afternoon, eventing, date... )
+			// make an object entry from the two fields in each array element
+			// as defined in the custom schema
+			// special handling for the two date related values
+			switch(e.when){
+				case 'date-format':
+				case 'date-time-format':
+					// custom field, get the data from the right place in the structure
+					nc[e[e.when]]=e.list
+					break
+				default:
+					// default location for all others
+					nc[e.when]= e.list
+			}
+		})
+		// pass back a good copy of the data
+		config_data.compliments= JSON.parse(JSON.stringify(nc))
+		return config_data
+	}
+}
+exports.converter=converter
+````
+
+what is left..    we we have fields that contain custom formatted data.. we should help the user get it right while editing the form, not
+later when MagicMirror is started..
+
+lets add some field validation to this..
+
+the form section above adds the onInput() event handler to each of the new fields..
+we just need to call some function on this fields data
+
+well, we HAVE _extension.js that is being loaded already, so we can put the functions in there
+one for each data type. and we can use the javascript regylar expression function to validate the data 1 char at a time, live
+that looks like this (without the regex strings, which are long.. look at the code if u need to)
+```js
+// this is for the cron type field, I hope to add to compliments
+function cron_validator(content){
+	return (cron_regex.exec(content) !== null)
+}
+// this is for the date field.. make sure its this year or  later or it wont trigger
+function date_validator(content){
+	let result=(new RegExp(date_regex).test(content))
+	if(result){
+		if(content[0]!='.'){
+			let thisYear=new Date().getFullYear()
+			let specified_year=content.slice(0,4)
+			if(!(parseInt(specified_year)>=thisYear))
+				result=false
+		}
+	}
+
+	return result
+}
+```
+
+and we have a css entry to turn the field red if the regex validation test fails..
+
+.. food for thought.. these fields require the user to type the text of the field format.
+there ARE visual date, and date/time pickers
+for the date one, we need to know if the date is specific to THIS year (2024-07-25), or the month/day in any year (birthday ....-07-25)
+for the cron.. once we have the date/time range, we need to convert that to the format required by cron.
+
+the two fields could be extended with onClick handlers to trigger the pickers..
+
+
+

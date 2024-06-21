@@ -239,7 +239,7 @@ let module_disabled_color = getColor(cssfile, "module_disabled");
 const module_form_template = {
   type: "fieldset",
   title: "modulename",
-  //"htmlClass":"module_name_class",
+  htmlClass:"",
   expandable: true,
   items: []
 };
@@ -404,6 +404,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
 
       let mform = clone(module_form_template);
       mform.title = module_name;
+      mform.htmlClass= module_name
 
       parents_parent = "parent=parent.parent().closest('fieldset')";
       // if this is the disabled element in the form
@@ -460,6 +461,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       schema[module_name] = clone(jsonform_info.schema[module_name]);
       let mform = clone(module_form_template);
       mform.title = module_name;
+      mform.htmlClass= module_name
       parents_parent = "";
       // if this is the disabled element in the form
       if (jsonform_info.form[0].key === module_name + "." + "disabled") {
@@ -1069,16 +1071,16 @@ Object.keys(value).forEach((mv) => {
     if (mheader) {
       mheader.htmlClass =
         disabled === value[mv].length
-          ? "module_disabled" + extra
-          : "module_enabled" + extra;
+          ? "module_disabled" + extra +" m_" + mv
+          : "module_enabled" + extra + " m_" + mv;
     }
   } else {
     form[0].items[1].items.forEach((m) => {
       if (m.title === mv) {
         m.htmlClass =
           value[mv].disabled !== undefined && value[mv].disabled === true
-            ? "module_disabled" + extra
-            : "module_enabled" + extra;
+            ? "module_disabled" + extra +" m_" + mv
+            : "module_enabled" + extra + " m_" + mv;
       }
     });
   }
@@ -1844,6 +1846,7 @@ function processModule(schema, form, value, defines, module_name) {
 
   mform = clone(module_form_template);
   mform.title = module_name;
+  mform.htmlClass= module_name
 
   if (debug)
     console.log(

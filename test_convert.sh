@@ -22,20 +22,26 @@ if [ -f "$FILE" ]; then
     	schema_file_exists=1
 	fi
 fi
+
 # if the modules changes
 if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; then
 	#get to the the modules list
 	cd $d
+	if [ ! -e config.html ]; then
+		cp templates/config.html .
+	fi
+	rm extension_list 2>/dev/null
+	touch extension_list
 	# get the list of installed modules, including defaults
 	NL=$'\n'
 	list=$(find .. -maxdepth 1 -type d | grep -v default | awk -F/ '{print substr($0,index($0,$5))}' )
 	list1=$(find ../default -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
 	listf="$list${NL}$list1"
 	IFS=$'\n'
-	modules=($listf)
+
 	echo "const config = require('../../config/config.js')" >$defaults_file
 	echo "var defined_config = {"  >>$defaults_file
-
+	modules=($listf)
 	for module in "${modules[@]}"
 	do
 		nm=$module
@@ -51,10 +57,12 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		#echo looking for "$nm.js"
 		if [ -e "$module/$nm".js ]; then
 		   node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
+		   ls $module/_extension.* 2>/dev/null >>extension_list
 		else
 			#echo "// file "$nm.js" does NOT exist"
 			:
 		fi
+
 
 	done
 	echo "}" >>$defaults_file
@@ -93,10 +101,10 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		echo MMM-Config
 		# copy the build error schema for form presentation
 		cp schemas/MMM-Config-build-error.json schema3.json
-		rm sss
 		# we cant continue
 		exit 0
 	fi
+	rm sss 2>/dev/null
 	modules_changed=1
 	echo $mod_lastchange>$d/modules_lastchange
 fi
@@ -105,6 +113,32 @@ if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; 
 	cd $d
 	node ./scripts/buildschema4.js $defaults_file >$FILE
 	echo $config_lastchange>$d/config_lastchange
+	# look for global extensions (built in modules or whatever)
+	ls schemas/*_extension.* >>extension_list
+	# if no extensions found in config
+	if [ $(grep 'extension.' config.html | wc -l) -eq 0 ]; then
+		#
+		# lets see if we found any extensions
+		#
+		# does the extension list file contain info (not 0 length)
+		if [ $(ls -laF extension_list 2>/dev/null | awk '{print $5}') -gt 0 ]; then
+			# get the file list as an array
+			file_list=($(cat extension_list))
+			# loop thru the array
+			for file in "${file_list[@]}"
+			do
+				#echo we have a file extension = $file
+				if [ -z ${file##*.js} ]; then
+					#echo this is a js file "<script type=\"text/javascript\" src=\"$file\"></script>"
+					sed -i -e /'<\/body>'/i\ "<script type=\"text\/javascript\" src=\"$file\"><\/script>" config.html
+				elif [ -z ${file##*.css} ]; then
+					#echo this is a css file
+					sed -i -e /'<\/head>'/i\ "<link rel=\"stylesheet\" type=\"text/css\" href=\"$file\"/>" config.html
+				fi
+			done
+		fi
+	fi
+	rm extension_list 2>/dev/null
 fi
 echo completed
 # for testing, launch browser to view form

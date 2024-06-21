@@ -1,4 +1,5 @@
 $(function () {
+  const event = new Event("form_loaded");
   // global vars
   var u = window.location.href;
   var pos = u.substr(u.lastIndexOf("/") + 1);
@@ -46,6 +47,7 @@ $(function () {
             case "onChange":
             case "onClick":
             case "onKeyUp":
+            case "onInput":
               // get the function from the string
               // parens mean don't EXECUTE the function, just get its value
               value = eval("(" + value + ")");
@@ -112,6 +114,7 @@ $(function () {
     let mangled_names = data.mangled_names;
     let convertedObjects = data.convertedObjects;
     let scriptConverted = data.scriptConvertedObjects
+
     $("#outmessage").text("");
     try {
       data.onSubmitValid = function (values) {
@@ -154,7 +157,8 @@ $(function () {
       $("#result").html('<form id="result-form" class="form-vertical"></form>');
       // insert the new form
       $("#result-form").jsonForm(data);
-
+      // trigger the custom event for any extension that needs to manipulate its part of the form
+      document.dispatchEvent(event)
       // delete entry
       $(
         "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-deletelast "
