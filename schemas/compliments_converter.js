@@ -21,7 +21,7 @@ function converter(config_data, direction){
 				field='date-time-format'
 				df=x
 			}// if the object key contains a . or starts with a number, THEN its a date field
-			 else if(x.includes('.') || !isNan(parseInt(x[0]))){
+			 else if(x.includes('.') || !isNaN(parseInt(x[0]))){
 				field='date-format'
 				df=x
 			}
