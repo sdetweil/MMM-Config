@@ -21,6 +21,7 @@ const module_positions = JSON.parse(
 // get the default modules list from the MM core
 const defaultModules = require("../default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
+const our_name = __dirname.split(path.separator).slice(-2,-1)
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -646,28 +647,29 @@ module.exports = NodeHelper.create({
         }
       }
     } else if(type=='converter'){
-      fn = isDefault
-        ? path.join(
-            __dirname,
-            "..",
-            "default",
-            module_name,
-            module_jsonform_converter
-          )
-        : path.join(__dirname, "..", module_name, module_jsonform_converter);
-      // if the module doesn't supply a schema file
-      if (!fs.existsSync(fn)) {
-        fn = path.join(
+    fn = isDefault
+      ? path.join(
           __dirname,
-          "schemas",
-          module_name + module_jsonform_converter
-        );
-        // check to see if we have one
-        if (!fs.existsSync(fn)) {
-          fn = null;
-        }
+          "../..",
+          "default",
+          module_name,
+          our_name+module_jsonform_converter
+        )
+      : path.join(__dirname, "../..", module_name,our_name+module_jsonform_converter.slice(1));
+    // if the module doesn't supply a schema file
+    if (!fs.existsSync(fn)) {
+      fn = path.join(
+        __dirname,
+        "../schemas",
+        //"../../MagicMirror/modules",
+        module_name +'.'+module_jsonform_converter.slice(1)
+      );
+      // check to see if we have one
+      if (!fs.existsSync(fn)) {
+        fn = null;
       }
     }
+  }
     return fn;
   },
   //
@@ -1353,7 +1355,7 @@ module.exports = NodeHelper.create({
       // if not disabled
       if(m.disabled==false && !defaultModules.includes(m.module)){
         // get a list of any extension files in the module folder
-        mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+m.module).filter(fn => fn.startsWith('_extension.')));
+        mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
         // if we found some
         if(mfiles.length)
           // add them to the global list

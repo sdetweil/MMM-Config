@@ -158,7 +158,7 @@ This custom schema file process requires someone: module author, or module user,
 
 To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
 
-1. a file in the module folder called MMM-Config.overrides.json, can provide the desired layout for the fields    we discussed above
+1. a file in the module folder called MMM-Config.overrides.json, can provide the desired layout for the fields    we discussed above, this is deprecated and no longer works. 
 	 
 2. MMM-Config provides a command to generate the entire module schema that can be customized
 
@@ -166,10 +166,10 @@ To minimize the customization effort, MMM-Config provides two different but comp
   create_form_for_module.sh (or .cmd on windows)  modulename
 ```
 
-   this will generate and create the file **schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL overwrite the same named file without warning)
+   this will generate and create the file **MMM-Config.schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL NOT overwrite the same named file, so if you have one and try to genertae a new one, oops.. no change)
 	 
 
-if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this schema.json file, then the form editor/author can submit the updated form (schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
+if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
 	 
 	 
 	 the schema.json file has 3 sections
@@ -182,7 +182,8 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
    	 3. "value"
 	     used to define the default values to be presented 
 		 in the form if no value is supplied from config.js
-			 
+
+### WARNING overrides are deprected and no longer work, 6/20/24
 if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the schema.json file
 
 ### a few examples for the MMM-Config.overrides.json:
@@ -612,8 +613,8 @@ this is really module specific js code.. hm.. how to add to the form page? AND h
 
 for both these problems, I have extended MMM-Config to support 2 new files in the module folder
 ```text
-_extension.css
-_extension.js
+MMM-Config.extension.css
+MMM-Config.extension.js
 ```
 
 the form builder will locate and add these to the html file used to launch the config form.
@@ -627,7 +628,7 @@ turns out one can make custom events..
 
 so after the form is generated into the web page, the event 'form_loaded' is fired,
 
-so for compliments a little event handler in _extension.js can process when the form is loaded..
+so for compliments a little event handler in MMM-Config.extension.js can process when the form is loaded..
 here JQuery makes quick work
 find **all** the elements in the document, wherever they are, that are the selected option of the select list
 in the m_compliments document tree with a classname specfied that ends with '---when' (that json form generated, from our property name ('when') )
@@ -652,7 +653,7 @@ $(document).on('form_loaded', function () {
 			if(o.endsWith('-format')){
 				// look above the select to the next element that encloses select and the custom fields
 				// find below the fieldset to find the appropriate div with the right class, and set its display style property to block
-				// previously set to display:none by _extension.css
+				// previously set to display:none by MMM-Config.extension.css
 				$(this).closest('fieldset').find('div[class$="'+o+'"]').css('display','block')
 			}
 		}
@@ -662,7 +663,7 @@ $(document).on('form_loaded', function () {
 
 so, we have our custom fields,
 	the form loader will put the right data in the fields(schema and form),
-	they all will be hidden(css, _extension.css).
+	they all will be hidden(css, MMM-Config.extension.css).
 	and some will be shown when used.. (form_loaded event handler, _extenstion.js)<br>
 
 oops.. NOW we have to fix the converter to handle putting/getting the JS object data to/from the form layout
@@ -744,7 +745,7 @@ lets add some field validation to this..
 the form section above adds the onInput() event handler to each of the new fields..
 we just need to call some function on this fields data
 
-well, we HAVE _extension.js that is being loaded already, so we can put the functions in there
+well, we HAVE MM-Config.extension.js that is being loaded already, so we can put the functions in there
 one for each data type. and we can use the javascript regylar expression function to validate the data 1 char at a time, live
 that looks like this (without the regex strings, which are long.. look at the code if u need to)
 ```js

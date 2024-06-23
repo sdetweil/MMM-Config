@@ -8,6 +8,7 @@ var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
 var save_module_form = "";
+const using_overrides = false;
 //console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
@@ -29,8 +30,9 @@ const languages = [];
 const sort = false;
 const special_variable_name_char = "^";
 const module_define_name_special_char = "ς";
-const module_jsonform_info_name = "schema.json";
+const module_jsonform_info_name = "_schema.json";
 const module_jsonform_converter = "_converter.js"
+const our_name = __dirname.split('/').slice(-2,-1)
 var schema = {};
 var form = [
   {
@@ -314,23 +316,25 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         JSON.stringify(defines.defined_config[module_definition], tohandler) +
         "\n"
     );
-   try {
-    let isDefault = defaultModules.includes(module_name);
-    let fn = isDefault
-    ? path.join(
-        __dirname,
-        "../..",
-        "default",
-        module_name,
-        "MMM-Config.overrides.json"
-      )
-    :path.join(__dirname, "../..", module_name,"MMM-Config.overrides.json")
-    if (debug) console.log("looking for module's MMM-Config override file=" + fn);
-    module_variable_usage[module_name]=require(fn)
-    if(debug)
-       console.log("found variable usage info for module "+module_name+" "+JSON.stringify(module_variable_usage[module_name],null,2))
-   }
-   catch{}
+  if(using_overrides){
+    try {
+      let isDefault = defaultModules.includes(module_name);
+      let fn = isDefault
+      ? path.join(
+          __dirname,
+          "../..",
+          "default",
+          module_name,
+          our_name +'.'+ module_jsonform_info_name.slice(1)
+        )
+      :path.join(__dirname, "../..", module_name,our_name+module_jsonform_info_name)
+      if (debug) console.log("looking for module's MMM-Config override file=" + fn);
+      module_variable_usage[module_name]=require(fn)
+      if(debug)
+         console.log("found variable usage info for module "+module_name+" "+JSON.stringify(module_variable_usage[module_name],null,2))
+    }
+    catch{}
+  }
   // set the data output area structure, many or one
   if (checkMulti(module_name))
     // many
@@ -345,7 +349,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
   let fn = check_for_module_file(module_name, 'schema');
   if (debug) console.log("looking for module's schema file=" + fn);
   //if we found a module schema file 
-  if (true && fn !== null) {
+  if (true && fn !== null && (save_module_form !=module_name)) {
     // set flag we found something
     moduleIndex[module_name] = 0;
 
@@ -359,6 +363,9 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     schema_present[module_name] = true;
 
     fn=check_for_module_file(module_name,'converter')
+
+    if(debug)
+           console.log("looking for module converter script for module="+fn)
     try {
       if(fn){
         if(debug)
@@ -1171,17 +1178,21 @@ function check_for_module_file(module_name,type) {
           "../..",
           "default",
           module_name,
-          module_jsonform_info_name
+          our_name+'.'+module_jsonform_info_name.slice(1)
         )
-      : path.join(__dirname, "../..", module_name, module_jsonform_info_name);
+      : path.join(__dirname, "../..", module_name, our_name+'.'+module_jsonform_info_name.slice(1));
+      if(debug)
+        console.log("looking for "+our_name+ " schema file="+fn)
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
       fn = path.join(
         __dirname,
         "../schemas",
         //"../../MagicMirror/modules",
-        module_name + "." + module_jsonform_info_name
+        module_name +'.'+ module_jsonform_info_name.slice(1)
       );
+      if(debug)
+        console.log("looking for "+our_name+ "/schemas schema file="+fn)
       // check to see if we have one
       if (!fs.existsSync(fn)) {
         fn = null;
@@ -1194,17 +1205,16 @@ function check_for_module_file(module_name,type) {
           "../..",
           "default",
           module_name,
-          module_jsonform_converter
+          our_name+module_jsonform_converter
         )
-      : path.join(__dirname, "../..", module_name, module_jsonform_converter);
+      : path.join(__dirname, "../..", module_name,our_name+module_jsonform_converter);
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
       fn = path.join(
         __dirname,
         "../schemas",
         //"../../MagicMirror/modules",
-        module_name + module_jsonform_converter
-      );
+        module_name +module_jsonform_converter)
       // check to see if we have one
       if (!fs.existsSync(fn)) {
         fn = null;
@@ -1915,6 +1925,8 @@ function writeJsonFormInfoFile(
   form_info,
   value_info
 ) {
+  if(debug)
+    console.log("checking to save form for this module="+module_name+" saveform="+save_module_form)
   // if we should save the constructed files?
   if (save_jsonform_info) {
     // save for all, of only one mdoule if specified
@@ -1925,9 +1937,15 @@ function writeJsonFormInfoFile(
       let module_folder = defaultModules.includes(module_name)
         ? path.join(__dirname, "../..", "default", module_name)
         : path.join(__dirname, "../..", module_name);
+
+      if(debug)
+        console.log("checking folder for schema save="+module_folder)
       // check to make sure the module folder exists
       if (fs.existsSync(module_folder)) {
+        if(debug)
+          console.log("folder for schema file exists")
         // remove the label item if present
+
         // only important for the arrayed layout, not the module data
         let form_info_clone = clone(form_info);
         for (let i in form_info_clone) {
@@ -1950,8 +1968,10 @@ function writeJsonFormInfoFile(
           value: value_info[module_name]
         };
         // get the file path
-        let fn = path.join(module_folder, module_jsonform_info_name);
+        let fn = path.join(module_folder, our_name+'.'+module_jsonform_info_name.slice(1));
         // if it doesn't exist
+        if(debug)
+          console.log("checking for existing schema file, fn="+fn)
         // don't write over existing
         if (!fs.existsSync(fn)) {
           // write out the formatted text

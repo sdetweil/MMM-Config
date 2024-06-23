@@ -57,7 +57,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		#echo looking for "$nm.js"
 		if [ -e "$module/$nm".js ]; then
 		   node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
-		   ls $module/_extension.* 2>/dev/null >>extension_list
+		   ls $module/MMM-Config_extension.* 2>/dev/null >>extension_list
 		else
 			#echo "// file "$nm.js" does NOT exist"
 			:
@@ -114,7 +114,7 @@ if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; 
 	node ./scripts/buildschema4.js $defaults_file >$FILE
 	echo $config_lastchange>$d/config_lastchange
 	# look for global extensions (built in modules or whatever)
-	ls schemas/*_extension.* >>extension_list
+	ls schemas/*_extension.* 2>/dev/null >>extension_list
 	# if no extensions found in config
 	if [ $(grep 'extension.' config.html | wc -l) -eq 0 ]; then
 		#
