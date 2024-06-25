@@ -8,7 +8,7 @@ var save_jsonform_info = false;
 const fs = require("fs");
 var debug = false;
 var save_module_form = "";
-const using_overrides = false;
+const using_overrides = true;
 //console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
@@ -18,6 +18,9 @@ if (process.argv.length > 3 && process.argv[3] === "saveform") {
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
     save_module_form = process.argv[4];
+     if (process.argv.length > 5 && process.argv[5] === "debug") {
+        debug = true
+     }
   }
 }
 
@@ -30,6 +33,7 @@ const languages = [];
 const sort = false;
 const special_variable_name_char = "^";
 const module_define_name_special_char = "ς";
+const module_jsonform_overrides_name = "overrides.json";
 const module_jsonform_info_name = "_schema.json";
 const module_jsonform_converter = "_converter.js"
 const our_name = __dirname.split('/').slice(-2,-1)
@@ -325,15 +329,18 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
           "../..",
           "default",
           module_name,
-          our_name +'.'+ module_jsonform_info_name.slice(1)
+          our_name +'.'+ module_jsonform_overrides_name
         )
-      :path.join(__dirname, "../..", module_name,our_name+module_jsonform_info_name)
+      :path.join(__dirname, "../..", module_name,our_name+'.'+module_jsonform_overrides_name)
       if (debug) console.log("looking for module's MMM-Config override file=" + fn);
       module_variable_usage[module_name]=require(fn)
       if(debug)
          console.log("found variable usage info for module "+module_name+" "+JSON.stringify(module_variable_usage[module_name],null,2))
     }
-    catch{}
+    catch{
+      if(debug)
+        console.log("unable to load module overrides for module="+module_name)
+    }
   }
   // set the data output area structure, many or one
   if (checkMulti(module_name))

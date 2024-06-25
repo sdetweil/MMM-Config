@@ -158,7 +158,7 @@ This custom schema file process requires someone: module author, or module user,
 
 To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
 
-1. a file in the module folder called MMM-Config.overrides.json, can provide the desired layout for the fields    we discussed above, this is deprecated and no longer works. 
+1. a file in the module folder called MMM-Config.overrides.json, can provide the desired schema for the fields   
 	 
 2. MMM-Config provides a command to generate the entire module schema that can be customized
 
@@ -183,7 +183,6 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 	     used to define the default values to be presented 
 		 in the form if no value is supplied from config.js
 
-### WARNING overrides are deprected and no longer work, 6/20/24
 if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the schema.json file
 
 ### a few examples for the MMM-Config.overrides.json:
