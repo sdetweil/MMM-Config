@@ -158,18 +158,18 @@ This custom schema file process requires someone: module author, or module user,
 
 To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
 
-1. a file in the module folder called MMM-Config.overrides.json, can provide the desired schema for the fields   
+1. a file in the module folder called MMM-Config.overrides.json, can provide the desired definition for the fields   
 	 
-2. MMM-Config provides a command to generate the entire module schema that can be customized
+2. MMM-Config provides a command to generate the entire module schema/form/value contents that can be customized
 
 ```
   create_form_for_module.sh (or .cmd on windows)  modulename
 ```
 
-   this will generate and create the file **MMM-Config.schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL NOT overwrite the same named file, so if you have one and try to genertae a new one, oops.. no change)
+   this will generate and create the file **MMM-Config.schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL NOT overwrite the same named file, so if you have one and try to genertae a new one, oops.. no change, and no warning)
 	 
 
-if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
+if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (modulename.schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
 	 
 	 
 	 the schema.json file has 3 sections
@@ -244,7 +244,7 @@ so in summary
 
 #### MMM-Config.overrides.json in the module folder
 	and/or
-#### schema.json in the module folder, 
+#### MMM-Config.schema.json in the module folder, 
     OR
 ####  modulename.schema.json in the schemas folder of MMM-Config	
 
@@ -288,7 +288,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 
 	{"type":"string",
 
-		"enum":[comma separated list of choices]
+		"enum":[comma separated list of choices, in the order you want them to appear.. 
 		       [ "a", "b", "c", "foo" ]  // for example
 	},
 
@@ -315,7 +315,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 
 		"removeStartTags":{"type":"string","enum":["title","description","both"]}
 
-		the first entry in the enum[] list will be the default value (selected if no value found in the current config.js) 
+		otherwise the first entry in the enum[] list will be the default value (selected if no value found in the current config.js) 
 
 5. ### sometimes none of the the choices seem to work, for  example the compliments module 
 
@@ -416,10 +416,10 @@ then there is a row for each variable to be overridden.(everything in double quo
 	we **CAN** make a custom schema, and just need to convert the config/defaults values to this form format and back to config.js format
 
 	enter the converter script in js
-	a new file, named _converter.js , located in the module folder, same location as the schema file
+	a new file, named MMM-Config_converter.js , located in the module folder, same location as the schema file
 
 ```js
-	  // you MUST convert all the multiple module config data items that need converting in this one function ca
+	  // you MUST convert all the multiple module config data items that need converting in this one function call
 	  some_function_name: function(config_data, direction){
 		if(direction == 'toForm'){
            // here you would do whatever conversions are required for the data 
@@ -433,7 +433,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 					{
 						// the schema says the element has a when value (the anytime....)
 						"when":when,
-						"list":config_data.compliments[when] // and a list value (trhe stuff to the right of the ':')
+						"list":config_data.compliments[when] // and a list value (the stuff to the right of the ':')
 					}
 				)  
 		   })
@@ -483,7 +483,7 @@ then there is a row for each variable to be overridden.(everything in double quo
           "draggable":false,       // if you want the user to be able to reorganize the list, set to true (default)
           "items": {
             "type": "fieldset",    // collection of fields with header
-            "items": [             // start of list of fields to show in this connection
+            "items": [             // start of list of fields to show in this collection
 			                       // the field display will be taken from the schema definition , string, number, .....
               {
                 "title": "when to show",  
@@ -509,10 +509,10 @@ then there is a row for each variable to be overridden.(everything in double quo
 ```
 
 	so at the end the compliments format in the form looks like this , with the add/remove buttons for the list of phrases
-	![main page](./doc_images/new_config_top.png)
+![main page](./doc_images/new_config_top.png)
 
 	and at the bottom of this section is another add/remove, for the 'when' 
-	![main page](./doc_images/new_config2.png)
+![main page](./doc_images/new_config2.png)
 
 6. ### All that is really cool, but, 
 
@@ -634,9 +634,9 @@ in the m_compliments document tree with a classname specfied that ends with '---
 and then LOOP thru those
 if the selected option ends with '-format', its one of the special types, and we need to surface the extra input field (change its display style setting)
 
-so, look back UP te document tree for the first fieldset element (see the generated html) and then find (downward) the div with a class name that ends with the text of the selection entry (JSON form generated from out fieldHtmlClass value) 
+so, look back UP the document tree for the first fieldset element (see the generated html) and then find (downward) the div with a class name that ends with the text of the selection entry (JSON form generated from our fieldHtmlClass value) 
 
-and set it display attribute to not none to make it visible again (in this case display:block works)
+and set its display attribute to not none to make it visible again (in this case display:block works)
 
 the cool part of JQuery here is that this one 'search' will return ALL instances of this selected option across as many compliments form elements in the entire doc, across multiple instances, etc.. no special coding required.
 ```js
@@ -647,13 +647,15 @@ $(document).on('form_loaded', function () {
 		// process each 
 		function(){
 			// get its selected option text
-			var o=$(this).text();
+			var selected_option=$(this).text();
 			// if its one of the special fields 
-			if(o.endsWith('-format')){
-				// look above the select to the next element that encloses select and the custom fields
-				// find below the fieldset to find the appropriate div with the right class, and set its display style property to block
-				// previously set to display:none by MMM-Config.extension.css
-				$(this).closest('fieldset').find('div[class$="'+o+'"]').css('display','block')
+			if(selected_option.endsWith('-format')){
+				// look above the select to the next element that encloses select and the custom fields (fieldset) 
+				$(this).closest('fieldset')
+					// find below the fieldset to find the appropriate div with the right class, 
+					.find('div[class$="'+o+'"]')
+						// and set its display style property to block, previously set to display:none by MMM-Config.extension.css
+						.css('display','block')
 			}
 		}
 	)
@@ -662,8 +664,8 @@ $(document).on('form_loaded', function () {
 
 so, we have our custom fields,
 	the form loader will put the right data in the fields(schema and form),
-	they all will be hidden(css, MMM-Config.extension.css).
-	and some will be shown when used.. (form_loaded event handler, _extenstion.js)<br>
+	they all will be hidden(css, MMM-Config_extension.css).
+	and some will be shown when used.. (form_loaded event handler, MMM-Config_extension.js)<br>
 
 oops.. NOW we have to fix the converter to handle putting/getting the JS object data to/from the form layout
 
@@ -686,6 +688,7 @@ function converter(config_data, direction){
 			let when
 			let df=null
 			let field=null
+			// set the field structure, we will fix it for custom date/time entries next
 			let entry = { when : x,  list: config_data.compliments[c]}
 			// if the key contains space a space, then its the cron date/time type format
 			if(x.includes(' ')){
@@ -745,8 +748,8 @@ the form section above adds the onInput() event handler to each of the new field
 we just need to call some function on this fields data
 
 well, we HAVE MM-Config.extension.js that is being loaded already, so we can put the functions in there
-one for each data type. and we can use the javascript regylar expression function to validate the data 1 char at a time, live
-that looks like this (without the regex strings, which are long.. look at the code if u need to)
+one for each data type. and we can use the javascript regular expression function to validate the data 1 char at a time, live.
+That looks like this (without the regex strings, which are long.. look at the code if u need to)
 ```js
 // this is for the cron type field, I hope to add to compliments
 function cron_validator(content){
@@ -754,13 +757,10 @@ function cron_validator(content){
 }
 // this is for the date field.. make sure its this year or  later or it wont trigger
 function date_validator(content){
-	let result=(new RegExp(date_regex).test(content))
-	if(result){
-		if(content[0]!='.'){
-			let thisYear=new Date().getFullYear()
-			let specified_year=content.slice(0,4)
-			if(!(parseInt(specified_year)>=thisYear))
-				result=false
+	let result=(new RegExp(date_regex).test(content))  //  test that the field content matches the YYYY-MM-DD format
+	if(result){  // if true
+		if(content[0]!='.'){  // check if the content DOES SPECIFY an actual year 2021 or 2024  for example
+			result = new Date(content) >=new Date()
 		}
 	}
 
