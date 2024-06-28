@@ -1,9 +1,9 @@
 $(document).on('form_loaded', function () {
 	$('.m_compliments div[class$="---when"]  option:selected').each(
 		function(){
-			var o=$(this).text(); 
-			if(o.endsWith('-format')){
-				$(this).closest('fieldset').find('div[class$="'+o+'"]').css('display','block')
+			var selected_option=$(this).text();
+			if(selected_option.endsWith('format')){
+				$(this).closest('fieldset').find('div[class$="'+selected_option+'"]').css('display','block')
 			}
 		}
 	)
@@ -14,13 +14,13 @@ function cron_validator(content){
 	return (cron_regex.exec(content) !== null)
 }
 function date_validator(content){
+	// make sure the data fits the right format
 	let result=(new RegExp(date_regex).test(content))
+	// if the right format, check for future date
 	if(result){
-		if(content[0]!='.'){
-			let thisYear=new Date().getFullYear()
-			let specified_year=content.slice(0,4)
-			if(!(parseInt(specified_year)>=thisYear))
-				result=false
+		if(!content.includes('.')){  // check if the content DOES SPECIFY an actual year 2021 or 2024  for example
+			// if so, make sure the specified data is after today, else it will never trigger
+			result = new Date(content) >=new Date()
 		}
 	}
 

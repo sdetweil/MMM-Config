@@ -1,11 +1,28 @@
 function converter(config_data, direction){
-
+	const weather_list=[
+                      "day_sunny",
+                      "day_cloudy",
+                      "cloudy",
+                      "cloudy_windy",
+                      "showers",
+                      "rain",
+                      "thunderstorm",
+                      "snow",
+                      "fog",
+                      "night_clear",
+                      "night_cloudy",
+                      "night_showers",
+                      "night_rain",
+                      "night_thunderstorm",
+                      "night_snow",
+                      "night_alt_cloudy_windy"
+                    ]
 	if (direction == 'toForm'){ // convert FROM native object format to form schema array format
 		// create entry array
 		let nc = []
 		// config format is an object, need an extendable array
 		Object.keys(config_data.compliments).forEach(c =>{
-			// for each key (morning, afternoon, eventing, date... )
+			// for each key (morning, afternoon, eventing, date..., weather )
 			// push an object onto the 'array '
 			// the object must match the custom schema definition
 			let x = c
@@ -21,7 +38,12 @@ function converter(config_data, direction){
 				field='date-time-format'
 				df=x
 			}// if the object key contains a . or starts with a number, THEN its a date field
-			 else if(x.includes('.') || !isNaN(parseInt(x[0]))){
+ 			else if(weather_list.includes(x)) {
+				// weather
+				field='weather-format'
+				df=x
+			}
+			else if(x.includes('.') || !isNaN(parseInt(x[0]))){
 				field='date-format'
 				df=x
 			}
@@ -49,6 +71,7 @@ function converter(config_data, direction){
 			switch(e.when){
 				case 'date-format':
 				case 'date-time-format':
+				case 'weather-format':
 					// custom field, get the data from the right place in the structure
 					nc[e[e.when]]=e.list
 					break

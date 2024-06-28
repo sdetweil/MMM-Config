@@ -3,7 +3,7 @@
   margin-left: 5em;
  }
 
-.m_compliments fieldset div[class$="format"] {
+.m_compliments fieldset div[class$="-format"] {
   display:none;
 }
 

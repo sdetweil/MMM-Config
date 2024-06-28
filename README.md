@@ -538,7 +538,8 @@ so the schema and form sections get some improvements
                       "afternoon",
                       "evening",
                       "date-format",
-                      "date-time-format"
+                      "date-time-format",
+					  "weather-format"					  
                     ]
                   },
                   "date-format":{
@@ -547,6 +548,27 @@ so the schema and form sections get some improvements
                   "date-time-format":{
                     "type":"string"
                   },
+                  "weather-format":{
+                    "type":"string",
+                    "enum":[
+                      "day_sunny",
+                      "day_cloudy",
+                      "cloudy",
+                      "cloudy_windy",
+                      "showers",
+                      "rain",
+                      "thunderstorm",
+                      "snow",
+                      "fog",
+                      "night_clear",
+                      "night_cloudy",
+                      "night_showers",
+                      "night_rain",
+                      "night_thunderstorm",
+                      "night_snow",
+                      "night_alt_cloudy_windy"
+                    ]
+                  },				  
                   "list": {
                     "type": "array",
                     "items": {
@@ -588,6 +610,12 @@ so the schema and form sections get some improvements
                 "description": "see <a href=\"https://crontab.cronhub.io/\">cron schedule creator</a>",
                 "required":true,
                 "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
+              },
+			                {
+                "key": "compliments.config.compliments[].weather-format",
+                "title":"weather type to show",
+                "fieldHtmlClass":"weather-format",
+                "required":true
               },
 ```
 now there is a some extra work to do..
@@ -653,7 +681,7 @@ $(document).on('form_loaded', function () {
 				// look above the select to the next element that encloses select and the custom fields (fieldset) 
 				$(this).closest('fieldset')
 					// find below the fieldset to find the appropriate div with the right class, 
-					.find('div[class$="'+o+'"]')
+					.find('div[class$="'+selected_option+'"]')
 						// and set its display style property to block, previously set to display:none by MMM-Config.extension.css
 						.css('display','block')
 			}
@@ -665,6 +693,11 @@ $(document).on('form_loaded', function () {
 so, we have our custom fields,
 	the form loader will put the right data in the fields(schema and form),
 	they all will be hidden(css, MMM-Config_extension.css).
+```css
+.m_compliments fieldset div[class$="-format"] {
+  display:none;
+}
+```	
 	and some will be shown when used.. (form_loaded event handler, MMM-Config_extension.js)<br>
 
 oops.. NOW we have to fix the converter to handle putting/getting the JS object data to/from the form layout
@@ -672,13 +705,30 @@ oops.. NOW we have to fix the converter to handle putting/getting the JS object 
 it now looks like this
 ```js
 function converter(config_data, direction){
-
+	const weather_list=[
+                      "day_sunny",
+                      "day_cloudy",
+                      "cloudy",
+                      "cloudy_windy",
+                      "showers",
+                      "rain",
+                      "thunderstorm",
+                      "snow",
+                      "fog",
+                      "night_clear",
+                      "night_cloudy",
+                      "night_showers",
+                      "night_rain",
+                      "night_thunderstorm",
+                      "night_snow",
+                      "night_alt_cloudy_windy"
+                    ]
 	if (direction == 'toForm'){ // convert FROM native object format to form schema array format
 		// create entry array
 		let nc = []
 		// config format is an object, need an extendable array
 		Object.keys(config_data.compliments).forEach(c =>{
-			// for each key (morning, afternoon, eventing, date... )
+			// for each key (morning, afternoon, eventing, date..., weather )
 			// push an object onto the 'array '
 			// the object must match the custom schema definition
 			let x = c
@@ -688,14 +738,18 @@ function converter(config_data, direction){
 			let when
 			let df=null
 			let field=null
-			// set the field structure, we will fix it for custom date/time entries next
 			let entry = { when : x,  list: config_data.compliments[c]}
 			// if the key contains space a space, then its the cron date/time type format
 			if(x.includes(' ')){
 				field='date-time-format'
 				df=x
 			}// if the object key contains a . or starts with a number, THEN its a date field
-			 else if(x.includes('.') || !isNaN(parseInt(x[0]))){
+ 			else if(weather_list.includes(x)) {
+				// weather
+				field='weather-format'
+				df=x
+			}
+			else if(x.includes('.') || !isNaN(parseInt(x[0]))){
 				field='date-format'
 				df=x
 			}
@@ -723,6 +777,7 @@ function converter(config_data, direction){
 			switch(e.when){
 				case 'date-format':
 				case 'date-time-format':
+				case 'weather-format':
 					// custom field, get the data from the right place in the structure
 					nc[e[e.when]]=e.list
 					break
@@ -759,7 +814,7 @@ function cron_validator(content){
 function date_validator(content){
 	let result=(new RegExp(date_regex).test(content))  //  test that the field content matches the YYYY-MM-DD format
 	if(result){  // if true
-		if(content[0]!='.'){  // check if the content DOES SPECIFY an actual year 2021 or 2024  for example
+		if(!content.includes('.')){  // check if the content DOES SPECIFY an actual year 2021 or 2024  for example
 			result = new Date(content) >=new Date()
 		}
 	}
@@ -769,6 +824,14 @@ function date_validator(content){
 ```
 
 and we have a css entry to turn the field red if the regex validation test fails..
+
+```css
+.m_compliments .fieldError::before {
+    content: ' * incorrect format';
+    color: red;
+    display: block;
+}
+```
 
 .. food for thought.. these fields require the user to type the text of the field format.
 there ARE visual date, and date/time pickers

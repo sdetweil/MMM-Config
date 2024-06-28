@@ -54,6 +54,7 @@
                       "morning",
                       "afternoon",
                       "evening",
+                      "weather-format",
                       "date-format",
                       "date-time-format"
                     ]
@@ -63,6 +64,27 @@
                   },
                   "date-time-format":{
                     "type":"string"
+                  },
+                  "weather-format":{
+                    "type":"string",
+                    "enum":[
+                      "day_sunny",
+                      "day_cloudy",
+                      "cloudy",
+                      "cloudy_windy",
+                      "showers",
+                      "rain",
+                      "thunderstorm",
+                      "snow",
+                      "fog",
+                      "night_clear",
+                      "night_cloudy",
+                      "night_showers",
+                      "night_rain",
+                      "night_thunderstorm",
+                      "night_snow",
+                      "night_alt_cloudy_windy"
+                    ]
                   },
                   "list": {
                     "type": "array",
@@ -143,7 +165,7 @@
               {
                 "title": "when to show",
                 "key": "compliments.config.compliments[].when",
-                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
+                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format','weather-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
               },
               {
                 "key": "compliments.config.compliments[].date-format",
@@ -166,8 +188,14 @@
                 "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
               },
               {
+                "key": "compliments.config.compliments[].weather-format",
+                "title":"weather type to show",
+                "fieldHtmlClass":"weather-format",
+                "required":true
+              },
+              {
                 "type": "array",
-                "title":"list of phrases to show for this time",
+                "title":"list of phrases to show for this time or weather type",
                 "deleteCurrent": false,
                 "draggable":false,
                 "htmlClass":"compliments_list",
