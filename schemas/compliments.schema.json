@@ -165,7 +165,16 @@
               {
                 "title": "when to show",
                 "key": "compliments.config.compliments[].when",
-                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format','weather-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
+                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format','weather-format'];let value=evt.target.value;let index=choices.indexOf(value);var parentElement =$(evt.target).closest('fieldset');for(let i in choices){let target=parentElement.find('div[class$='+choices[i]+']');let style=(index != i?'none':'block');target[0].style.display=style;}}",
+                "titleMap":{
+                      "anytime":"anytime",
+                      "morning":"morning",
+                      "afternoon":"afternoon",
+                      "evening":"evening",
+                      "weather-format":"weather",
+                      "date-format":"date",
+                      "date-time-format":"datetime"
+                }
               },
               {
                 "key": "compliments.config.compliments[].date-format",
@@ -195,7 +204,7 @@
               },
               {
                 "type": "array",
-                "title":"list of phrases to show for this time or weather type",
+                "title":"list of phrases to show for this event type",
                 "deleteCurrent": false,
                 "draggable":false,
                 "htmlClass":"compliments_list",
