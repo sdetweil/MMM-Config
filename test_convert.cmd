@@ -141,7 +141,7 @@ if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 	if %changed% equ 1 (
 	   node scripts\buildschema4.js %defaults_file% >%FILE%
           for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
-          ls schemas/*_extension.* 2>nul >>extension_list
+          dir /b /s schemas\*_extension.* 2>nul >>extension_list
           rem fixup config page html for extensions
           node scripts/fixup.js config.html extension_list
           del extension_list >nul 2>nul
