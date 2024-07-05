@@ -171,9 +171,9 @@
                       "morning":"morning",
                       "afternoon":"afternoon",
                       "evening":"evening",
-                      "weather-format":"weather",
+                      "weather-format":"weather related",
                       "date-format":"date",
-                      "date-time-format":"datetime"
+                      "date-time-format":"date and time (cron)"
                 }
               },
               {
@@ -192,7 +192,7 @@
                 "placeholder":"min hour day_of_month month dow",
                 "type": "text",
                 "fieldHtmlClass":"date-time-format",
-                "description": "see <a href=\"https://crontab.cronhub.io/\">cron schedule creator</a>",
+                "description": "see <a href=\"https://crontab-generator.org/\">cron schedule creator</a><br>enter anything for the command, only use the first 5 fields os the result",
                 "required":true,
                 "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
               },

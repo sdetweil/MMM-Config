@@ -55,7 +55,7 @@ function readFile(fn) {
       .forEach((line) => {
         //if(debug) console.log("line="+ ++counter +line);
         // and save the lines
-        if (debug) console.log("line length=" + line.length);
+        //if (debug) console.log("line length=" + line.length);
         if (line.length) {
           lines.push(line);
           if (line.length > minimized_lines_check) processMinimized = true;
@@ -116,6 +116,7 @@ function process_main(lines, name) {
   let done = false;
   let first = true;
   let cache = [];
+  let defaultsline=""
   for (let line of lines) {
     // if this is a comment line
     if (line.trim().startsWith("//"))
@@ -124,7 +125,7 @@ function process_main(lines, name) {
     // if this is the defaults definition line
     if (!started && line.includes(start_string)) {
       // && !line.trim().startsWith('//')){
-      // if the line as a brace, toss it
+      // if the line has a brace, toss it
       if (line.startsWith("{")) line = line.slice(1);
       // make it specific to the module
       line =
@@ -139,9 +140,11 @@ function process_main(lines, name) {
         );
         if (debug) console.log("name includes spaces, start line=" + line);
       }
+      defaultsline=line.split(':')[0]
       started = true;
       counter = 0;
       if (debug) console.log("starting");
+
     }
     let comment = "";
     // if we have started
@@ -191,7 +194,7 @@ function process_main(lines, name) {
                 continue;
               }
             }
-          }
+          } 
         }
       }
       while ((index = line.indexOf(startChar, index + 1)) >= 0) {

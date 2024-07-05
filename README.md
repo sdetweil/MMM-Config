@@ -589,7 +589,16 @@ so the schema and form sections get some improvements
               {
                 "title": "when to show",
                 "key": "compliments.config.compliments[].when",
-                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}"
+                "onChange":"(evt,node)=>{let choices=['date-format','date-time-format'];let value=evt.target.value; let i=0; let index=choices.indexOf(value); var parentElement =$(evt.target).closest('fieldset');choices.forEach(f=>{let target=parentElement.find('div[class$='+f+']');let style=(index != i?'none':'block'); target[0].style.display=style;i++})}",
+				"titleMap":{
+                      "anytime":"anytime",
+                      "morning":"morning",
+                      "afternoon":"afternoon",
+                      "evening":"evening",
+                      "weather-format":"weather",
+                      "date-format":"date",
+                      "date-time-format":"datetime"
+                }
               },
               {
                 "key": "compliments.config.compliments[].date-format",
@@ -611,7 +620,7 @@ so the schema and form sections get some improvements
                 "required":true,
                 "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
               },
-			                {
+			  {
                 "key": "compliments.config.compliments[].weather-format",
                 "title":"weather type to show",
                 "fieldHtmlClass":"weather-format",

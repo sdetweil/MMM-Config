@@ -23,6 +23,12 @@ cd %d%
 @for /f "tokens=1,2"  %%m in ('dir ..\..\ ^| find "modules" ^| find /v "node"') do (set modules_lastchanged="%%m %%n")
 @for /f "tokens=1,2"  %%m in ('dir ..\..\config\config.js ^| find "config.js"') do (set config_lastchanged="%%m %%n")
 
+if not exist config.html (
+	copy templates\config.html >nul
+)
+del extension_list 2>nul
+call %d%touch extension_list >nul
+
 set defaults_file=%d%\defaults.js
 set schema_file_exists=0
 set FILE=%d%/schema3.json
@@ -52,7 +58,7 @@ rem
 	   del somefile 2>/nul
 	   rem delete the output to start fresh
 	   del defines.js 2>/nul
-	   rem add teh js header needed
+	   rem add the js header needed
 	   echo var config = require^('../../config/config.js'^) >%defaults_file%
 	   echo var defined_config = {  >>%defaults_file%
 	   rem loop thru all the files and process the defines for each
@@ -134,13 +140,20 @@ if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
 	if %changed% equ 1 (
 	   node scripts\buildschema4.js %defaults_file% >%FILE%
-       for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
+          for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
+          dir /b schemas/*_extension.* 2>nul >>extension_list
+          rem fixup config page html for extensions
+          node scripts/fixup.js config.html extension_list
+          del extension_list >nul
 	)
 
 echo completed
 rem  for testing, launch browser to view form
 rem  start msedge %d%\testit.html
 goto :done
+:getfilesize
+set filesize=%~z1
+goto :eof
 :process_define
 Setlocal EnableDelayedExpansion
 		set m=%1
@@ -162,6 +175,7 @@ Setlocal EnableDelayedExpansion
 		)
 		IF EXIST "..\%mf%\%m%.js" (
 			node %d%\scripts\dumpdefaults.js "..\%mf%\%m%.js" >>%2
+			dir /b "..\%mf%\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
   goto :eof
 :done

@@ -115,29 +115,8 @@ if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; 
 	echo $config_lastchange>$d/config_lastchange
 	# look for global extensions (built in modules or whatever)
 	ls schemas/*_extension.* 2>/dev/null >>extension_list
-	# if no extensions found in config
-	if [ $(grep 'extension.' config.html | wc -l) -eq 0 ]; then
-		#
-		# lets see if we found any extensions
-		#
-		# does the extension list file contain info (not 0 length)
-		if [ $(ls -laF extension_list 2>/dev/null | awk '{print $5}') -gt 0 ]; then
-			# get the file list as an array
-			file_list=($(cat extension_list))
-			# loop thru the array
-			for file in "${file_list[@]}"
-			do
-				#echo we have a file extension = $file
-				if [ -z ${file##*.js} ]; then
-					#echo this is a js file "<script type=\"text/javascript\" src=\"$file\"></script>"
-					sed -i -e /'<\/body>'/i\ "<script type=\"text\/javascript\" src=\"$file\"><\/script>" config.html
-				elif [ -z ${file##*.css} ]; then
-					#echo this is a css file
-					sed -i -e /'<\/head>'/i\ "<link rel=\"stylesheet\" type=\"text/css\" href=\"$file\"/>" config.html
-				fi
-			done
-		fi
-	fi
+	# fixup config page html for extensions
+	node scripts/fixup.js config.html extension_list
 	rm extension_list 2>/dev/null
 fi
 echo completed

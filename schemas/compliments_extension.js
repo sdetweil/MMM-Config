@@ -1,7 +1,7 @@
 $(document).on('form_loaded', function () {
 	$('.m_compliments div[class$="---when"]  option:selected').each(
 		function(){
-			var selected_option=$(this).text();
+			var selected_option=$(this).val();
 			if(selected_option.endsWith('format')){
 				$(this).closest('fieldset').find('div[class$="'+selected_option+'"]').css('display','block')
 			}
