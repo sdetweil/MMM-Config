@@ -1,6 +1,8 @@
 
 const fs = require('fs')
+const os = require('os')
 
+const lineend=os.platform == 'win32'?'\r\n':'\n'
 const index_html = process.argv[2]
 const insertions = process.argv[3]
 let debug = false;
@@ -9,17 +11,18 @@ debug = process.argv[4]=='debug'?true:false
 }
 catch(error){}
 let changed= false
-let index_lines= fs.readFileSync(index_html).toString().split('\n')
-let insertion_lines = fs.readFileSync(insertions).toString().split('\n')
+let index_lines= fs.readFileSync(index_html).toString().split(lineend)
+let insertion_lines = fs.readFileSync(insertions).toString().split('\n') // because this file is produced by ls , not dir
 
 insertion_lines.forEach(extension_file =>{
 	// if not already present
 	if(extension_file.startsWith('.') && !extension_file.startsWith('..') ){
 		extension_file= extension_file.slice(2)
 	}
-	let r = index_lines.findIndex(element => element.includes(extension_file))
-	if(r ==-1){
-		if(debug) console.log("did not find "+extension_file +" in "+index_lines.indexOf(extension_file))
+	let r = index_lines.filter(element => {return element.includes(extension_file)})
+		
+	if(r.length == 0){
+		if(debug) console.log("did not find '"+extension_file+"'" )
 		// if its a JS file
 		if(extension_file.endsWith('.js')){
 			// add it to the body
@@ -39,6 +42,6 @@ insertion_lines.forEach(extension_file =>{
 	}
 })
 if(changed){
-	fs.writeFileSync(index_html,index_lines.join('\n'))
-	if(debug) console.log("new file="+index_lines.join('\n'))
+	fs.writeFileSync(index_html,index_lines.join(lineend))
+	if(debug) console.log("new file="+index_lines.join(lineend))
 }
