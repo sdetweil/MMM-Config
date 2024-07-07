@@ -34,7 +34,7 @@ const sort = false;
 const special_variable_name_char = "^";
 const module_define_name_special_char = "ς";
 const module_jsonform_overrides_name = "overrides.json";
-const module_jsonform_info_name = "_schema.json";
+const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
 const our_name = __dirname.split('/').slice(-2,-1)
 var schema = {};
@@ -1179,15 +1179,30 @@ function check_for_module_file(module_name,type) {
   let fn
   let isDefault = defaultModules.includes(module_name);
   if(type === 'schema'){
-    fn = isDefault
+    let schemapath= isDefault
       ? path.join(
           __dirname,
           "../..",
           "default",
-          module_name,
-          our_name+'.'+module_jsonform_info_name.slice(1)
+          module_name
         )
-      : path.join(__dirname, "../..", module_name, our_name+'.'+module_jsonform_info_name.slice(1));
+      : path.join(__dirname, "../..", module_name );
+      if(debug){
+        console.log("file path="+schemapath);
+      }
+      // get the file list in the module folder, filter for our files
+      let fnlist =fs.readdirSync(schemapath).filter(fn => fn.endsWith(module_jsonform_info_name));
+      if(debug){
+        console.log("read dir results = "+JSON.stringify(fnlist))
+      }
+      // if we found one, should never be both
+      if(fnlist.length==1){
+        // use it
+        fn=schemapath+'/'+fnlist[0]
+      } else {
+        // restore to the prior filename which will fail as always
+        fn = path.join(schemapath,  our_name+'.'+module_jsonform_info_name);
+      }
       if(debug)
         console.log("looking for "+our_name+ " schema file="+fn)
     // if the module doesn't supply a schema file
@@ -1196,7 +1211,7 @@ function check_for_module_file(module_name,type) {
         __dirname,
         "../schemas",
         //"../../MagicMirror/modules",
-        module_name +'.'+ module_jsonform_info_name.slice(1)
+        module_name +'.'+ module_jsonform_info_name
       );
       if(debug)
         console.log("looking for "+our_name+ "/schemas schema file="+fn)
@@ -1975,7 +1990,7 @@ function writeJsonFormInfoFile(
           value: value_info[module_name]
         };
         // get the file path
-        let fn = path.join(module_folder, our_name+'.'+module_jsonform_info_name.slice(1));
+        let fn = path.join(module_folder, our_name+'.'+module_jsonform_info_name);
         // if it doesn't exist
         if(debug)
           console.log("checking for existing schema file, fn="+fn)
