@@ -1,9 +1,21 @@
+// on form_loaded event
 $(document).on('form_loaded', function () {
+	// find all the elements of our when selection list and get the selected option in each
 	$('.m_compliments div[class$="---when"]  option:selected').each(
+		// process each
 		function(){
-			var selected_option=$(this).val();
-			if(selected_option.endsWith('format')){
-				$(this).closest('fieldset').find('div[class$="'+selected_option+'"]').css('display','block')
+			// get its selected option text
+			var selected_option_value=$(this).val(); //.text() contains the visible value from titlemap, .val() contains the enum value
+																							 // if no title map .text() and .val() are the same
+			// if its one of the special fields
+			if(selected_option_value.endsWith('-format')){
+				// look above the select to the next element that encloses select and the custom fields (fieldset)
+				// this is all one clause, just split over multiple lines for clarity
+				$(this).closest('fieldset')
+					// find below the fieldset to find the appropriate div with the right class,
+					.find('div[class$="'+selected_option_value+'"]')
+						// and set its display style property to block, previously set to display:none by MMM-Config.extension.css
+						.css('display','block')
 			}
 		}
 	)

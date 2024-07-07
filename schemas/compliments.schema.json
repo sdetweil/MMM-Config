@@ -163,7 +163,7 @@
             "type": "fieldset",
             "items": [
               {
-                "title": "when to show",
+                "title": "when",
                 "key": "compliments.config.compliments[].when",
                 "onChange":"(evt,node)=>{let choices=['date-format','date-time-format','weather-format'];let value=evt.target.value;let index=choices.indexOf(value);var parentElement =$(evt.target).closest('fieldset');for(let i in choices){let target=parentElement.find('div[class$='+choices[i]+']');let style=(index != i?'none':'block');target[0].style.display=style;}}",
                 "titleMap":{
@@ -178,7 +178,7 @@
               },
               {
                 "key": "compliments.config.compliments[].date-format",
-                "title":"date to show",
+                "title":"date",
                 "placeholder":"YYYY-MM-DD",
                 "fieldHtmlClass":"date-format",
                 "type": "text",
@@ -188,7 +188,7 @@
               },
               {
                 "key": "compliments.config.compliments[].date-time-format",
-                "title":"date/time to show",
+                "title":"date/time",
                 "placeholder":"min hour day_of_month month dow",
                 "type": "text",
                 "fieldHtmlClass":"date-time-format",
@@ -198,7 +198,7 @@
               },
               {
                 "key": "compliments.config.compliments[].weather-format",
-                "title":"weather type to show",
+                "title":"weather condition",
                 "fieldHtmlClass":"weather-format",
                 "required":true
               },

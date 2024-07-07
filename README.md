@@ -684,13 +684,14 @@ $(document).on('form_loaded', function () {
 		// process each 
 		function(){
 			// get its selected option text
-			var selected_option=$(this).text();
+			var selected_option_value=$(this).val(); //.text() contains the visible value from titlemap, .val() contains the enum value
+													 // if no title map .text() and .val() are the same
 			// if its one of the special fields 
-			if(selected_option.endsWith('-format')){
+			if(selected_option_value.endsWith('-format')){
 				// look above the select to the next element that encloses select and the custom fields (fieldset) 
 				$(this).closest('fieldset')
 					// find below the fieldset to find the appropriate div with the right class, 
-					.find('div[class$="'+selected_option+'"]')
+					.find('div[class$="'+selected_option_value+'"]')
 						// and set its display style property to block, previously set to display:none by MMM-Config.extension.css
 						.css('display','block')
 			}
