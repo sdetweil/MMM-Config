@@ -629,11 +629,13 @@ module.exports = NodeHelper.create({
             __dirname,
             "..",
             "default",
-            module_name+
+            our_name +
             "."+
             module_jsonform_info_name.slice(1)
           )
         : path.join(__dirname, "..", module_name+"."+module_jsonform_info_name.slice(1));
+      if(debug)
+        console.log("1 checking for module ="+module_name+" in "+fn);
       // if the module doesn't supply a schema file
       if (!fs.existsSync(fn)) {
         fn = path.join(
@@ -654,18 +656,21 @@ module.exports = NodeHelper.create({
           "..",
           "default",
           module_name,
-          module_name+"."+module_jsonform_converter.slice(1)
+          "MMM-Config"+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "..", module_name,module_name+module_jsonform_converter.slice(1));
-    //console.log("filename="+fn);
+      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
+      if(debug)
+        console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
       fn = path.join(
         __dirname,
         "schemas",
         //"../../MagicMirror/modules",
-        module_name +module_jsonform_converter
+        module_name+module_jsonform_converter
       );
+      if(debug)
+        console.log("2 checking for module ="+module_name+" in "+fn);
     //console.log("filename 2="+fn);
       // check to see if we have one
       if (!fs.existsSync(fn)) {
