@@ -9,3 +9,5 @@ defaults.js
 *.png
 config.html
 *_lastchanged
+somefile*.*
+

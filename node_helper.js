@@ -640,17 +640,20 @@ module.exports = NodeHelper.create({
             __dirname,
             "..",
             "default",
-            module_name,
-            module_jsonform_info_name
+            our_name +
+            "."+
+            module_jsonform_info_name.slice(1)
           )
-        : path.join(__dirname, "..", module_name, module_jsonform_info_name);
+        : path.join(__dirname, "..", module_name+"."+module_jsonform_info_name.slice(1));
+      if(debug)
+        console.log("1 checking for module ="+module_name+" in "+fn);
       // if the module doesn't supply a schema file
       if (!fs.existsSync(fn)) {
         fn = path.join(
           __dirname,
           "schemas",
           //"../../MagicMirror/modules",
-          module_name + "." + module_jsonform_info_name
+          module_name + "." + module_jsonform_info_name.slice(1)
         );
         // check to see if we have one
         if (!fs.existsSync(fn)) {
@@ -661,20 +664,25 @@ module.exports = NodeHelper.create({
     fn = isDefault
       ? path.join(
           __dirname,
-          "../..",
+          "..",
           "default",
           module_name,
-          our_name+module_jsonform_converter
+          "MMM-Config"+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "../..", module_name,our_name+module_jsonform_converter.slice(1));
+      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
+      if(debug)
+        console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
       fn = path.join(
         __dirname,
-        "../schemas",
+        "schemas",
         //"../../MagicMirror/modules",
-        module_name +'.'+module_jsonform_converter.slice(1)
+        module_name+module_jsonform_converter
       );
+      if(debug)
+        console.log("2 checking for module ="+module_name+" in "+fn);
+    //console.log("filename 2="+fn);
       // check to see if we have one
       if (!fs.existsSync(fn)) {
         fn = null;
@@ -872,8 +880,8 @@ module.exports = NodeHelper.create({
         let modified_value = {};
 
         let j = self.getpair(data, p, self);
-        if(debug)
-          console.log("found data for key="+p+"="+JSON.stringify(data['calendar'],null,2))
+       // if(debug)
+       //   console.log("found data for key="+p+"="+JSON.stringify(data['calendar'],null,2))
         if (debug)
           console.log("data 1=" + JSON.stringify(j, self.tohandler, 2));
 
@@ -884,11 +892,18 @@ module.exports = NodeHelper.create({
         // convert the array items to object items
         if (j.length) {
           for (const item of j) {
+            if(debug)
+              console.log("processing pair item="+item);
             let property = item.split(":");
             if (property[1] == "true") property[1] = true;
             if (property[1] == "false") property[1] = false;
-            if (self.isNumeric(property[1]))
-              property[1] = parseFloat(property[1]);
+            if(debug)
+              console.log("pair property value="+property[1])
+            //if (!Number.isNaN(property[1])){
+            //  if(debug) 
+            //    console.log("property="+property[1]+" is a number");
+            //  property[1] = parseFloat(property[1]);
+            //}
             modified_value[property[0]] = property[1];
           }
           j = self.setpair(data, p, self, modified_value);
@@ -901,9 +916,11 @@ module.exports = NodeHelper.create({
       delete data.pairs;
     }
     if (1) {
-      for (let n of Object.keys(data.mangled_names)) {
+      Object.keys(data.mangled_names).forEach(n=>{
+      //for (let n of Object.keys(data.mangled_names)) {
         self.fixobject_name(data, n, data.mangled_names[n]);
-      }
+       }
+      )
       delete data.mangled_names;
     }
 
@@ -1472,6 +1489,7 @@ module.exports = NodeHelper.create({
 
     getPort({ port: getPort.makeRange(8300, 9500) }).then((port) => {
       // Start the server
+      if(debug)
       console.log(" got port=" + port);
       socket_io_port = port;
       server.listen(socket_io_port);

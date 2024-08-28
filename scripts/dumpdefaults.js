@@ -200,7 +200,12 @@ function process_main(lines, name) {
                 continue;
               }
             }
-          } 
+          } else if(info.startsWith("config.")){
+	      let x = info.slice(0,-1)
+	      line=line.replace(x,'"---!'+x+'"')
+	      cache.push(line)
+	      continue
+	  } 
         }
       }
       while ((index = line.indexOf(startChar, index + 1)) >= 0) {

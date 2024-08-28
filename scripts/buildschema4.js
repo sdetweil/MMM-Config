@@ -3,6 +3,7 @@ const defines = require(process.argv[2]);
 // change to debugging if using vscode debugger
 const debugging = false;
 const merge = require("lodash").merge;
+
 const interfaces = require("os").networkInterfaces();
 var save_jsonform_info = false;
 const fs = require("fs");
@@ -426,7 +427,9 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       };
 
       temp_value[module_name] = fixVariableNames(jsonform_info.value);
-
+      temp_value[module_name] = process_config_values(temp_value[module_name])
+      if(debug)
+        console.log("post processed config for module = "+module_name+"="+JSON.stringify(temp_value[module_name],null,2)) 
       let mform = clone(module_form_template);
       mform.title = module_name;
       mform.htmlClass= module_name
@@ -506,6 +509,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       if(debug)
         console.log(" fixing var names pre="+JSON.stringify(jsonform_info.value,tohandler))
       temp_value[module_name] = fixVariableNames(jsonform_info.value);
+      temp_value[module_name] = process_config_values(temp_value[module_name])
       if(debug)
         console.log(" fixing var names post="+JSON.stringify(temp_value[module_name],tohandler))
       checkObjects(
@@ -690,10 +694,21 @@ for (let m of defines.config.modules) {
         // set it
         tt.label = "instance " + (tt.index + 1);
       // add it to the arra for this module
-      value[m.module].push(clone(tt));
+      if(debug) 
+       console.log("adding module defaults to value, module="+m.module)
+      //value[m.module].push(clone(tt));
+      value[m.module].push(process_config_values(clone(tt)))
+      if(debug)
+        console.log("after push="+JSON.stringify(value[m.module],null,2))
+      //value[m.module].pop()
+      //value[m.module].push(v)   
     }
     // set its singular value
-    else value[m.module] = clone(tt);
+    else {
+      if(debug) 
+        console.log("setting module defaults to value, module="+m.module)
+      value[m.module] = process_config_values(clone(tt)) 
+    } 
   } else {
     // shouldn't be able to get here
     // as all modules installed  were processed
@@ -708,6 +723,8 @@ for (let m of defines.config.modules) {
       m.order = "*";
     }
     m.inconfig = "1";
+    if(debug)
+      console.log("saving value section for module ="+m.module);
     if (checkMulti(m.module)) value[m.module].push(fixVariableNames(clone(m)));
     else value[m.module] = fixVariableNames(clone(m));
   }
@@ -1903,6 +1920,9 @@ function processModule(schema, form, value, defines, module_name) {
   //  save the constructed form definition for the properties
   //
   writeJsonFormInfoFile(module_name, prefix, module_form_items, temp_value);
+    if(debug) 
+      console.log("after write check, module values="+JSON.stringify(temp_value[module_name], null,2))
+    temp_value[module_name] = process_config_values(temp_value[module_name])
 
   if (debug) console.log("checking multi");
   if (checkMulti(module_name)) {
@@ -1945,6 +1965,59 @@ function processModule(schema, form, value, defines, module_name) {
   }
 
   form[0].items[1].items.push(mform);
+}
+
+function process_config_values(moduleValues){
+  const module_values = clone(moduleValues)
+  Object.keys(module_values.config).forEach(p => {
+	if(typeof  module_values.config[p] === "string"){
+	    if(debug)
+	      console.log("processing for config parm "+p+ " of module "+module_values.module);
+	    if(module_values.config[p].startsWith("---!config.")){
+	      if(debug)
+	        console.log("we found a config parameter copy module for module="+module_values.module+" parameter "+p)
+	      let item=module_values.config[p].split('.')[1]
+	      if(debug)
+	         console.log("using current config value  for parm="+item+" value="+defines.config[item]);
+	      module_values.config[p]=defines.config[item]
+	}
+    }
+  })
+  if(debug)
+   console.log("process config after conversion="+JSON.stringify(module_values,null,2))
+  return module_values
+}
+
+function process_config_values1(module_name,values, index=-1){
+  let handle_array=(Array.isArray(values[module_name])?true:false);
+  if(debug){
+    console.log("values are an array ="+handle_array+" index="+index);
+  }
+  let t_value=clone(handle_array?values[module_name][index]:values[module_name])
+  let changed=false;
+  if(debug) 
+    console.log("module values="+JSON.stringify(t_value,null,2));
+  Object.keys(t_value.config).forEach(p => {
+    if(typeof  t_value.config[p] === "string"){
+    if(debug)
+      console.log("processing for config parm "+p+ " of module "+module_name);
+    if(t_value.config[p].startsWith("---!config.")){
+      if(debug)
+        console.log("we found a config parameter copy module for module="+module_name+" parameter "+p)
+      let item=t_value.config[p].split('.')[1]
+      if(debug)
+         console.log("using current config value  for parm="+item+" value="+defines.config[item]);
+      t_value.config.p=defines.config[item]
+      changed=true
+    }
+    }
+    if(changed== true){
+       if(handle_array)
+         values[module_name][index]=t_value
+       else
+       values[module_name]=t_value
+    }	
+  })
 }
 
 //
