@@ -15,9 +15,20 @@ const fs = require("fs");
 const oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
 const configPath = __dirname + "/schema3.json";
-const module_positions = JSON.parse(
+// get the default module positions old way
+let module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
+try {
+
+  let mp =
+  fs.readFileSync(
+    path.join(__dirname, "/../../js/positions.js"),
+    "utf8"
+  )
+  module_positions= JSON.parse(mp.split('=')[1])
+} catch(error){
+}
 // get the default modules list from the MM core
 const defaultModules = require("../default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"

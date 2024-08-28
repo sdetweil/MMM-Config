@@ -224,12 +224,23 @@ const module_position_form = JSON.parse(
     "utf8"
   )
 );
-const module_positions = JSON.parse(
+
+let module_positions = JSON.parse(
   fs.readFileSync(
     path.join(__dirname, "../templates/module_positions.json"),
     "utf8"
   )
 );
+try {
+  let mp =
+  fs.readFileSync(
+    path.join(__dirname, "/../../../js/positions.js"),
+    "utf8"
+  )
+  module_positions= JSON.parse(mp.split('=')[1])
+} catch(error){
+
+}
 //
 //  find the color to be used for enabled/disabled and save for the onclick handler
 //
