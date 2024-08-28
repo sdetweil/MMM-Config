@@ -181,8 +181,14 @@ function process_main(lines, name) {
       } else {
         // check for literal with embedded '{' or '}'
         if (line.includes(":")) {
-          let info = line.split(":")[1].trim();
+          let info = line.split(":").slice(1).join(':').trim();
+          if(debug){
+              console.log('parm='+info)
+          }
           if (info.includes("{") || info.includes("}")) {
+            if(debug){
+              console.log('info contains possibly embedded object='+info)
+            }
             let r = info.match(/(["'])((?:\\1|(?:(?!\1)).)*)(\1)/);
             if (r) {
               if (debug) {
