@@ -747,12 +747,12 @@ Object.keys(temp_value).forEach((unused_module) => {
   let c = Object.keys(value[unused_module]).length;
   let tt = clone(value[unused_module])
   if (c === 0) {
-    if(module_scripts[m.module] !== undefined ){
+    if(module_scripts[unused_module.module] !== undefined ){
       if(debug)
-        console.log("calling module data converter script for module="+m.module)
+        console.log("calling module data converter script for module="+unused_module.module)
       // call it to convert from config format to form format (object to array for example)
-      tt.config = module_scripts[m.module].converter(tt.config,'toForm')
-      scriptConvertedObjects[m.module]='config'
+      tt.config = module_scripts[unused_module.module].converter(tt.config,'toForm')
+      scriptConvertedObjects[unused_module.module]='config'
       if(debug){
         console.log("converted config data ="+JSON.stringify(tt,fromhandler,2))
       }
