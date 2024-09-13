@@ -744,15 +744,16 @@ Object.keys(temp_value).forEach((unused_module) => {
         " to value section =" +
         JSON.stringify(temp_value[unused_module], tohandler, 2)
     );
+  // get the keys from value section, should NOT be any if noy used
   let c = Object.keys(value[unused_module]).length;
-  let tt = clone(value[unused_module])
   if (c === 0) {
-    if(module_scripts[unused_module.module] !== undefined ){
+    let tt = clone(temp_value[unused_module])
+    if(module_scripts[unused_module] !== undefined ){
       if(debug)
-        console.log("calling module data converter script for module="+unused_module.module)
+        console.log("calling module data converter script for module="+unused_module)
       // call it to convert from config format to form format (object to array for example)
-      tt.config = module_scripts[unused_module.module].converter(tt.config,'toForm')
-      scriptConvertedObjects[unused_module.module]='config'
+      tt.config = module_scripts[unused_module].converter(tt.config,'toForm')
+      scriptConvertedObjects[unused_module]='config'
       if(debug){
         console.log("converted config data ="+JSON.stringify(tt,fromhandler,2))
       }
