@@ -745,13 +745,24 @@ Object.keys(temp_value).forEach((unused_module) => {
         JSON.stringify(temp_value[unused_module], tohandler, 2)
     );
   let c = Object.keys(value[unused_module]).length;
+  let tt = clone(value[unused_module])
   if (c === 0) {
+    if(module_scripts[m.module] !== undefined ){
+      if(debug)
+        console.log("calling module data converter script for module="+m.module)
+      // call it to convert from config format to form format (object to array for example)
+      tt.config = module_scripts[m.module].converter(tt.config,'toForm')
+      scriptConvertedObjects[m.module]='config'
+      if(debug){
+        console.log("converted config data ="+JSON.stringify(tt,fromhandler,2))
+      }
+    }
     if (checkMulti(unused_module))
       value[unused_module].push(
-        fixVariableNames(clone(temp_value[unused_module]))
+        fixVariableNames(tt)
       );
     else
-      value[unused_module] = fixVariableNames(clone(temp_value[unused_module]));
+      value[unused_module] = fixVariableNames(tt);
   }
 });
 
