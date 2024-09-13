@@ -119,7 +119,7 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
     );
 }
 // get the default modules list from the MM core 
-const defaultModules = require("../../default/defaultmodules.js");
+const defaultModules = require("../../../modules/default/defaultmodules.js");
 if (debug)
   console.log(
     "default modules list=" + JSON.stringify(defaultModules, null, 2)
@@ -744,8 +744,20 @@ Object.keys(temp_value).forEach((unused_module) => {
         " to value section =" +
         JSON.stringify(temp_value[unused_module], tohandler, 2)
     );
+  // get the keys from value section, should NOT be any if noy used
   let c = Object.keys(value[unused_module]).length;
   if (c === 0) {
+    let tt = clone(temp_value[unused_module])
+    if(module_scripts[unused_module] !== undefined ){
+      if(debug)
+        console.log("calling module data converter script for module="+unused_module)
+      // call it to convert from config format to form format (object to array for example)
+      tt.config = module_scripts[unused_module].converter(tt.config,'toForm')
+      scriptConvertedObjects[unused_module]='config'
+      if(debug){
+        console.log("converted config data ="+JSON.stringify(tt,fromhandler,2))
+      }
+    }
     if (checkMulti(unused_module))
       value[unused_module].push(
         fixVariableNames(clone(temp_value[unused_module]))
@@ -1210,11 +1222,11 @@ function check_for_module_file(module_name,type) {
     let schemapath= isDefault
       ? path.join(
           __dirname,
-          "../..",
+          "../../../modules",
           "default",
           module_name
         )
-      : path.join(__dirname, "../..", module_name );
+      : path.join(__dirname, "../../", module_name );
       if(debug){
         console.log("file path="+schemapath);
       }
@@ -1252,7 +1264,7 @@ function check_for_module_file(module_name,type) {
     fn = isDefault
       ? path.join(
           __dirname,
-          "../..",
+          "../../../modules",
           "default",
           module_name,
           our_name+module_jsonform_converter

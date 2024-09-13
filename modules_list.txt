@@ -2,3 +2,6 @@ MyCovid19
 calendar
 clock
 alert
+compliments
+weather
+newsfeed
