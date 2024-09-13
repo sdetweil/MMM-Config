@@ -1,11 +1,19 @@
 @echo off
 Setlocal EnableDelayedExpansion
+
 rem
 rem port of unix script
 rem
 
 set base=MagicMirror
 set d=%~dp0
+
+set  modules_location=modules
+# get the configured modules location or use the default
+set modules_location=%MM_MODULES_DIR%
+# get the config file name, or use the default
+set config_name=/config/config.js
+set config_name=%MM_CONFIG_FILE%
 
 rem make sure the lastchanged files exist
 call %d%touch %d%modules_lastchanged >nul
@@ -20,8 +28,8 @@ for /f "delims=" %%x in (%d%modules_lastchanged) do (set modules_lastsaved=%%x)
 for /f "delims=" %%x in (%d%config_lastchanged) do (set config_lastsaved=%%x)
 cd %d%
 @rem get the current module and config file last changed dates
-@for /f "tokens=1,2"  %%m in ('dir ..\..\ ^| find "modules" ^| find /v "node"') do (set modules_lastchanged="%%m %%n")
-@for /f "tokens=1,2"  %%m in ('dir ..\..\config\config.js ^| find "config.js"') do (set config_lastchanged="%%m %%n")
+@for /f "tokens=1,2"  %%m in ('dir ..\..\ ^| find !modules_location! ^| find /v "node"') do (set modules_lastchanged="%%m %%n")
+@for /f "tokens=1,2"  %%m in ('dir ..\..\!config\config.js! ^| find "config.js"') do (set config_lastchanged="%%m %%n")
 
 if not exist config.html (
 	copy templates\config.html >nul
@@ -29,7 +37,7 @@ if not exist config.html (
 del extension_list 2>nul
 call %d%touch extension_list >nul
 
-set defaults_file=%d%\defaults.js
+set defaults_file=%d%/defaults.js
 set schema_file_exists=0
 set FILE=%d%/schema3.json
 if exist %FILE% (
@@ -49,9 +57,9 @@ rem
 
        del somefile 2>nul
 	   rem get all the modules installed
-       for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
+          for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
 	   rem get all the default modules
-	   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo default\%%i >>somefile
+	   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\..\..\modules\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo default\%%i >>somefile
 	   rem make a sorted unique list
           type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
 	   rem delete the work file
@@ -59,7 +67,7 @@ rem
 	   rem delete the output to start fresh
 	   del defines.js 2>/nul
 	   rem add the js header needed
-	   echo var config = require^('../../config/config.js'^) >%defaults_file%
+	   echo var config = require^('../../'!config_name!^) >%defaults_file%
 	   echo var defined_config = {  >>%defaults_file%
 	   rem loop thru all the files and process the defines for each
           for /f "tokens=1 usebackq delims=~" %%A in (`type somefile2.txt`) do  call :process_define "%%A"  %defaults_file%
@@ -69,7 +77,7 @@ rem
 	   echo } >>%defaults_file%
 	   echo module.exports={defined_config,config};  >>%defaults_file%
 	   rem record that we processed for the modules now
-	   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "modules" ^| find /v "node"`) do echo "%%m %%n" >%d%modules_lastchanged
+	   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find !modules_location! ^| find /v "node"`) do echo "%%m %%n" >%d%modules_lastchanged
 	   set changed=1
 )
 rem check the generated defaults.js for errors
@@ -82,7 +90,7 @@ if exist sss (
 	rem echo line count =!lc!
   	 if !lc! NEQ 0 (
 	   rem echo have error file
-	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\modules\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
+	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\"!modules_location!"\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
 	   rem echo line=!firstline!
 	   rem for /f "tokens=2 delims=:" %%a in ("%firstline%") do set ln=!firstline!
 	   rem get the module name from the defaults file
