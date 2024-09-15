@@ -181,25 +181,29 @@ module.exports = NodeHelper.create({
       // save payload config info
       this.config = payload;
 
-      debug = this.config.debug;
+      //debug = this.config.debug;
 
       // get the environment var for config files
       let cf = process.env.MM_CONFIG_FILE
       // if set and it does not contain path separator, its only the filename, not the folder
       if(cf && !cf.includes(path.sep)){
+			
         // add the default config folder to the name
         cf = "/config/"+cf;
       }
 
       // set the output config file name
       oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:"/config/config.js");
+	  
+	  
 
       // if the modules folder env variable is set, use it
-      if(!process.env.MM_MODULES_DIR)
-        // else use whats in the config from web side
-        modules_folder=this.config.modules
+      //if(!process.env.MM_MODULES_DIR)
+      //  // else use whats in the config from web side
+      //  modules_folder=this.config.modules
 
       if(debug){
+	    console.log("config folder set at form start ="+cf);
         console.log("modules folder set at form start="+modules_folder)
       }
 

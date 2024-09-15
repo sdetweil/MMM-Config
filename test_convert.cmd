@@ -8,12 +8,16 @@ rem
 set base=MagicMirror
 set d=%~dp0
 
-set  modules_location=modules
-# get the configured modules location or use the default
+rem  get the configured modules location or use the default
 set modules_location=%MM_MODULES_DIR%
-# get the config file name, or use the default
-set config_name=/config/config.js
+if "!modules_location!"=="" set modules_location=modules
+rem echo modules_dir=!modules_location!
+rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%
+if "!config_name!"=="" set config_name=/config/config.js
+if "!config_name:~0,1!"=="/"  set config_name=!config_name:~1!
+rem echo !config_name!
+
 
 rem make sure the lastchanged files exist
 call %d%touch %d%modules_lastchanged >nul
@@ -28,13 +32,22 @@ for /f "delims=" %%x in (%d%modules_lastchanged) do (set modules_lastsaved=%%x)
 for /f "delims=" %%x in (%d%config_lastchanged) do (set config_lastsaved=%%x)
 cd %d%
 @rem get the current module and config file last changed dates
-@for /f "tokens=1,2"  %%m in ('dir ..\..\ ^| find !modules_location! ^| find /v "node"') do (set modules_lastchanged="%%m %%n")
-@for /f "tokens=1,2"  %%m in ('dir ..\..\!config\config.js! ^| find "config.js"') do (set config_lastchanged="%%m %%n")
-
+for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "!modules_location!" ^| find "<DIR>"`) do (set modules_lastchanged="%%m %%n")
+rem if linux path separators were used , change to windows style
+set temp_config_name=!config_name:/=\!
+rem echo temp_config=!temp_config_name!
+rem get the name part (has path first) 
+for /f "usebackq tokens=2 delims=\" %%m in ('!config_name!') do (set config_filename=%%m)
+rem get the date/time that config file changes.. watch out for other files in the config folder
+for /f "tokens=1-2,5 usebackq"  %%m in (`dir ..\..\!temp_config_name! ^| find "!config_filename!"`) do (set config_lastchanged="%%m %%n")
+rem copy our repo clean copy of the config form html 
+rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+rem make sure we don't have old extension list
 del extension_list 2>nul
+rem make empty one
 call %d%touch extension_list >nul
 
 set defaults_file=%d%/defaults.js
@@ -55,32 +68,34 @@ rem
 rem if modules folder change date doesn't match saved
 rem
 
-       del somefile 2>nul
-	   rem get all the modules installed
-          for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
-	   rem get all the default modules
-	   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\..\..\modules\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo default\%%i >>somefile
-	   rem make a sorted unique list
-          type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
-	   rem delete the work file
-	   del somefile 2>/nul
-	   rem delete the output to start fresh
-	   del defines.js 2>/nul
-	   rem add the js header needed
-	   echo var config = require^('../../'!config_name!^) >%defaults_file%
-	   echo var defined_config = {  >>%defaults_file%
-	   rem loop thru all the files and process the defines for each
-          for /f "tokens=1 usebackq delims=~" %%A in (`type somefile2.txt`) do  call :process_define "%%A"  %defaults_file%
-	   rem delete the work file
-	   rem del somefile2.txt 2>/nul
-	   rem add the js trailer
-	   echo } >>%defaults_file%
-	   echo module.exports={defined_config,config};  >>%defaults_file%
-	   rem record that we processed for the modules now
-	   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find !modules_location! ^| find /v "node"`) do echo "%%m %%n" >%d%modules_lastchanged
-	   set changed=1
+   del somefile 2>nul
+   rem get all the non-default modules installed,
+   rem we are in the modules folder so just back up one to get the list , make sure to ignore default it  module dir is 'modules'
+   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
+   rem get all the default modules
+   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\..\modules\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo ..\modules\default\%%i>>somefile
+   rem make a sorted unique list
+   type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
+   rem delete the work file
+   del somefile 2>/nul
+   rem delete the output to start fresh
+   del defines.js 2>/nul
+   rem add the js header needed
+   echo var config = require^('../../!config_name:\=/!'^) >%defaults_file%
+   echo var defined_config = {  >>%defaults_file%
+   rem loop thru all the files and process the defines for each
+   for /f "tokens=1 usebackq delims=~" %%A in (`type somefile2.txt`) do  call :process_define "%%A"  %defaults_file%
+   rem delete the work file
+   del somefile2.txt 2>/nul
+   rem add the js trailer
+   echo } >>%defaults_file%
+   echo module.exports={defined_config,config};  >>%defaults_file%
+   rem record that we processed for the modules now
+   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "!modules_location!" ^| find "<DIR>"`) do echo "%%m %%n" >%d%modules_lastchanged
+   set changed=1
 )
 rem check the generated defaults.js for errors
+rem can only load/require it to find the errors
 node scripts\test.js !defaults_file! 2>sss >nul
 rem
 rem if the file exists and the line count is greater than 0
@@ -90,11 +105,7 @@ if exist sss (
 	rem echo line count =!lc!
   	 if !lc! NEQ 0 (
 	   rem echo have error file
-	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\"!modules_location!"\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
-	   rem echo line=!firstline!
-	   rem for /f "tokens=2 delims=:" %%a in ("%firstline%") do set ln=!firstline!
-	   rem get the module name from the defaults file
-	   rem mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' |  awk -F: '$1<'$ln | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
+	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\!modules_location!\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
 	   findstr /r /n /c:"_defaults:" defaults.js | perl -e "print reverse <>" >sss1
 	   set firsttime=0
 	   for /f "tokens=1,2 delims=:" %%a in (sss1) do (
@@ -143,16 +154,21 @@ if exist sss (
 )
 
 rem proces for the web page in either modules list or config.js changed
-if %config_lastsaved% neq %config_lastchanged%  (set changed=1)
-if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
-if %modules_lastsaved% neq %modules_lastchanged%  (set changed=1)
-	if %changed% equ 1 (
-	   node scripts\buildschema4.js %defaults_file% >%FILE%
-          for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\config\config.js ^| find "config.js"` ) do echo "%%m %%n" > %d%config_lastchanged
-          dir /b /s schemas\*_extension.* 2>nul >>extension_list
-          rem fixup config page html for extensions
-          node scripts/fixup.js config.html extension_list
-          del extension_list >nul 2>nul
+if !config_lastsaved! neq !config_lastchanged!  (set changed=1)
+if !modules_lastsaved! neq !modules_lastchanged!  (set changed=1)
+
+	rem if somethign changed
+	if !changed! equ 1 (
+	rem regenerate the form schema file
+	   node scripts\buildschema4.js !defaults_file! >!FILE!
+	   rem set the last changed date.time info 
+	   for /f "tokens=1-2,5 usebackq"  %%m in (`dir ..\..\!temp_config_name! ^| find "!config_filename!"`) do echo "%%m %%n" > %d%config_lastchanged
+	   rem check for any extensions in the schemas folder (we are shipping them, so not found in module folder) 
+	   dir /b /s schemas\*_extension.* 2>nul >>extension_list
+	   rem fixup config page html for extensions
+	   node scripts/fixup.js config.html extension_list
+	   rem drop the extensions list, not needed now
+	   del extension_list >nul 2>nul
 	)
 
 echo completed
@@ -165,25 +181,24 @@ goto :eof
 :process_define
 Setlocal EnableDelayedExpansion
 		set m=%1
-		rem echo !m!
-		set "m=!m:~1!"            remove the 1st character
-        	set "m=!m:~0,-1!
-		rem echo !m!
-		if "%m:~0,7%"=="default"  (
-			set mf=%m:~0,-1%
-			set m=%m:~8,-1%
-			rem echo !m!  ended
-		) else (
-			set mf=%m:~0,-1%
-			set m=%m:~0,-1%
+		set m=!m:~1,-1!
+		set mf=..\!modules_location!
+		rem parse to find if default module, will be a noop if not default, non-default variables set on entry
+		for /f "tokens=1-5 delims=\ usebackq" %%a in (`echo !m!^| find "default"`) do (
+		         set mf=..\modules\default
+				 set m=%%d
 		)
-		for /f "usebackq tokens=1 delims=~" %%B in ('!m!') do (
+		rem get rid of any trailing spaces
+		for /f "usebackq tokens=1 delims= " %%B in ('!m!') do (
 			set m=%%B
 			rem echo."%m%"
 		)
-		IF EXIST "..\%mf%\%m%.js" (
-			node %d%\scripts\dumpdefaults.js "..\%mf%\%m%.js" >>%2
-			dir /b "..\%mf%\MMM-Config_extension.*" 2>nul >>"extension_list"
+		rem if the module js exists
+		IF EXIST "..\%mf%\%m%\%m%.js" (
+			rem dump it to defauls
+			node %d%\scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
+			rem check for any extensions
+			dir /b "..\%mf%\%m%\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
   goto :eof
 :done
