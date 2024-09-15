@@ -715,7 +715,7 @@ for (let m of defines.config.modules) {
     // somehow config references one not installed???
     if (debug) console.log("DO NOT have module info =" + m.module);
     continue;
-    //value[m.module]=m
+    /*//value[m.module]=m
     if (m.position === undefined) {
       m.position = "none";
     }
@@ -727,7 +727,7 @@ for (let m of defines.config.modules) {
     if(debug)
       console.log("saving value section for module ="+m.module);
     if (checkMulti(m.module)) value[m.module].push(fixVariableNames(clone(m)));
-    else value[m.module] = fixVariableNames(clone(m));
+    else value[m.module] = fixVariableNames(clone(m));*/
   }
 }
 // free memory
@@ -768,6 +768,9 @@ Object.keys(temp_value).forEach((unused_module) => {
   }
 });
 
+// if we have multiple instances of a module, 
+// sort them in the array by instance number
+//
 Object.keys(value).forEach((item) => {
   // if this is an array of modules
   if (Array.isArray(value[item])) {
@@ -858,7 +861,6 @@ Object.keys(position_hash).forEach((p) => {
 //
 // sort modules in order by position
 //
-
 positions.sort(function (a, b) {
   // compare titles, function for clarity
   function testit(x, y) {
@@ -883,7 +885,8 @@ value["positions"] = positions;
 
 //
 // loop thru all the module values
-// find their array variables that might end up empty on form submit
+// find their array variables that might end up empty on form submit 
+// (cause the browser doesn't return empty arrays)
 // this could create entries in the object_form list processed next
 //
 
@@ -933,7 +936,6 @@ Object.keys(value).forEach((module_name) => {
 // we only recorded the names of those found via the defines setup
 // make sure there are more for each instance
 //
-
 let keys = Object.keys(pairVariables);
 multi_modules.forEach((module_name) => {
   keys.forEach((item) => {
