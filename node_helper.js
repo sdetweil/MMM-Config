@@ -6,19 +6,30 @@ const os = require("os");
 const stream = require("stream");
 const _ = require("lodash");
 const remote = new stream.Writable();
+let debug = true;
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
 
 const fs = require("fs");
-const oc =
-  __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
+
 const configPath = __dirname + "/schema3.json";
+
+let oc =
+  __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
+
 // get the default module positions old way
 let module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
 );
+
+// set the modules folder to the environment variable if set
+let  modules_folder=process.env.MM_MODULES_DIR?process.env.MM_MODULES_DIR:"modules"
+if(debug){
+  console.log("modules folder set at init to ="+modules_folder)
+}
+
 try {
 
   let mp =
@@ -30,7 +41,7 @@ try {
 } catch(error){
 }
 // get the default modules list from the MM core
-const defaultModules = require("../default/defaultmodules.js");
+const defaultModules = require("../../modules/default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
 const our_name = __dirname.split(path.separator).slice(-2,-1)
 const QRCode = require("qrcode");
@@ -46,7 +57,7 @@ if (typeof module !== "undefined") {module.exports = config;}';
 
 // add require of other javascripot components here
 // var xxx = require('yyy') here
-let debug = false;
+
 // disable savinging while testing = false
 let doSave = true;
 
@@ -149,6 +160,7 @@ module.exports = NodeHelper.create({
     this.command += this.config.force_update ? " override" : "";
     console.log("command =" + this.command);
     console.log("Starting module helper:" + this.name);
+    //console.log("environment vars="+JSON.stringify(process.env,null,2))
     this.launchit();
     this.extraRoutes();
     this.remote_start(this);
@@ -169,7 +181,32 @@ module.exports = NodeHelper.create({
       // save payload config info
       this.config = payload;
 
-      debug = this.config.debug;
+      //debug = this.config.debug;
+
+      // get the environment var for config files
+      let cf = process.env.MM_CONFIG_FILE
+      // if set and it does not contain path separator, its only the filename, not the folder
+      if(cf && !cf.includes(path.sep)){
+			
+        // add the default config folder to the name
+        cf = "/config/"+cf;
+      }
+
+      // set the output config file name
+      oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:"/config/config.js");
+	  
+	  
+
+      // if the modules folder env variable is set, use it
+      //if(!process.env.MM_MODULES_DIR)
+      //  // else use whats in the config from web side
+      //  modules_folder=this.config.modules
+
+      if(debug){
+	    console.log("config folder set at form start ="+cf);
+        console.log("modules folder set at form start="+modules_folder)
+      }
+
       this.startit();
 
       this.hostname = //os.hostname();
@@ -184,10 +221,10 @@ module.exports = NodeHelper.create({
         this.config.port;
 
       if (this.config.showQR) {
-        let url = this.config.url + "/modules/" + this.name + "/review";
+        let url = this.config.url + "/"+modules_folder+"/" + this.name + "/review";
         let imageurl =
           //this.config.url +
-          "/modules/" + this.name + "/qrfile.png";
+          "/"+modules_folder+"/" + this.name + "/qrfile.png";
         QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
           if (!err) {
             if (debug) console.log("QRCode build done");

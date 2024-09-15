@@ -1,13 +1,23 @@
 #!/bin/bash
 # convert modules to info for remote UI
+# get the configured modules location or use the default
+modules_location=${MM_MODULES_DIR:-modules}
+# get the config file name, or use the default
+config_name=${MM_CONFIG_FILE:-config/config.js}
+# if the config name is JUST the name (no folder)
+if [ ! $(echo $config_name | grep '/') ]; then
+	# add the default folder name
+	config_name=config/$config_name
+fi
+# if this is a mac
 if [ $(uname -s) == 'Darwin' ]; then
 	d=$( cd "$(dirname "$0")" ; pwd -P )
-	mod_lastchange=$(GetFileInfo -m $d/../../modules | tr / - | awk '{print $1  " "  $2}')
-	config_lastchange=$(GetFileInfo -m $d/../../config/config.js | tr / - | awk '{print $1  " "  $2}')
-else
+	mod_lastchange=$(GetFileInfo -m $d/../../$modules_location | tr / - | awk '{print $1  " "  $2}')
+	config_lastchange=$(GetFileInfo -m $d/../../$config_name | tr / - | awk '{print $1  " "  $2}')
+else # not mac
 	d=$(dirname "$(realpath $0)")
-	mod_lastchange=$(stat --printf="%y %n\n" $d/../../* | grep "/modules$" | awk -F. '{print $1}')
-	config_lastchange=$(stat --printf="%y %n\n" $d/../../config/*.js | grep "/config.js$" | awk -F. '{print $1}')
+	mod_lastchange=$(stat --printf="%y %n\n" $d/../../$modules_location | awk -F. '{print $1}')
+	config_lastchange=$(stat --printf="%y %n\n" $d/../../$config_name | awk -F. '{print $1}')
 fi
 touch $d/config_lastchange
 config_lastsaved=$(cat $d/config_lastchange)
@@ -15,10 +25,14 @@ touch $d/modules_lastchange
 mod_lastsaved=$(cat $d/modules_lastchange)
 defaults_file=$d/defaults.js
 modules_changed=0
+
 schema_file_exists=0
 FILE=$d/schema3.json
+#if the output file exists
 if [ -f "$FILE" ]; then
+	# are we NOT overriding the change date
 	if [ "$1". != "override." ]; then
+		# says so
     	schema_file_exists=1
 	fi
 fi
@@ -35,11 +49,11 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	# get the list of installed modules, including defaults
 	NL=$'\n'
 	list=$(find .. -maxdepth 1 -type d | grep -v default | awk -F/ '{print substr($0,index($0,$5))}' )
-	list1=$(find ../default -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
+	list1=$(find ../../modules/default -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
 	listf="$list${NL}$list1"
 	IFS=$'\n'
 
-	echo "const config = require('../../config/config.js')" >$defaults_file
+	echo "const config = require('../../$config_name')" >$defaults_file
 	echo "var defined_config = {"  >>$defaults_file
 	modules=($listf)
 	for module in "${modules[@]}"
@@ -47,7 +61,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		nm=$module
 		if [[ "$nm" =~ "/" ]]; then
 			if [[ "$nm" =~ "default" ]]; then
-				nm=$(echo "$nm"| awk -F/ '{ print $3}')
+				nm=$(echo "$nm"| awk -F/ '{ print $5}')
 			else
 				nm=$(echo "$nm"| awk -F/ '{ print $2}')
 			fi
@@ -111,7 +125,7 @@ fi
 # if the config changed since last start or the modules changed
 if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./scripts/buildschema4.js $defaults_file >$FILE
+	node ./scripts/buildschema4.js ../defaults.js >$FILE
 	echo $config_lastchange>$d/config_lastchange
 	# look for global extensions (built in modules or whatever)
 	ls schemas/*_extension.* 2>/dev/null >>extension_list

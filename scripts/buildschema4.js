@@ -119,7 +119,7 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
     );
 }
 // get the default modules list from the MM core 
-const defaultModules = require("../../default/defaultmodules.js");
+const defaultModules = require("../../../modules/default/defaultmodules.js");
 if (debug)
   console.log(
     "default modules list=" + JSON.stringify(defaultModules, null, 2)
@@ -606,7 +606,7 @@ schema["positions"] = module_position_schema;
 //
 if(debug){
   console.log("pre clone defines "+JSON.stringify(temp_value,tohandler))
-  console.log(" pre-defines, value = "+JSON.stringify(value['MMM-WeatherBackground'],tohandler))
+  //console.log(" pre-defines, value = "+JSON.stringify(value['MMM-WeatherBackground'],tohandler))
 }
 
 let installed_modules = clone(temp_value);
@@ -614,12 +614,12 @@ if(debug)
   console.log("post clone defines "+JSON.stringify(installed_modules,tohandler))
 // loop thru the config.js modules list
 for (let m of defines.config.modules) {
-  if (value[m.module] === undefined) {
-    if (checkMulti(m.module)) value[m.module] = [];
-    else value[m.module] = {};
-  }
   // if we have data in the value section
   if (installed_modules[m.module] !== undefined) {
+    if (value[m.module] === undefined) {
+      if (checkMulti(m.module)) value[m.module] = [];
+      else value[m.module] = {};
+    }
     if (debug)
       console.log(
         " have module info =" +
@@ -714,6 +714,7 @@ for (let m of defines.config.modules) {
     // as all modules installed  were processed
     // somehow config references one not installed???
     if (debug) console.log("DO NOT have module info =" + m.module);
+    continue;
     //value[m.module]=m
     if (m.position === undefined) {
       m.position = "none";
@@ -737,16 +738,16 @@ installed_modules = null;
 //
 //
 Object.keys(temp_value).forEach((unused_module) => {
-  if (debug)
-    console.log(
+  // get the keys from value section, should NOT be any if noy used
+  let c = Object.keys(value[unused_module]).length;
+  if (c === 0) {
+    if (debug)
+      console.log(
       "copying unused module=" +
         unused_module +
         " to value section =" +
         JSON.stringify(temp_value[unused_module], tohandler, 2)
     );
-  // get the keys from value section, should NOT be any if noy used
-  let c = Object.keys(value[unused_module]).length;
-  if (c === 0) {
     let tt = clone(temp_value[unused_module])
     if(module_scripts[unused_module] !== undefined ){
       if(debug)
@@ -1222,11 +1223,11 @@ function check_for_module_file(module_name,type) {
     let schemapath= isDefault
       ? path.join(
           __dirname,
-          "../..",
+          "../../../modules",
           "default",
           module_name
         )
-      : path.join(__dirname, "../..", module_name );
+      : path.join(__dirname, "../../", module_name );
       if(debug){
         console.log("file path="+schemapath);
       }
@@ -1264,7 +1265,7 @@ function check_for_module_file(module_name,type) {
     fn = isDefault
       ? path.join(
           __dirname,
-          "../..",
+          "../../../modules",
           "default",
           module_name,
           our_name+module_jsonform_converter
