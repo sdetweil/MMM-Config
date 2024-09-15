@@ -14,11 +14,12 @@ const updatedDiff = require("deep-object-diff").updatedDiff;
 
 const fs = require("fs");
 
-const configPath = __dirname + "/schema3.json";
-
+const configPath = __dirname + path.sep+"schema3.json";
+const default_config_name=path.sep+"config"+path.sep+"config.js"
 let oc =
-  __dirname.split(path.sep).slice(0, -2).join(path.sep) + "/config/config.js";
+  __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
 
+console.log("oc="+oc)
 // get the default module positions old way
 let module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
@@ -38,12 +39,14 @@ try {
     "utf8"
   )
   module_positions= JSON.parse(mp.split('=')[1])
+  module_positions.push("none")
 } catch(error){
 }
+
 // get the default modules list from the MM core
 const defaultModules = require("../../modules/default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split(path.separator).slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-2,-1)
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -191,9 +194,12 @@ module.exports = NodeHelper.create({
         // add the default config folder to the name
         cf = "/config/"+cf;
       }
+	  if(cf && !cf.startsWith(path.sep)){
+		  cf=path.sep+cf
+	  }		  
 
       // set the output config file name
-      oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:"/config/config.js");
+      oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:default_config_name);
 	  
 	  
 
@@ -1150,7 +1156,7 @@ module.exports = NodeHelper.create({
             let temp = { module: module_name };
             for (let module_property of Object.keys(merged_module)) {
               temp[module_property] = merged_module[module_property];
-              if (debug) console.log("copied for key=" + module_property);
+              if (debug) console.log("copied for key=" + module_property+"=",temp[module_property]);
             }
 
             // don't crash for bad positions
@@ -1166,6 +1172,9 @@ module.exports = NodeHelper.create({
             }
 
             temp.position = temp.position.replace(" ", "_");
+			if(debug){
+				console.log("position='"+temp.position+"' layout table=",layout_order);
+			}
             layout_order[temp.position].push(temp);
             if (debug)
               console.log(
@@ -1450,8 +1459,9 @@ module.exports = NodeHelper.create({
     // if we are doing the actual save
     // false for testing data handling
     if (doSave) {
+	const logname=oc.split(path.sep).slice(-1)
       if(debug)
-        console.log("saving to new config.js")
+        console.log("saving to new "+logname)
       // rename curent using ist last mod date as part of the extension name
       fs.copyFileSync(oc, oc + "." + d);
       // write out the new config.js
@@ -1460,7 +1470,7 @@ module.exports = NodeHelper.create({
           console.error(err);
         } else {
           // inform the form all went well
-          socket.emit("saved", "config.js created successfully");
+          socket.emit("saved", logname+ " created successfully");
           // and restart with pm2. then
           if (self.config.restart === "pm2") {
             if (debug) console.log("restarting using pm2, id=" + pm2_id);
