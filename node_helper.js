@@ -20,6 +20,7 @@ let oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
 
 console.log("oc="+oc)
+
 // get the default module positions old way
 let module_positions = JSON.parse(
   fs.readFileSync(__dirname + "/templates/module_positions.json", "utf8")
@@ -254,7 +255,7 @@ module.exports = NodeHelper.create({
     for (let x of source) {
       if (x.module === m) {
         if(debug)
-          console.log("found module "+m+" in config.js search for index="+index+" has index="+x.index-1)
+          console.log("found module "+m+" in "+oc.split('/').slice(-1)+" search for index="+index+" has index="+x.index-1)
         // if we didn't care which module instance
         // return first
         // else return instance of matching index (if any)
@@ -824,7 +825,7 @@ module.exports = NodeHelper.create({
           }
         }
       });
-      delete data.convertedObjects;
+
 
       if (debug)
         console.log(
@@ -897,9 +898,13 @@ module.exports = NodeHelper.create({
             //console.log("set NOT nested")
           }
         } else {
-          // present but NOT an empty array
-          if (debug) console.log("reformat_array key=" + o.key);
-          self.reformat_array(o.object, self, o.key);
+          // was this a converted object?
+          if(debug) console.log("is this item="+p+" a converted to array? "+data.convertedObjects.includes(p))
+          if(data.convertedObjects.includes(p)){
+            // present but NOT an empty array
+            if (debug) console.log("reformat_array key=" + o.key);
+            self.reformat_array(o.object, self, o.key);
+          }
         }
         if (debug)
           console.log(
@@ -909,6 +914,7 @@ module.exports = NodeHelper.create({
           );
       }
       delete data.arrays;
+      delete data.convertedObjects;
     }
     // cleanup the pairs
     if (1) {
@@ -1040,7 +1046,7 @@ module.exports = NodeHelper.create({
           console.log(
             "checking for module=" +
               module_name +
-              " in config.js , have form data=" +
+              " in "+oc.split('/').slice(-1)+" , have form data=" +
               JSON.stringify(module_form_data, self.tohandler, 2)
           );
         }
@@ -1049,7 +1055,7 @@ module.exports = NodeHelper.create({
           console.log(
             "going to get entry for " +
               module_name +
-              " from config.js with index=" +
+              " from "+oc.split('/').slice(-1)+" with index=" +
               (mm_index[module_name]-1)
           );
         }
@@ -1075,7 +1081,7 @@ module.exports = NodeHelper.create({
             console.log(
               "looking for modules=" +
                 module_name +" at index="+(mm_index[module_name])+
-                " in config.js , have config data=" +
+                " in "+oc.split('/').slice(-1)+" , have config data=" +
                 JSON.stringify(module_in_config, self.tohandler, 2)
             );
 
@@ -1121,7 +1127,7 @@ module.exports = NodeHelper.create({
         } else {
           if (debug)
             console.log(
-              "module " + module_name + " not in config.js, might be adding "
+              "module " + module_name + " not in "+oc.split('/').slice(-1)+", might be adding "
             );
         }
 
@@ -1129,7 +1135,7 @@ module.exports = NodeHelper.create({
         if (merged_module) {
           if (debug)
             console.log(
-              "might have a module to add to new config.js =" +
+              "might have a module to add to new "+oc.split('/').slice(-1)+" =" +
                 merged_module.module
             );
           // if the module WAS in config or is enabled = not disabled
