@@ -1,5 +1,6 @@
-#!/bin/bash
+#!/bin/bash 
 # convert modules to info for remote UI
+indentifier=$MM_INDENTIFIER
 # get the configured modules location or use the default
 modules_location=${MM_MODULES_DIR:-modules}
 # get the config file name, or use the default
@@ -23,11 +24,11 @@ touch $d/config_lastchange
 config_lastsaved=$(cat $d/config_lastchange)
 touch $d/modules_lastchange
 mod_lastsaved=$(cat $d/modules_lastchange)
-defaults_file=$d/defaults.js
+defaults_file=$d/defaults_${indentifier}.js
 modules_changed=0
 
 schema_file_exists=0
-FILE=$d/schema3.json
+FILE=$d/schema3_${indentifier}.json
 #if the output file exists
 if [ -f "$FILE" ]; then
 	# are we NOT overriding the change date
@@ -92,7 +93,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		# find the lines with the module names as first character on line (not blank)
 		# AND the line number is less than in the reported error
 		# extract and reconstruct the module name
-		mname=$(grep -n -v "^\s" defaults.js | awk 'NR>2' | tac | awk -F: '$1<'$ln| head -n1 | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
+		mname=$(grep -n -v "^\s" $defaults_file | awk 'NR>2' | tac | awk -F: '$1<'$ln| head -n1 | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
 		# all done with error file
 		error=$(grep  "^\s" -m1 sss)
 		nerror=$(echo $error | awk -F: '{print $1}')
@@ -114,7 +115,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		printf '%.s-' {1..20}
 		echo MMM-Config
 		# copy the build error schema for form presentation
-		cp schemas/MMM-Config-build-error.json schema3.json
+		cp schemas/MMM-Config-build-error.json  $FILE
 		# we cant continue
 		exit 0
 	fi
@@ -125,7 +126,7 @@ fi
 # if the config changed since last start or the modules changed
 if [ "$config_lastsaved". != "$config_lastchange". -o $modules_changed == 1  ]; then
 	cd $d
-	node ./scripts/buildschema4.js ../defaults.js >$FILE
+	node ./scripts/buildschema4.js ${defaults_file} >$FILE
 	echo $config_lastchange>$d/config_lastchange
 	# look for global extensions (built in modules or whatever)
 	ls schemas/*_extension.* 2>/dev/null >>extension_list

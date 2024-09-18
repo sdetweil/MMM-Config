@@ -14,7 +14,6 @@ const updatedDiff = require("deep-object-diff").updatedDiff;
 
 const fs = require("fs");
 
-const configPath = __dirname + path.sep+"schema3.json";
 const default_config_name=path.sep+"config"+path.sep+"config.js"
 let oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
@@ -59,6 +58,19 @@ const closeString =
 /*************** DO NOT EDIT THE LINE BELOW ***************/\n\
 if (typeof module !== "undefined") {module.exports = config;}';
 
+
+String.prototype.hashCode = function() {
+  var hash = 0,
+    i, chr;
+  if (this.length === 0) return hash;
+  for (i = 0; i < this.length; i++) {
+    chr = this.charCodeAt(i);
+    hash = ((hash << 5) - hash) + chr;
+    hash |= 0; // Convert to 32bit integer
+  }
+  return hash.toString().replace('-','');
+}
+
 // add require of other javascripot components here
 // var xxx = require('yyy') here
 
@@ -72,7 +84,7 @@ module.exports = NodeHelper.create({
   // collect the data in background
   launchit() {
     if (debug) console.log("execing " + this.command);
-    exec(this.command, (error, stdout, stderr) => {
+    exec(this.command, { env: {...process.env, MM_INDENTIFIER: oc.hashCode()} }, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
@@ -185,32 +197,25 @@ module.exports = NodeHelper.create({
       // save payload config info
       this.config = payload;
 
-      //debug = this.config.debug;
+      debug = this.config.debug;
 
       // get the environment var for config files
       let cf = process.env.MM_CONFIG_FILE
       // if set and it does not contain path separator, its only the filename, not the folder
       if(cf && !cf.includes(path.sep)){
-			
+
         // add the default config folder to the name
         cf = "/config/"+cf;
       }
-	  if(cf && !cf.startsWith(path.sep)){
-		  cf=path.sep+cf
-	  }		  
+  	  if(cf && !cf.startsWith(path.sep)){
+  		  cf=path.sep+cf
+  	  }
 
       // set the output config file name
       oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:default_config_name);
-	  
-	  
-
-      // if the modules folder env variable is set, use it
-      //if(!process.env.MM_MODULES_DIR)
-      //  // else use whats in the config from web side
-      //  modules_folder=this.config.modules
 
       if(debug){
-	    console.log("config folder set at form start ="+cf);
+        console.log("config folder set at form start ="+cf);
         console.log("modules folder set at form start="+modules_folder)
       }
 
@@ -739,7 +744,7 @@ module.exports = NodeHelper.create({
   // handle form submission from web browser
   //
   process_submit: async function (data, self, socket) {
-    let cfg = require(__dirname + "/defaults.js");
+    let cfg = require(__dirname + "/defaults_"+oc.hashCode()+".js");
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
@@ -1498,7 +1503,9 @@ module.exports = NodeHelper.create({
     let configJSON = "";
 
     function getFiles(self) {
-      if (debug) console.log("path=" + configPath);
+      let configPath = __dirname + path.sep+"schema3_"+oc.hashCode()+".json";
+
+      if (debug || 1) console.log("path=" + configPath);
 
       if (fs.existsSync(configPath)) {
         try {

@@ -8,6 +8,9 @@ rem
 set base=MagicMirror
 set d=%~dp0
 
+rem set the indentifier in case there are multiple instances
+set indentifier=%MM_INDENTIFIER%
+
 rem  get the configured modules location or use the default
 set modules_location=%MM_MODULES_DIR%
 if "!modules_location!"=="" set modules_location=modules
@@ -50,13 +53,13 @@ del extension_list 2>nul
 rem make empty one
 call %d%touch extension_list >nul
 
-set defaults_file=%d%/defaults.js
+set defaults_file=!d!/defaults_!MM_IDENTIFIER!.js
 set schema_file_exists=0
-set FILE=%d%/schema3.json
+set FILE=!d!/schema3_!MM_IDENTIFIER!.json
 if exist %FILE% (
 	if "%1." neq "override." (
-	set schema_file_exists=1
-    )
+		set schema_file_exists=1
+   )
 )
 set changed=0
 set need_to_update_modules=0
@@ -106,7 +109,7 @@ if exist sss (
   	 if !lc! NEQ 0 (
 	   rem echo have error file
 	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\!modules_location!\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
-	   findstr /r /n /c:"_defaults:" defaults.js | perl -e "print reverse <>" >sss1
+	   findstr /r /n /c:"_defaults:" !defaults_file! | perl -e "print reverse <>" >sss1
 	   set firsttime=0
 	   for /f "tokens=1,2 delims=:" %%a in (sss1) do (
 	     set ml=%%a
@@ -140,7 +143,7 @@ if exist sss (
 						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
 						echo MMM-Config
 						rem copy the build error schema for form presentation
-						copy /y schemas\MMM-Config-build-error.json schema3.json >/nul
+						copy /y schemas\MMM-Config-build-error.json !FILE! >/nul
 					   )
 				   )
 				)
