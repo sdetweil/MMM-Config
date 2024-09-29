@@ -6,7 +6,7 @@ const os = require("os");
 const stream = require("stream");
 const _ = require("lodash");
 const remote = new stream.Writable();
-let debug = true;
+let debug = false;
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
@@ -17,8 +17,6 @@ const fs = require("fs");
 const default_config_name=path.sep+"config"+path.sep+"config.js"
 let oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
-
-console.log("oc="+oc)
 
 // get the default module positions old way
 let module_positions = JSON.parse(
@@ -174,8 +172,10 @@ module.exports = NodeHelper.create({
       __dirname +
       (os.platform() == "win32" ? "\\test_convert.cmd" : "/test_convert.sh");
     this.command += this.config.force_update ? " override" : "";
-    console.log("command =" + this.command);
-    console.log("Starting module helper:" + this.name);
+    if(debug){
+      console.log("command =" + this.command);
+      console.log("Starting module helper:" + this.name);
+    }
     //console.log("environment vars="+JSON.stringify(process.env,null,2))
     this.launchit();
     this.extraRoutes();
@@ -185,13 +185,7 @@ module.exports = NodeHelper.create({
   // handle messages from our module// each notification indicates a different messages
   // payload is a data structure that is different per message.. up to you to design this
   socketNotificationReceived(notification, payload) {
-    console.log(
-      this.name +
-        " received a socket notification: " +
-        notification +
-        " - Payload: " +
-        payload
-    );
+
     // if config message from module
     if (notification === "CONFIG") {
       // save payload config info
