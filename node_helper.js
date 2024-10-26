@@ -76,9 +76,88 @@ String.prototype.hashCode = function() {
 let doSave = true;
 
 module.exports = NodeHelper.create({
-  config: {},
+  config: {debug:false},
   module_scripts: {},
+  imageurl:null,
 
+  buildQR_URI(){
+      console.log("in buildQR_URI");
+      this.hostname = //os.hostname();
+      this.getIPAddress()
+
+      this.config.url =
+        "http://" +
+        (this.config.address == "0.0.0.0"
+          ? this.hostname
+          : this.config.address) +
+        ":" +
+        this.config.port;
+
+      if (this.config.showQR) {
+        let url = this.config.url + "/"+modules_folder+"/" + this.name + "/review";
+        this.imageurl =
+          //this.config.url +
+          "/"+modules_folder+"/" + this.name + "/qrfile.png";
+        QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
+          if (!err) {
+            if (debug) console.log("QRCode build done");
+          } else {
+            console.log("QR image create failed =" + JSON.stringif(err));
+          }
+        });
+      }
+  },
+  setconfigpath(){
+    console.log("in setconfigpath");
+    // get the environment var for config files
+    let cf = process.env.MM_CONFIG_FILE
+    // if set and it does not contain path separator, its only the filename, not the folder
+    if(cf && !cf.includes(path.sep)){
+
+      // add the default config folder to the name
+      cf = "/config/"+cf;
+    }
+    if(cf && !cf.startsWith(path.sep)){
+      cf=path.sep+cf
+    }
+
+    // set the output config file name
+    oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:default_config_name);
+
+    if(debug){
+      console.log("config folder set at form start ="+cf);
+      console.log("modules folder set at form start="+modules_folder)
+    }
+  },
+  setConfig(){
+    console.log("in setConfig");
+    this.setconfigpath()
+    this.config.address = config.address;
+    this.config.port = config.port;
+    this.config.whiteList = config.ipWhitelist
+
+    for(let m of config.modules){
+      if(m.module === this.name){
+        debug=this.config.debug = m.config.debug
+        this.config.force_update = m.config.force_update
+        this.config.restart = m.config.restart
+        if(m.config.showQR){
+          this.config.showQR=m.config.showQR
+          this.buildQR_URI()
+        }
+        break;
+      }
+    }
+
+    this.startit()
+  },
+  // MM calls start
+  start() {
+    if(this.config.debug) console.log('Starting module helper:' +this.name+ JSON.stringify(this.data));
+    //console.log("full config=",config)
+    this.setConfig()
+
+  },
   // collect the data in background
   launchit() {
     if (debug) console.log("execing " + this.command);
@@ -121,6 +200,7 @@ module.exports = NodeHelper.create({
   },
   // module startup after receiving MM ready
   startit() {
+    console.log("in startit")
     // if restart is the old pm2: value, fix it
     if (this.config.restart.toLowerCase().startsWith("pm2:"))
       this.config.restart = "pm2";
@@ -189,60 +269,12 @@ module.exports = NodeHelper.create({
     // if config message from module
     if (notification === "CONFIG") {
       // save payload config info
-      this.config = payload;
-
-      debug = this.config.debug;
-
-      // get the environment var for config files
-      let cf = process.env.MM_CONFIG_FILE
-      // if set and it does not contain path separator, its only the filename, not the folder
-      if(cf && !cf.includes(path.sep)){
-
-        // add the default config folder to the name
-        cf = "/config/"+cf;
-      }
-  	  if(cf && !cf.startsWith(path.sep)){
-  		  cf=path.sep+cf
-  	  }
-
-      // set the output config file name
-      oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:default_config_name);
-
-      if(debug){
-        console.log("config folder set at form start ="+cf);
-        console.log("modules folder set at form start="+modules_folder)
-      }
-
-      this.startit();
-
-      this.hostname = //os.hostname();
-      this.getIPAddress()
-
-      this.config.url =
-        "http://" +
-        (this.config.address == "0.0.0.0"
-          ? this.hostname
-          : this.config.address) +
-        ":" +
-        this.config.port;
-
-      if (this.config.showQR) {
-        let url = this.config.url + "/"+modules_folder+"/" + this.name + "/review";
-        let imageurl =
-          //this.config.url +
-          "/"+modules_folder+"/" + this.name + "/qrfile.png";
-        QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
-          if (!err) {
-            if (debug) console.log("QRCode build done");
-            this.sendSocketNotification(
+      //this.config = payload;
+      if(this.imageurl){
+        this.sendSocketNotification(
               "qr_url",
-              imageurl
-              //this.config.url + "/modules/" + this.name + "/review"
+              this.imageurl
             );
-          } else {
-            console.log("QR image crate failed =" + JSON.stringif(err));
-          }
-        });
       }
     }
   },
