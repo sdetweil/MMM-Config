@@ -21,7 +21,8 @@ A dynamically built form, based on modules installed (git cloned at least) into 
     ```
 		{
 			module:"MMM-Config",
-			position:"top_right",  // the QR code (if requested) will appear here
+			position:"top_right", 
+				// the QR code (if requested) will appear here
 			config:{
 
 			}
@@ -38,8 +39,13 @@ A dynamically built form, based on modules installed (git cloned at least) into 
 | | | | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/modules/MMM-Config/review** |
 | | | | `Note:` If MagicMirror is configured for `'address:"localhost"`, you `MUST use a browser ON the same system as MM`, and the QR code will be replaced by text on the screen explaining why the QRCode is not displayed
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
-| `restart` | OPTIONAL | none, static,  pm2, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file |
-| `debug` | OPTIONAL | false | Turns on debugging of the form submisson and rewrite of config.js |
+| `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file |managed_process.pm2_env
+
+if you have multiple instances of MagicMirror running under pm2, and yoiu want restart on save, look at the pm2 status output and get the unique name or number of the app, 
+for example
+
+pm2:MagicMirror1, or  pm2:0
+this is particularly important if you are running multiple instances from the same MagicMirror folder with differnt config files
 
 On form submission, a new config.js is constructed and saved, `AFTER` renaming the current config.js out of the way.  
 
@@ -153,7 +159,7 @@ but.. the form library DOES provide support for those types of entries, if the d
 
 ### building the form customization 
 
-This custom schema file process requires someone: module author, or module user, to create the proper form definition file (schema.json in the module folder), and if present MMM-Config will use that instead of creating the structure dynamically.
+This custom schema file process requires someone: module author, or module user, to create the proper form definition file (MMM-Config.schema.json in the module folder), and if present MMM-Config will use that instead of creating the structure dynamically.
 
 
 To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
@@ -172,7 +178,7 @@ To minimize the customization effort, MMM-Config provides two different but comp
 if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (modulename.schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
 	 
 	 
-	 the schema.json file has 3 sections
+	 the MMM-Config.schema.json file has 3 sections
 	 1. "schema"
 	     used to define the variables and data types 
 		 and organization of the defaults section
@@ -183,23 +189,23 @@ if the module has not been updated in a long time (mmm-Pages, ...etc) where it i
 	     used to define the default values to be presented 
 		 in the form if no value is supplied from config.js
 
-if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the schema.json is generated.  this minimizes or eliminates custom editing of the schema.json file
+if the overrides file is present when the create_form_for_module command is executed, then the customizations will be applied before the MMM-Config.schema.json is generated.  this minimizes or eliminates custom editing of the schema.json file
 
 ### a few examples for the MMM-Config.overrides.json:
 
-in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs
+in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs (pairs is a special form variable created just for this application)
 
 
 ``````
     {
-		"titleReplace":"type":"pairs"},
+		"titleReplace":{"type":"pairs"},
 		"locationTitleReplace":{"type":"pairs"},
 		"excludedEvents":{"type":"object","object":{
 			"filterBy": "", 
 			"until": "nn day(s)/week(s)/month(s)", 
 			"caseSensitive": false, 
 			"regex":false}},
-	        "customEvents":{"type":"object","object":{
+	    "customEvents":{"type":"object","object":{
 			"keyword": "", 
 			"symbol": "", 
 			"color": "", 
@@ -664,7 +670,7 @@ turns out one can make custom events..
 
 so after the form is generated into the web page, the event 'form_loaded' is fired,
 
-so for compliments a little event handler in MMM-Config.extension.js can process when the form is loaded..
+so for compliments a little event handler in MMM-Config extension.js can process when the form is loaded..
 here JQuery makes quick work
 find **all** the elements in the document, wherever they are, that are the selected option of the select list
 in the m_compliments document tree with a classname specfied that ends with '---when' (that json form generated, from our property name ('when') )
@@ -804,15 +810,14 @@ function converter(config_data, direction){
 exports.converter=converter
 ````
 
-what is left..    we we have fields that contain custom formatted data.. we should help the user get it right while editing the form, not
-later when MagicMirror is started..
+what is left..    we we have fields that contain custom formatted data.. we should help the user get it right while editing the form, not later when MagicMirror is started..
 
 lets add some field validation to this..
 
 the form section above adds the onInput() event handler to each of the new fields..
 we just need to call some function on this fields data
 
-well, we HAVE MM-Config.extension.js that is being loaded already, so we can put the functions in there
+well, we HAVE the MM-Config.extension.js that is being loaded already, so we can put the functions in there
 one for each data type. and we can use the javascript regular expression function to validate the data 1 char at a time, live.
 That looks like this (without the regex strings, which are long.. look at the code if u need to)
 ```js

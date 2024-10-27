@@ -206,8 +206,11 @@ module.exports = NodeHelper.create({
   startit() {
     //console.log("in startit")
     // if restart is the old pm2: value, fix it
-    if (this.config.restart.toLowerCase().startsWith("pm2:"))
-      this.config.restart = "pm2";
+    if (this.config.restart.toLowerCase().startsWith("pm2:")){
+      const parts=this.config.restart.toLowerCase().split(':')
+      this.config.restart = parts[0]
+      pm2_id=parts[1]
+    }
     // handle how we restart, if any
     switch (this.config.restart) {
       case "static":
@@ -228,26 +231,35 @@ module.exports = NodeHelper.create({
         });
         break;
       case "pm2":
-        if (debug) console.log("getting pm2 process list");
-        exec("pm2 jlist", (error, stdout, stderr) => {
-          if (!error) {
-            let output = JSON.parse(stdout);
-            if (debug)
-              console.log(
-                "processing pm2 jlist output, " + output.length + " entries"
-              );
-            output.forEach((managed_process) => {
-              if (__dirname.startsWith(managed_process.pm2_env.pm_cwd)) {
-                if (debug)
-                  console.log(
-                    "found our pm2 entry, id=" + managed_process.pm_id
-                  );
-                pm2_id = managed_process.pm_id;
-              }
-            });
+        // if the id was not set from config
+        if(pm2_id  ==  -1){
+          if (debug) console.log("getting pm2 process list");
+          exec("pm2 jlist", (error, stdout, stderr) => {
+            if (!error) {
+              let output = JSON.parse(stdout);
+              if (debug)
+                console.log(
+                  "processing pm2 jlist output, " + output.length + " entries"
+                );
+              output.forEach((managed_process) => {
+                if(managed_process.pm2_env.status === 'online' ){
+                  if (__dirname.startsWith(managed_process.pm2_env.pm_cwd)) {
+                    if (debug)
+                      console.log(
+                        "found our pm2 entry, id=" + managed_process.pm_id
+                      );
+                    pm2_id = managed_process.pm_id;
+                  }
+                }
+              });
+            }
+          });
+        }
+        else {
+          if(debug){
+            console.log("pm app id is ", pm_id)
           }
-        });
-
+        }
         break;
       default:
     }
