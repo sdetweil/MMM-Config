@@ -8,8 +8,8 @@ rem
 set base=MagicMirror
 set d=%~dp0
 
-rem set the indentifier in case there are multiple instances
-set indentifier=%MM_INDENTIFIER%
+rem set the identifier in case there are multiple instances
+set identifier=%MM_identifier%
 
 rem  get the configured modules location or use the default
 set modules_location=%MM_MODULES_DIR%
@@ -19,28 +19,30 @@ rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%
 if "!config_name!"=="" set config_name=/config/config.js
 if "!config_name:~0,1!"=="/"  set config_name=!config_name:~1!
-rem echo !config_name!
+ echo !config_name!
 
+set config_lastchange_file=config_lastchange_!identifier!
+set modules_lastchange_file=modules_lastchange_!identifier!
 
 rem make sure the lastchanged files exist
-call %d%touch %d%modules_lastchanged >nul
-call %d%touch %d%config_lastchanged >nul
+call %d%touch %d%%modules_lastchange_file% >nul
+call %d%touch %d%%config_lastchange_file% >nul
 
 rem set the last changed to null in case the files are empty
 set modules_lastsaved=""
 set config_lastsaved=""
 
 rem get the contents of the last changed files
-for /f "delims=" %%x in (%d%modules_lastchanged) do (set modules_lastsaved=%%x)
-for /f "delims=" %%x in (%d%config_lastchanged) do (set config_lastsaved=%%x)
+for /f "delims=" %%x in (%d%%modules_lastchange_file%) do (set modules_lastsaved=%%x)
+for /f "delims=" %%x in (%d%%config_lastchange_file%) do (set config_lastsaved=%%x)
 cd %d%
 @rem get the current module and config file last changed dates
 for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "!modules_location!" ^| find "<DIR>"`) do (set modules_lastchanged="%%m %%n")
 rem if linux path separators were used , change to windows style
-set temp_config_name=!config_name:/=\!
-rem echo temp_config=!temp_config_name!
+set temp_config_name=%config_name:/=\%
+rem echo temp_config=%temp_config_name%
 rem get the name part (has path first) 
-for /f "usebackq tokens=2 delims=\" %%m in ('!config_name!') do (set config_filename=%%m)
+for /f "usebackq tokens=2 delims=\" %%m in ('%temp_config_name%') do (set config_filename=%%m)
 rem get the date/time that config file changes.. watch out for other files in the config folder
 for /f "tokens=1-2,5 usebackq"  %%m in (`dir ..\..\!temp_config_name! ^| find "!config_filename!"`) do (set config_lastchanged="%%m %%n")
 rem copy our repo clean copy of the config form html 
@@ -50,12 +52,12 @@ if not exist config.html (
 )
 rem make sure we don't have old extension list
 del extension_list 2>nul
-rem make empty one
-call %d%touch extension_list >nul
+rem make empty onel %d%touch extension_list >nul
 
-set defaults_file=!d!/defaults_!MM_IDENTIFIER!.js
+set defaults_file=%d%/defaults_%identifier%.js
 set schema_file_exists=0
-set FILE=!d!/schema3_!MM_IDENTIFIER!.json
+set FILE=!d!/schema3_!identifier!.json
+
 if exist %FILE% (
 	if "%1." neq "override." (
 		set schema_file_exists=1
@@ -94,7 +96,7 @@ rem
    echo } >>%defaults_file%
    echo module.exports={defined_config,config};  >>%defaults_file%
    rem record that we processed for the modules now
-   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "!modules_location!" ^| find "<DIR>"`) do echo "%%m %%n" >%d%modules_lastchanged
+   for /f "tokens=1,2 usebackq"  %%m in (`dir ..\..\ ^| find "!modules_location!" ^| find "<DIR>"`) do echo "%%m %%n" >!d!!modules_lastchange_file!
    set changed=1
 )
 rem check the generated defaults.js for errors
@@ -165,7 +167,7 @@ if !modules_lastsaved! neq !modules_lastchanged!  (set changed=1)
 	rem regenerate the form schema file
 	   node scripts\buildschema4.js !defaults_file! >!FILE!
 	   rem set the last changed date.time info 
-	   for /f "tokens=1-2,5 usebackq"  %%m in (`dir ..\..\!temp_config_name! ^| find "!config_filename!"`) do echo "%%m %%n" > %d%config_lastchanged
+	   for /f "tokens=1-2,5 usebackq"  %%m in (`dir ..\..\%temp_config_name% ^| find "%config_filename%"`) do echo "%%m %%n" > %d%%config_lastchange_file%
 	   rem check for any extensions in the schemas folder (we are shipping them, so not found in module folder) 
 	   dir /b /s schemas\*_extension.* 2>nul >>extension_list
 	   rem fixup config page html for extensions
