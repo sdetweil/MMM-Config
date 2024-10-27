@@ -57,7 +57,7 @@ const closeString =
 if (typeof module !== "undefined") {module.exports = config;}';
 
 
-String.prototype.hashCode = function() {
+String.prototype.hashCode = function(port) {
   var hash = 0,
     i, chr;
   if (this.length === 0) return hash;
@@ -66,7 +66,7 @@ String.prototype.hashCode = function() {
     hash = ((hash << 5) - hash) + chr;
     hash |= 0; // Convert to 32bit integer
   }
-  return hash.toString().replace('-','');
+  return hash.toString().replace('-','')+port.toString();
 }
 
 // add require of other javascripot components here
@@ -81,7 +81,7 @@ module.exports = NodeHelper.create({
   imageurl:null,
 
   buildQR_URI(){
-      console.log("in buildQR_URI");
+      //console.log("in buildQR_URI");
       this.hostname = //os.hostname();
       this.getIPAddress()
 
@@ -108,7 +108,7 @@ module.exports = NodeHelper.create({
       }
   },
   setconfigpath(){
-    console.log("in setconfigpath");
+    //console.log("in setconfigpath");
     // get the environment var for config files
     let cf = process.env.MM_CONFIG_FILE
     // if set and it does not contain path separator, its only the filename, not the folder
@@ -130,10 +130,14 @@ module.exports = NodeHelper.create({
     }
   },
   setConfig(){
-    console.log("in setConfig");
+    //console.log("in setConfig");
     this.setconfigpath()
+    // watch out for env variable setting port
+    let mm_port = process.env.MM_PORT
+    //console.log("config port=", config.port, " env port=", mm_port)
+
     this.config.address = config.address;
-    this.config.port = config.port;
+    this.config.port = mm_port || config.port;
     this.config.whiteList = config.ipWhitelist
 
     for(let m of config.modules){
@@ -161,7 +165,7 @@ module.exports = NodeHelper.create({
   // collect the data in background
   launchit() {
     if (debug) console.log("execing " + this.command);
-    exec(this.command, { env: {...process.env, MM_INDENTIFIER: oc.hashCode()} }, (error, stdout, stderr) => {
+    exec(this.command, { env: {...process.env, MM_INDENTIFIER: oc.hashCode(this.config.port)} }, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
@@ -200,7 +204,7 @@ module.exports = NodeHelper.create({
   },
   // module startup after receiving MM ready
   startit() {
-    console.log("in startit")
+    //console.log("in startit")
     // if restart is the old pm2: value, fix it
     if (this.config.restart.toLowerCase().startsWith("pm2:"))
       this.config.restart = "pm2";
@@ -212,7 +216,7 @@ module.exports = NodeHelper.create({
           __dirname.split(path.sep).slice(0, -2).join(path.sep) +
           "/node_modules/.bin/electron" +
           (os.platform() == "win32" ? ".cmd" : "");
-        console.log("electron path=" + ep);
+        if(debug) console.log("electron path=" + ep);
         require("electron-reload")(oc, {
           electron: ep,
           argv: [
@@ -770,7 +774,7 @@ module.exports = NodeHelper.create({
   // handle form submission from web browser
   //
   process_submit: async function (data, self, socket) {
-    let cfg = require(__dirname + "/defaults_"+oc.hashCode()+".js");
+    let cfg = require(__dirname + "/defaults_"+oc.hashCode(this.config.port)+".js");
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
@@ -1529,7 +1533,7 @@ module.exports = NodeHelper.create({
     let configJSON = "";
 
     function getFiles(self) {
-      let configPath = __dirname + path.sep+"schema3_"+oc.hashCode()+".json";
+      let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(this.config.port)+".json";
 
       if (debug || 1) console.log("path=" + configPath);
 
