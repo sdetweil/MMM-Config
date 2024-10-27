@@ -139,7 +139,7 @@ module.exports = NodeHelper.create({
     for(let m of config.modules){
       if(m.module === this.name){
         debug=this.config.debug = m.config.debug || false
-        this.config.force_update = m.config.force_update || false
+        this.config.force_update = m.config.force_update || true
         this.config.restart = m.config.restart || ""
         if(m.config.showQR){
           this.config.showQR=m.config.showQR || false
