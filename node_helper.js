@@ -165,7 +165,7 @@ module.exports = NodeHelper.create({
   // collect the data in background
   launchit() {
     if (debug) console.log("execing " + this.command);
-    exec(this.command, { env: {...process.env, MM_INDENTIFIER: oc.hashCode(this.config.port)} }, (error, stdout, stderr) => {
+    exec(this.command, { env: {...process.env, MM_identifier: oc.hashCode(this.config.port)} }, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
