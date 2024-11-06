@@ -39,13 +39,14 @@ A dynamically built form, based on modules installed (git cloned at least) into 
 | | | | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/modules/MMM-Config/review** |
 | | | | `Note:` If MagicMirror is configured for `'address:"localhost"`, you `MUST use a browser ON the same system as MM`, and the QR code will be replaced by text on the screen explaining why the QRCode is not displayed
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
-| `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file |managed_process.pm2_env
+| `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file | managed_process.pm2_env
 
-if you have multiple instances of MagicMirror running under pm2, and yoiu want restart on save, look at the pm2 status output and get the unique name or number of the app, 
+if you have multiple instances of MagicMirror running under pm2, and you want restart on save, look at the pm2 status output and get the unique name or number of the app, 
 for example
 
 pm2:MagicMirror1, or  pm2:0
-this is particularly important if you are running multiple instances from the same MagicMirror folder with differnt config files
+this is particularly important if you are running multiple instances from the same MagicMirror folder with differnt config files,
+you may specify only pm2, and the module will autodetect what app id to use
 
 On form submission, a new config.js is constructed and saved, `AFTER` renaming the current config.js out of the way.  
 
@@ -53,7 +54,7 @@ The rename adds on the date and time the existing config.js was last modified.
 
 The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`.
 
-The ':'  in the time is changed to '.' as windows will not allow a filename with ':'.
+The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
 MMM-Config uses the [jsonform](https://github.com/jsonform/jsonform/wiki) library to construct, present and operate  the form
 
