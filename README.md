@@ -154,11 +154,12 @@ this is also array of objects of a particular format.
 				
 
 				
-in each of these cases , and more across many modules, MMM-Config cannot construct a proper form for creating the definitions for those fields.  
+in each of these cases , and more across many modules, MMM-Config cannot construct a proper form for creating the definitions for those fields,
+it will try its best, but most times it will get something wrong
 
 but.. the form library DOES provide support for those types of entries, if the definition is created correctly.  
 
-### building the form customization 
+#### building the form customization 
 
 This custom schema file process requires someone: module author, or module user, to create the proper form definition file (MMM-Config.schema.json in the module folder), and if present MMM-Config will use that instead of creating the structure dynamically.
 
@@ -173,11 +174,12 @@ To minimize the customization effort, MMM-Config provides two different but comp
   create_form_for_module.sh (or .cmd on windows)  modulename
 ```
 
-   this will generate and create the file **MMM-Config.schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL NOT overwrite the same named file, so if you have one and try to genertae a new one, oops.. no change, and no warning)
+   this will generate and create the file **MMM-Config.schema.json** in the module folder, where MMM-Config would look for it. (warning it WILL NOT overwrite the same named file, so if you have one and try to generate a new one, oops.. no change, and no warning)
 	 
 
-if the module has not been updated in a long time (mmm-Pages, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (modulename.schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
-	 
+if the module has not been updated in a long time (mmm-pages for example, ...etc) where it is unlikely the module files will ever be updated to include this MMM-Config.schema.json file (or as modulename.schema,json in the MMM-Config schemas folder) , then the form editor/author can submit the updated form (modulename.schema.json) as a PR to MMM-Config (in the schemas folder) and it will be distibuted and used from there 
+
+  ### Form Schema file layout
 	 
 	 the MMM-Config.schema.json file has 3 sections
 	 1. "schema"
@@ -212,7 +214,9 @@ in the 1st example in the calendar module, the titleReplace and locationTitleRep
 			"color": "", 
 			"eventClass": ""}}
 	}
-``````		
+``````
+I have created a custom type called pairs which looks like the key:value layout 
+
 for the **customEvents** and **excludedEvents** we describe the structures that will appear in the array.
 
 Now MMM-Config can generate fields for the two structures 
@@ -289,9 +293,10 @@ then there is a row for each variable to be overridden.(everything in double quo
 	},
 
 	// use this when the module doesn't declare the contents of the object, but its described in the doc or code
+	like
 	     excludedEvents:{}
 
-4. ### string with a selection list 		 
+5. ### string with a selection list 		 
 
 	{"type":"string",
 
@@ -324,7 +329,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 
 		otherwise the first entry in the enum[] list will be the default value (selected if no value found in the current config.js) 
 
-5. ### sometimes none of the the choices seem to work, for  example the compliments module 
+6. ### sometimes none of the the choices seem to work, for  example the compliments module 
 
 	in javascript, the list of compliments it is an object '{....}', which is fixed in size
 
@@ -546,7 +551,7 @@ so the schema and form sections get some improvements
                       "evening",
                       "date-format",
                       "date-time-format",
-					  "weather-format"					  
+                      "weather-format"					  
                     ]
                   },
                   "date-format":{
@@ -627,7 +632,7 @@ so the schema and form sections get some improvements
                 "required":true,
                 "onInput":"(evt,node)=>{let value=evt.target.value;if(!cron_validator(value)){evt.target.parentElement.classList.add('fieldError')}else {evt.target.parentElement.classList.remove('fieldError')}}"
               },
-			  {
+              {
                 "key": "compliments.config.compliments[].weather-format",
                 "title":"weather type to show",
                 "fieldHtmlClass":"weather-format",
