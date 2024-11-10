@@ -166,9 +166,11 @@ This custom schema file process requires someone: module author, or module user,
 
 To minimize the customization effort, MMM-Config provides two different but complimentary approaches to customizing the generated for content
 
-1. a file in the module folder called MMM-Config.overrides.json, can provide the desired definition for the fields   
+1. a file in the module folder called MMM-Config.overrides.json, can provide the desired definition for the fields
+   this will create a form with all the fields defined as specified, BUT the usage (list of choices, ...) may not be correct
 	 
-2. MMM-Config provides a command to generate the entire module schema/form/value contents that can be customized
+3. MMM-Config provides a command to generate the entire module schema/form/value contents that can be customized
+   this porovides the form developer with the ability to make a good use of text and field usage for a better user experience
 
 ```
   create_form_for_module.sh (or .cmd on windows)  modulename
