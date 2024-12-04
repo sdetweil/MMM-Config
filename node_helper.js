@@ -44,7 +44,7 @@ try {
 // get the default modules list from the MM core
 const defaultModules = require("../../modules/default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split(path.sep).slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-1)
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -576,6 +576,8 @@ module.exports = NodeHelper.create({
     if (!keys.includes("classes")) keys.push("classes");
     if (!keys.includes("hiddenOnStartup")) keys.push("hiddenOnStartup");
     if (!keys.includes("configDeepMerge")) keys.push("configDeepMerge");
+    if (!keys.includes("animateIn")) keys.push("animateIn");
+    if (!keys.includes("animateOut")) keys.push("animateOut");
     keys = _.without(keys, "config");
     if(debug){
       console.log("merge keys for fields="+JSON.stringify(keys))
@@ -775,6 +777,8 @@ module.exports = NodeHelper.create({
         }
       }
     } else if(type=='converter'){
+      if(debug)
+        console.log("1 checking for module converter for"+module_name);
     fn = isDefault
       ? path.join(
           __dirname,

@@ -124,6 +124,15 @@ if (debug)
   console.log(
     "default modules list=" + JSON.stringify(defaultModules, null, 2)
   );
+let x = require("../../../js/animateCSS.js");
+const animationNames = {}
+animationNames.AnimateCSSIn = clone(x.AnimateCSSIn) //.splice(0,0,"None")
+animationNames.AnimateCSSIn.splice(0,0,"None")
+animationNames.AnimateCSSOut = clone(x.AnimateCSSOut) //.splice(0,0,"None")
+animationNames.AnimateCSSOut.splice(0,0,"None")
+if(debug){
+  console.log("animation names in="+animationNames.AnimateCSSIn+"\n out="+animationNames.AnimateCSSOut +" x=",x)
+}
 
 //
 //  lets auto detect multiple instances of the same module
@@ -682,6 +691,17 @@ for (let m of defines.config.modules) {
     // watch out for spaces in position names
     // old habits
     tt.position = tt.position.replace(" ", "_");
+    // if no animateIn set
+    if (tt.animateIn === undefined) {
+      // force to a known value, none isn't used
+      tt.animateIn = "none";
+    }
+    // if no animateOut set
+    if (tt.animateOut === undefined) {
+      // force to a known value, none isn't used
+      tt.animateOut = "none";
+    }
+
     tt = fixVariableNames(tt);
     // if this is a module that supports multi instance
     if (checkMulti(m.module)) {
@@ -1272,7 +1292,7 @@ function check_for_module_file(module_name,type) {
           module_name,
           our_name+module_jsonform_converter
         )
-      : path.join(__dirname, "../..", module_name,our_name+module_jsonform_converter);
+      : path.join(__dirname, "../..", module_name,our_name+"."+module_jsonform_converter.slice(1));
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
       fn = path.join(
@@ -1762,6 +1782,8 @@ function processModule(schema, form, value, defines, module_name) {
     position: "none",
     order: "*",
     inconfig: "0",
+    animateIn:"none",
+    animateOut:"none",
     // from the defaults: collector
     config: defines
   };
@@ -1794,6 +1816,8 @@ function processModule(schema, form, value, defines, module_name) {
       order: { type: "string", title: "order", default: "*" },
       inconfig: { type: "string", title: "inconfig", default: "0" },
       index: { type: "integer" },
+      animateIn: { type:"string", enum:animationNames.AnimateCSSIn},
+      animateOut: { type:"string", enum:animationNames.AnimateCSSOut},
       config: { type: "object", title: "config", properties: {} }
     }
   };
@@ -1833,6 +1857,17 @@ function processModule(schema, form, value, defines, module_name) {
   module_form_items.push({
     key: module_name + "." + "inconfig",
     type: "hidden"
+  });
+
+  module_form_items.push({
+    key: module_name + "." + "animateIn",
+    "title":"animateIn",
+    "description": "select one of these to change the behavior when the module is shown"
+  });
+  module_form_items.push({
+    key: module_name + "." + "animateOut",
+    "title":"animateOut",
+    "description": "select one of these to change the behavior when the module is hidden"
   });
   module_form_items.push({ key: module_name + "." + "index", type: "hidden" });
   if (checkMulti(module_name)) {
