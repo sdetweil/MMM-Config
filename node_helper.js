@@ -573,6 +573,9 @@ module.exports = NodeHelper.create({
     let keys = _.keys(module_entry);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
+    if (!keys.includes("classes")) keys.push("classes");
+    if (!keys.includes("hiddenOnStartup")) keys.push("hiddenOnStartup");
+    if (!keys.includes("configDeepMerge")) keys.push("configDeepMerge");
     keys = _.without(keys, "config");
     if(debug){
       console.log("merge keys for fields="+JSON.stringify(keys))
