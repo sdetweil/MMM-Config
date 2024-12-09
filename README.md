@@ -170,7 +170,7 @@ To minimize the customization effort, MMM-Config provides two different but comp
    this will create a form with all the fields defined as specified, BUT the usage (list of choices, ...) may not be correct
 	 
 3. MMM-Config provides a command to generate the entire module schema/form/value contents that can be customized
-   this porovides the form developer with the ability to make a good use of text and field usage for a better user experience
+   this provides the form developer with the ability to make a good use of text and field usage for a better user experience
 
 ```
   create_form_for_module.sh (or .cmd on windows)  modulename
