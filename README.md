@@ -95,7 +95,7 @@ MMM-Config uses that defaults:{} object list to construct the form for editing.
 ### however some defintions are ambiguous
 
 in the default calendar the 
-```
+```js
 		titleReplace: {
 			"De verjaardag van ": "",
 			"'s birthday": ""
@@ -108,7 +108,7 @@ this list can be customized by the user in config.js by adding or removing speci
 so its treated as an array (the form library supports adding/removing things from an array)
 
 the MMM-NewsAPI module uses the similar query structure
-```
+```js
 		 query: {
 					country: "us",
 					category: "",
@@ -126,7 +126,7 @@ BUT the structure is a fixed size. the user cannot ADD a new field to this struc
 
 
 another example is in the default calendar, Using a list (array) 
-```  
+```js 
 		customEvents: []
 ```
 this an array of objects of a particular format.	
@@ -136,7 +136,7 @@ this an array of objects of a particular format.
 but not listed in the defaults section (because Javascript doesn't provide a template/model type syntax)
 
 another is 
-```
+```js
 		excludedEvents: [] 
 ```
 this is also array of objects of a particular format.	 
@@ -172,7 +172,7 @@ To minimize the customization effort, MMM-Config provides two different but comp
 3. MMM-Config provides a command to generate the entire module schema/form/value contents that can be customized.
    This provides the form developer with the ability to make good use of text descriptions and field usage for a better user experience
 
-```
+```sh
   create_form_for_module.sh (or .cmd on windows)  modulename
 ```
 
@@ -201,7 +201,7 @@ if the overrides file is present when the create_form_for_module command is exec
 in the 1st example in the calendar module, the titleReplace and locationTitleReplace we clarify these are used as lists of key/value pairs (pairs is a special form variable created just for this application)
 
 
-``````
+```json
     {
 		"titleReplace":{"type":"pairs"},
 		"locationTitleReplace":{"type":"pairs"},
@@ -216,7 +216,7 @@ in the 1st example in the calendar module, the titleReplace and locationTitleRep
 			"color": "", 
 			"eventClass": ""}}
 	}
-``````
+```
 I have created a custom type called pairs which looks like the key:value layout 
 
 for the **customEvents** and **excludedEvents** we describe the structures that will appear in the array.
@@ -235,7 +235,7 @@ for example,  in MMM-NewsAPI there are four fields that are used as selection li
 
 and we need to clarify that query is an object
 the overrides file for MMM-NewsApi would be
-```
+```json
    {
         "query":{"type":"object"},
         "choice":{"type":"string","enum":["headlines","everything"]},
@@ -283,7 +283,7 @@ then there is a row for each variable to be overridden.(everything in double quo
 	where xxxxxxx is the definition of the variables in the object 
 
 	for excludedEvents it looks like this 
-
+	```json
 	{"type":"object",
 	
 		"object":{
@@ -293,19 +293,19 @@ then there is a row for each variable to be overridden.(everything in double quo
 			"regex":false
 		}
 	},
-
+	```
 	// use this when the module doesn't declare the contents of the object, but its described in the doc or code
 	like
 	     excludedEvents:{}
 
 5. ### string with a selection list 		 
-
+	```json
 	{"type":"string",
 
 		"enum":[comma separated list of choices, in the order you want them to appear.. 
 		       [ "a", "b", "c", "foo" ]  // for example
 	},
-
+	```
 	// use this when the module has a string variable 
 	something:"" or something:null (but usage implies string and a choice)
 
