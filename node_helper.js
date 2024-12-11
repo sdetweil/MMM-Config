@@ -15,6 +15,8 @@ const updatedDiff = require("deep-object-diff").updatedDiff;
 const fs = require("fs");
 
 const default_config_name=path.sep+"config"+path.sep+"config.js"
+let oc_prefix = ''
+
 let oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
 
@@ -304,6 +306,7 @@ module.exports = NodeHelper.create({
 
     // if config message from module
     if (notification === "CONFIG") {
+
       // save payload config info
       //this.config = payload;
       if(this.imageurl){
@@ -817,6 +820,11 @@ module.exports = NodeHelper.create({
 
     if (debug)
       console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
+    // waited long enough to have it created by batch script
+    try {
+        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix.txt")
+    }
+    catch(error){}
 
     if (1) {
       if (debug)
@@ -1052,6 +1060,8 @@ module.exports = NodeHelper.create({
     })
 
     delete data.scriptConvertedObjects
+
+
 
     // setup the final data to write out
     let r = {};
@@ -1327,6 +1337,27 @@ module.exports = NodeHelper.create({
       });
     });
 
+    if(debug)
+      console.log("checking for substituted spread variables= "+JSON.stringify(data.substituted_variables,null,2))
+    if(data.substituted_variables){
+      data.substituted_variables.forEach(v =>{
+        if(debug)
+          console.log("processing spread for module=",v.module," path=",v.path," variable=",v.variable)
+        for(let m of r["config"]["modules"]){
+          if(m.module === v.module){
+            let c=m
+            for(let i =0; i<v.path.length-1; i++){
+              c=c[v.path[i]]
+            }
+            c[v.path.slice(-1)]=[ "..."+v.variable ]
+            console.log(" path contents="+JSON.stringify(c,null,2))
+          if(debug)
+            console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
+          }
+        }
+
+      })
+    }
     //	console.log(" config = "+JSON.stringify(cfg,' ',2))
     if (checking_diff) {
       let x = detailedDiff(r["config"], cfg.config);
@@ -1494,6 +1525,19 @@ module.exports = NodeHelper.create({
         xx = xx.replace(saved, expression);
       });
     }
+    if(data.substituted_variables){
+      data.substituted_variables.forEach(v=>{
+        if(debug){
+          console.log("replacing ",'"...'+v.variable+'"', " with ",'...'+v.variable)
+        }
+        if(xx.includes('"...'+v.variable+'"')){
+          if(debug)
+            console.log("found variable in data")
+        }
+        xx=xx.replace('"...'+v.variable+'"', '...'+v.variable)
+
+      })
+    }
     //
     // lets construct the config.html to include extension files from module authors
     //
@@ -1535,13 +1579,13 @@ module.exports = NodeHelper.create({
     // if we are doing the actual save
     // false for testing data handling
     if (doSave) {
-	const logname=oc.split(path.sep).slice(-1)
+	    const logname=oc.split(path.sep).slice(-1)
       if(debug)
         console.log("saving to new "+logname)
       // rename curent using ist last mod date as part of the extension name
       fs.copyFileSync(oc, oc + "." + d);
       // write out the new config.js
-      fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
+      fs.writeFile(oc, oc_prefix+ xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
           console.error(err);
         } else {
@@ -1555,6 +1599,7 @@ module.exports = NodeHelper.create({
           }
         }
       });
+      xx=null
     }
   },
   // end of form post handling

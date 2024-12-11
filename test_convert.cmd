@@ -50,6 +50,10 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+rem empty the work directory
+del workdir\*.txt 2>nul
+rem check for any usage of the spread operator
+node scripts\check_for_spread.js ..\..\!config_name! !d!\workdir\config_prefix.txt !d!\workdirspread_usage.json
 rem make sure we don't have old extension list
 del extension_list 2>nul
 rem make empty onel %d%touch extension_list >nul

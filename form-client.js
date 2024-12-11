@@ -114,6 +114,9 @@ $(function () {
     let mangled_names = data.mangled_names;
     let convertedObjects = data.convertedObjects;
     let scriptConverted = data.scriptConvertedObjects
+    let substituted_variables=null
+    if(data.substituted_variables)
+      substituted_variables = data.substituted_variables
 
     $("#outmessage").text("");
     try {
@@ -125,6 +128,8 @@ $(function () {
         values["mangled_names"] = mangled_names;
         values["convertedObjects"] = convertedObjects;
         values["scriptConvertedObjects"]=scriptConverted
+        if(substituted_variables)
+          values["substituted_variables"] = substituted_variables
 
         activesocket.emit("saveConfig", values);
         $("#outmessage").html(

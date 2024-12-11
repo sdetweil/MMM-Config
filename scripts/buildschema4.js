@@ -1192,6 +1192,14 @@ value = JSON.parse(str, fromhandler);
 // create the big object that we will emit
 //
 
+let substituted_variables = null
+//try {
+  substituted_variables = require("../workdir/spread_usage.json")
+//}
+//catch(error){
+//  ;
+//}
+
 let combined = {
   schema: schema,
   form: form,
@@ -1205,6 +1213,9 @@ let combined = {
   scriptConvertedObjects: scriptConvertedObjects
 
 };
+
+if(substituted_variables)
+  combined.substituted_variables = substituted_variables
 // get the string value of the object
 let cc = JSON.stringify(combined, tohandler, 2).slice(1, -1);
 // emit the string
