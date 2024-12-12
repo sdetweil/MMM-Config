@@ -52,6 +52,7 @@ if not exist config.html (
 )
 rem empty the work directory
 del workdir\*.txt 2>nul
+del workdir\*.json 2>nul
 rem check for any usage of the spread operator
 node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix.txt workdir\spread_usage.json
 rem make sure we don't have old extension list

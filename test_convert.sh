@@ -49,7 +49,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		cp templates/config.html .
 	fi
 	# empty the work directory
-	rm  workdir/*.txt 2>/dev/null
+	rm  workdir/*.* 2>/dev/null
 	# check for any usage of the spread operator
 	node scripts/check_for_spread.js ../../$config_name $d/workdir/config_prefix.txt $d/workdir/spread_usage.json
 	rm extension_list 2>/dev/null
