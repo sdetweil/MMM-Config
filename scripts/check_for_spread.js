@@ -8,9 +8,13 @@ if(process.argv.length<5){
 }
 
 
+
 const cfg = process.argv[2] //"/home/sam/MagicMirror.old/config/config.js"
-let debug=false
-const lines = fs.readFileSync(cfg).toString().split(os.EOL)
+
+let debug=(process.argv.length>=6 && process.argv[5]==='debug')?true:false
+if(debug)
+   console.log("process args=",process.argv)
+const lines = fs.readFileSync(cfg).toString().split("\n")
 if(debug)
 	console.log("there are "+lines.length+" lines to process")
 let i=0
@@ -87,7 +91,7 @@ if(usage_list.length){
 	}
 }
 if(found){
-	fs.writeFileSync(process.argv[3], lines.slice(0,limit).join(os.EOL))
+	fs.writeFileSync(process.argv[3], lines.slice(0,limit).join("\n"))
 	fs.writeFileSync(process.argv[4], JSON.stringify(usage_list))
 }
 
@@ -119,4 +123,3 @@ function findparent(start, list, limit){
 		return ''
 }
 
-//console.log("config= "+JSON.stringify(cfg,null,2))

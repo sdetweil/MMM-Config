@@ -19,7 +19,7 @@ rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%
 if "!config_name!"=="" set config_name=/config/config.js
 if "!config_name:~0,1!"=="/"  set config_name=!config_name:~1!
- echo !config_name!
+rem echo !config_name!
 
 set config_lastchange_file=config_lastchange_!identifier!
 set modules_lastchange_file=modules_lastchange_!identifier!
@@ -53,7 +53,7 @@ if not exist config.html (
 rem empty the work directory
 del workdir\*.txt 2>nul
 rem check for any usage of the spread operator
-node scripts\check_for_spread.js ..\..\!config_name! !d!\workdir\config_prefix.txt !d!\workdirspread_usage.json
+node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix.txt workdir\spread_usage.json
 rem make sure we don't have old extension list
 del extension_list 2>nul
 rem make empty onel %d%touch extension_list >nul
