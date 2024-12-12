@@ -10,7 +10,7 @@ const fs = require("fs");
 var debug = false;
 var save_module_form = "";
 const using_overrides = true;
-//console.log("parms=", process.argv)
+console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
@@ -37,7 +37,7 @@ const module_define_name_special_char = "ς";
 const module_jsonform_overrides_name = "overrides.json";
 const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split('/').slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-2,-1)
 var schema = {};
 var form = [
   {
@@ -1193,12 +1193,12 @@ value = JSON.parse(str, fromhandler);
 //
 
 let substituted_variables = null
-//try {
+try {
   substituted_variables = require("../workdir/spread_usage.json")
-//}
-//catch(error){
-//  ;
-//}
+}
+catch(error){
+  ;
+}
 
 let combined = {
   schema: schema,
