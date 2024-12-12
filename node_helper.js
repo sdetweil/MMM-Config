@@ -1343,19 +1343,33 @@ module.exports = NodeHelper.create({
       data.substituted_variables.forEach(v =>{
         if(debug)
           console.log("processing spread for module=",v.module," path=",v.path," variable=",v.variable)
+        if(debug)
+          console.log(" module in form data=",r["config"]["modules"][v.module])
         for(let m of r["config"]["modules"]){
-          if(m.module === v.module){
-            let c=m
-            for(let i =0; i<v.path.length-1; i++){
-              c=c[v.path[i]]
+          // found the module
+          if(m.module==v.module){
+            // and the index, if specified matches
+            if(m.index== undefined || (m.index != undefined && m.index==v.index)){
+              // start at the module level
+              let c=m
+              if(debug){
+                if(m.index != undefined)
+                  console.log("found matching index=", v.index, " for module=", m.module_name)
+                else
+                  console.log("no index for module ", v.module)
+              }
+              // then walk down the variable path
+              for(let i =0; i<v.path.length-1; i++){
+                c=c[v.path[i]]
+              }
+              // reset that variable to the spread operator variable
+              c[v.path.slice(-1)]=[ "..."+v.variable ]
+              console.log(" path contents="+JSON.stringify(c,null,2))
+              if(debug)
+                console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
             }
-            c[v.path.slice(-1)]=[ "..."+v.variable ]
-            console.log(" path contents="+JSON.stringify(c,null,2))
-          if(debug)
-            console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
           }
         }
-
       })
     }
     //	console.log(" config = "+JSON.stringify(cfg,' ',2))
@@ -1526,16 +1540,18 @@ module.exports = NodeHelper.create({
       });
     }
     if(data.substituted_variables){
+      if(debug)
+        console.log("have some substituted variables=",data.substituted_variables)
       data.substituted_variables.forEach(v=>{
         if(debug){
           console.log("replacing ",'"...'+v.variable+'"', " with ",'...'+v.variable)
         }
-        if(xx.includes('"...'+v.variable+'"')){
+        // should only occur once, but user may have used same set of variables in multiple places
+        while(xx.includes('"...'+v.variable+'"')){
           if(debug)
             console.log("found variable in data")
+          xx=xx.replace('"...'+v.variable+'"', '...'+v.variable)
         }
-        xx=xx.replace('"...'+v.variable+'"', '...'+v.variable)
-
       })
     }
     //
