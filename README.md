@@ -440,16 +440,16 @@ then there is a row for each variable to be overridden.(everything in double quo
 		   // in compliments , we need to change the object to an  array 
 		   let new_compliments = []
 		   Object.keys(config_data.compliments).forEach(when=>{
-                // we have the object key 
-				// now we need to create a little 'object' for each element in the array
-				// so we will add to the array for each entry in the object
-                new_compliments.push(
-					{
-						// the schema says the element has a when value (the anytime....)
-						"when":when,
-						"list":config_data.compliments[when] // and a list value (the stuff to the right of the ':')
-					}
-				)  
+                     // we have the object key
+                     // now we need to create a little 'object' for each element in the array
+		     // so we will add to the array for each entry in the object
+                     new_compliments.push(
+			{
+			// the schema says the element has a when value (the anytime....)
+				"when":when,
+				"list":config_data.compliments[when] // and a list value (the stuff to the right of the ':')
+			}
+                      )  
 		   })
 		   // done processing all the entries in the config format object
 		   // now update the passed in config data
@@ -457,13 +457,13 @@ then there is a row for each variable to be overridden.(everything in double quo
 		   config_data.compliments = JSON.parse(JSON.stringify(new_compliments))
 		}
 		else if direction == 'toConfig'){
-           // we need to go from form format (array), back to expected config.js format object 
+                   // we need to go from form format (array), back to expected config.js format object 
 		   // setup the empty object
 		   let config_compliments = {}
 		   // loop thru each array element
 		   confg_data.compliments.forEach(element=>{
-			   // create a keyed entry in the old format, by using the two parts of the array entry
-               config_compliments[element.when] = element.list
+			// create a keyed entry in the old format, by using the two parts of the array entry
+                        config_compliments[element.when] = element.list
 		   })
 		   // all done with the array 
 		   // save the modified data 
