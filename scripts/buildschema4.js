@@ -239,6 +239,7 @@ try {
     "utf8"
   )
   module_positions= JSON.parse(mp.split('=')[1])
+  module_positions.unshift('none')
 } catch(error){
 
 }
