@@ -10,11 +10,13 @@ const fs = require("fs");
 var debug = false;
 var save_module_form = "";
 const using_overrides = true;
-console.log("parms=", process.argv)
+
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
 }
+if(debug)
+  console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
