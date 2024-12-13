@@ -225,7 +225,7 @@ Now MMM-Config can generate fields for the two structures
 
 in the **excludedEvents** structure, one can use the filterBy field in each instance the same as the 'string' of words  
 
-#### changing text field in defaults to operate as a dropdown selection list
+## changing text field in defaults to operate as a dropdown selection list
 
 another instance of customization would be a selection list instead of just string that the user would enter
 
@@ -255,11 +255,11 @@ these selection list fields now make the data entry easier for the user, and pro
 
 so in summary
 
-#### MMM-Config.overrides.json in the module folder
+### MMM-Config.overrides.json in the module folder
 	and/or
-#### MMM-Config.schema.json in the module folder, 
+### MMM-Config.schema.json in the module folder, 
     OR
-####  modulename.schema.json in the schemas folder of MMM-Config	
+###  modulename.schema.json in the schemas folder of MMM-Config	
 
 
 ## overrides definitions
