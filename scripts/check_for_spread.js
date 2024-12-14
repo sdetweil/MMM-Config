@@ -190,7 +190,7 @@ if(usage_list.length){
 	}
 }
 if(found){
-	fs.writeFileSync(process.argv[3], lines.slice(0,limit).join("\n"))
+	fs.writeFileSync(process.argv[3], lines.slice(0,limit).join(lineEnding))
 	fs.writeFileSync(process.argv[4], JSON.stringify(usage_list))
 }
 
