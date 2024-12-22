@@ -194,8 +194,8 @@ Setlocal EnableDelayedExpansion
 		set mf=..\!modules_location!
 		rem parse to find if default module, will be a noop if not default, non-default variables set on entry
 		for /f "tokens=1-5 delims=\ usebackq" %%a in (`echo !m!^| find "default"`) do (
-		         set mf=..\modules\default
-				 set m=%%d
+		   set mf=..\modules\default
+			set m=%%d
 		)
 		rem get rid of any trailing spaces
 		for /f "usebackq tokens=1 delims= " %%B in ('!m!') do (
