@@ -10,6 +10,7 @@ const fs = require("fs");
 var debug = false;
 var save_module_form = "";
 const using_overrides = true;
+const MM_identifier=process.env.MM_identifier
 
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
@@ -1197,7 +1198,7 @@ value = JSON.parse(str, fromhandler);
 
 let substituted_variables = null
 try {
-  substituted_variables = require("../workdir/spread_usage.json")
+  substituted_variables = require(`../workdir/spread_usage${MM_identifier}.json`)
 }
 catch(error){
   ;

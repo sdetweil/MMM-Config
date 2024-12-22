@@ -816,13 +816,14 @@ module.exports = NodeHelper.create({
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
+
     if (debug) console.log("\nstart processing form submit\n");
 
     if (debug)
       console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
     // waited long enough to have it created by batch script
     try {
-        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix.txt")
+        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix"+oc.hashCode(this.config.port)+".txt")
     }
     catch(error){}
 
