@@ -26,8 +26,8 @@ set config_lastchange_file=config_lastchange_!identifier!
 set modules_lastchange_file=modules_lastchange_!identifier!
 
 rem make sure the lastchanged files exist
-call %d%touch %d%%modules_lastchange_file% >nul
-call %d%touch %d%%config_lastchange_file% >nul
+cmd /c %d%touch %d%%modules_lastchange_file% >nul
+cmd /c %d%touch %d%%config_lastchange_file% >nul
 
 rem set the last changed to null in case the files are empty
 set modules_lastsaved=""
