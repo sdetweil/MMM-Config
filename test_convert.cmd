@@ -1,5 +1,6 @@
 @echo off
-Setlocal EnableDelayedExpansion
+
+setlocal EnableDelayedExpansion
 
 rem
 rem port of unix script
@@ -53,13 +54,13 @@ if not exist config.html (
 del animateCSS.js 2>nul
 rem check if the list of animations has an export statement
 rem if not its downlevel, so copy and add it
-findstr  "export" ..\..\js\animateCSS.js >nul 2&1
+findstr  "export" ..\..\js\animateCSS.js 
 if %errorlevel% equ 1 (
-	copy ../../js/animateCSS.js . >nul
-	echo "if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js
+	copy ..\..\js\animateCSS.js  >nul
+	echo|set /p="if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js
 )
 rem empty the work directory
-del workdir\ *!identifier!.* 2>nul
+del /q workdir\ *!identifier!.* 2>nul
 rem check for any usage of the spread operator
 node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix!identifier!.txt workdir\spread_usage!identifier!.json
 rem make sure we don't have old extension list
