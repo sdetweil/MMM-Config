@@ -19,7 +19,7 @@ rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%
 if "!config_name!"=="" set config_name=/config/config.js
 if "!config_name:~0,1!"=="/"  set config_name=!config_name:~1!
- echo !config_name!
+rem echo !config_name!
 
 set config_lastchange_file=config_lastchange_!identifier!
 set modules_lastchange_file=modules_lastchange_!identifier!
@@ -50,6 +50,10 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+rem empty the work directory
+del workdir\ *!identifier!.* 2>nul
+rem check for any usage of the spread operator
+node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix!identifier!.txt workdir\spread_usage!identifier!.json
 rem make sure we don't have old extension list
 del extension_list 2>nul
 rem make empty onel %d%touch extension_list >nul
@@ -190,8 +194,8 @@ Setlocal EnableDelayedExpansion
 		set mf=..\!modules_location!
 		rem parse to find if default module, will be a noop if not default, non-default variables set on entry
 		for /f "tokens=1-5 delims=\ usebackq" %%a in (`echo !m!^| find "default"`) do (
-		         set mf=..\modules\default
-				 set m=%%d
+		   set mf=..\modules\default
+			set m=%%d
 		)
 		rem get rid of any trailing spaces
 		for /f "usebackq tokens=1 delims= " %%B in ('!m!') do (

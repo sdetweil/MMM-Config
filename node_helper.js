@@ -15,6 +15,8 @@ const updatedDiff = require("deep-object-diff").updatedDiff;
 const fs = require("fs");
 
 const default_config_name=path.sep+"config"+path.sep+"config.js"
+let oc_prefix = ''
+
 let oc =
   __dirname.split(path.sep).slice(0, -2).join(path.sep) + default_config_name ;
 
@@ -44,7 +46,10 @@ try {
 // get the default modules list from the MM core
 const defaultModules = require("../../modules/default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split(path.sep).slice(-1)
+
+const our_name = __dirname.split(path.sep).slice(-1)[0]  // slice returns an array
+    // /home/sam/MagicMirror.old/modules/MMM-Config/node_helper.js
+
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -304,6 +309,7 @@ module.exports = NodeHelper.create({
 
     // if config message from module
     if (notification === "CONFIG") {
+
       // save payload config info
       //this.config = payload;
       if(this.imageurl){
@@ -785,9 +791,9 @@ module.exports = NodeHelper.create({
           "..",
           "default",
           module_name,
-          "MMM-Config"+"."+module_jsonform_converter.slice(1)
+          our_name+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
+      : path.join(__dirname, "..", module_name,our_name+module_jsonform_converter);
       if(debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
@@ -817,10 +823,16 @@ module.exports = NodeHelper.create({
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
+
     if (debug) console.log("\nstart processing form submit\n");
 
     if (debug)
       console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
+    // waited long enough to have it created by batch script
+    try {
+        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix"+oc.hashCode(this.config.port)+".txt")
+    }
+    catch(error){}
 
     if (1) {
       if (debug)
@@ -1057,6 +1069,8 @@ module.exports = NodeHelper.create({
 
     delete data.scriptConvertedObjects
 
+
+
     // setup the final data to write out
     let r = {};
     // save the config info
@@ -1074,7 +1088,10 @@ module.exports = NodeHelper.create({
     // loop thru the form data (has all modules)
     // copy the modules into their position sections
     let mm_index = {};
+
     for (let module_name of Object.keys(data)) {
+      if(debug)
+        console.log("processing data for module="+module_name)
       // fix this for multiple instances
       // don't copy config info
       switch (module_name) {
@@ -1104,6 +1121,8 @@ module.exports = NodeHelper.create({
         }
 
         // if a converter script was loaded for ths module
+        if(debug)
+          console.log("checking for module converter script")
         if(this.module_scripts[module_name] !== undefined){
           // call it
           if(module_form_data && module_form_data.config){
@@ -1331,6 +1350,41 @@ module.exports = NodeHelper.create({
       });
     });
 
+    if(debug)
+      console.log("checking for substituted spread variables= "+JSON.stringify(data.substituted_variables,null,2))
+    if(data.substituted_variables){
+      data.substituted_variables.forEach(v =>{
+        if(debug)
+          console.log("processing spread for module=",v.module," path=",v.path," variable=",v.variable)
+        if(debug)
+          console.log(" module in form data=",r["config"]["modules"][v.module])
+        for(let m of r["config"]["modules"]){
+          // found the module
+          if(m.module==v.module){
+            // and the index, if specified matches
+            if(m.index== undefined || (m.index != undefined && m.index==v.index)){
+              // start at the module level
+              let c=m
+              if(debug){
+                if(m.index != undefined)
+                  console.log("found matching index=", v.index, " for module=", m.module_name)
+                else
+                  console.log("no index for module ", v.module)
+              }
+              // then walk down the variable path
+              for(let i =0; i<v.path.length-1; i++){
+                c=c[v.path[i]]
+              }
+              // reset that variable to the spread operator variable
+              c[v.path.slice(-1)]=[ "..."+v.variable ]
+              console.log(" path contents="+JSON.stringify(c,null,2))
+              if(debug)
+                console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
+            }
+          }
+        }
+      })
+    }
     //	console.log(" config = "+JSON.stringify(cfg,' ',2))
     if (checking_diff) {
       let x = detailedDiff(r["config"], cfg.config);
@@ -1498,6 +1552,21 @@ module.exports = NodeHelper.create({
         xx = xx.replace(saved, expression);
       });
     }
+    if(data.substituted_variables){
+      if(debug)
+        console.log("have some substituted variables=",data.substituted_variables)
+      data.substituted_variables.forEach(v=>{
+        if(debug){
+          console.log("replacing ",'"...'+v.variable+'"', " with ",'...'+v.variable)
+        }
+        // should only occur once, but user may have used same set of variables in multiple places
+        while(xx.includes('"...'+v.variable+'"')){
+          if(debug)
+            console.log("found variable in data")
+          xx=xx.replace('"...'+v.variable+'"', '...'+v.variable)
+        }
+      })
+    }
     //
     // lets construct the config.html to include extension files from module authors
     //
@@ -1539,13 +1608,13 @@ module.exports = NodeHelper.create({
     // if we are doing the actual save
     // false for testing data handling
     if (doSave) {
-	const logname=oc.split(path.sep).slice(-1)
+	    const logname=oc.split(path.sep).slice(-1)
       if(debug)
         console.log("saving to new "+logname)
       // rename curent using ist last mod date as part of the extension name
       fs.copyFileSync(oc, oc + "." + d);
       // write out the new config.js
-      fs.writeFile(oc, xx.slice(1, -1) + closeString, "utf8", (err) => {
+      fs.writeFile(oc, oc_prefix+ xx.slice(1, -1) + closeString, "utf8", (err) => {
         if (err) {
           console.error(err);
         } else {
@@ -1559,6 +1628,7 @@ module.exports = NodeHelper.create({
           }
         }
       });
+      xx=null
     }
   },
   // end of form post handling

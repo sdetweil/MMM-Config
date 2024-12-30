@@ -10,14 +10,21 @@ const fs = require("fs");
 var debug = false;
 var save_module_form = "";
 const using_overrides = true;
-//console.log("parms=", process.argv)
+const MM_identifier=process.env.MM_identifier
+
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
 }
+if(debug)
+  console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
+  //console.log("save form")
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
+    if(debug){
+      console.log("setting saveform="+process.argv[4])
+    }
     save_module_form = process.argv[4];
      if (process.argv.length > 5 && process.argv[5] === "debug") {
         debug = true
@@ -37,7 +44,7 @@ const module_define_name_special_char = "ς";
 const module_jsonform_overrides_name = "overrides.json";
 const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split('/').slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-2,-1)[0]
 var schema = {};
 var form = [
   {
@@ -1213,6 +1220,14 @@ value = JSON.parse(str, fromhandler);
 // create the big object that we will emit
 //
 
+let substituted_variables = null
+try {
+  substituted_variables = require(`../workdir/spread_usage${MM_identifier}.json`)
+}
+catch(error){
+  ;
+}
+
 let combined = {
   schema: schema,
   form: form,
@@ -1226,6 +1241,9 @@ let combined = {
   scriptConvertedObjects: scriptConvertedObjects
 
 };
+
+if(substituted_variables)
+  combined.substituted_variables = substituted_variables
 // get the string value of the object
 let cc = JSON.stringify(combined, tohandler, 2).slice(1, -1);
 // emit the string
@@ -1540,7 +1558,7 @@ function find_empty_arrays(obj, stack, hash) {
       let t = stack.join(".");
       if (debug) console.log(" array name=" + t);
       if (t.endsWith(".[]")) t = t.replace(".[]", "[]");
-      if (t.includes(".[]")) t = t.replace(".[]", "");
+      while (t.includes(".[]")) t = t.replace(".[]", "");
       if (!form_object_correction.includes(t)) {
         if(!forced_not_arrays.includes(t)){
           form_object_correction.push(t);
@@ -2539,7 +2557,7 @@ function processString(m, p, v, mform, checkPair, recursive, wasObject) {
   try{
     if(debug)
       console.log("forced def="+JSON.stringify(usage_defined[p]) + " for variable="+p)
-    if(usage_defined && usage_defined[p] && usage_defined[p].enum ){
+    if(usage_defined && usage_defined[p] ){ //&& usage_defined[p].enum ){
       x = JSON.stringify(usage_defined[p]).slice(1,-1)
     }
   }
