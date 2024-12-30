@@ -19,8 +19,12 @@ if (process.argv.length > 3 && process.argv[3] === "debug") {
 if(debug)
   console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
+  //console.log("save form")
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
+    if(debug){
+      console.log("setting saveform="+process.argv[4])
+    }
     save_module_form = process.argv[4];
      if (process.argv.length > 5 && process.argv[5] === "debug") {
         debug = true
@@ -40,7 +44,7 @@ const module_define_name_special_char = "ς";
 const module_jsonform_overrides_name = "overrides.json";
 const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split(path.sep).slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-2,-1)[0]
 var schema = {};
 var form = [
   {
@@ -1534,7 +1538,7 @@ function find_empty_arrays(obj, stack, hash) {
       let t = stack.join(".");
       if (debug) console.log(" array name=" + t);
       if (t.endsWith(".[]")) t = t.replace(".[]", "[]");
-      if (t.includes(".[]")) t = t.replace(".[]", "");
+      while (t.includes(".[]")) t = t.replace(".[]", "");
       if (!form_object_correction.includes(t)) {
         if(!forced_not_arrays.includes(t)){
           form_object_correction.push(t);
@@ -2518,7 +2522,7 @@ function processString(m, p, v, mform, checkPair, recursive, wasObject) {
   try{
     if(debug)
       console.log("forced def="+JSON.stringify(usage_defined[p]) + " for variable="+p)
-    if(usage_defined && usage_defined[p] && usage_defined[p].enum ){
+    if(usage_defined && usage_defined[p] ){ //&& usage_defined[p].enum ){
       x = JSON.stringify(usage_defined[p]).slice(1,-1)
     }
   }

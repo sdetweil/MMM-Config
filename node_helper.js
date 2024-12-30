@@ -46,7 +46,8 @@ try {
 // get the default modules list from the MM core
 const defaultModules = require("../../modules/default/defaultmodules.js");
 const module_jsonform_converter = "_converter.js"
-const our_name = __dirname.split(path.sep).slice(-2,-1)
+const our_name = __dirname.split(path.sep).slice(-1)[0]  // slice returns an array
+    // /home/sam/MagicMirror.old/modules/MMM-Config/node_helper.js
 const QRCode = require("qrcode");
 const checking_diff = false;
 var socket_io_port = 8200;
@@ -784,9 +785,9 @@ module.exports = NodeHelper.create({
           "..",
           "default",
           module_name,
-          "MMM-Config"+"."+module_jsonform_converter.slice(1)
+          our_name+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
+      : path.join(__dirname, "..", module_name,our_name+module_jsonform_converter);
       if(debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
@@ -1081,7 +1082,10 @@ module.exports = NodeHelper.create({
     // loop thru the form data (has all modules)
     // copy the modules into their position sections
     let mm_index = {};
+
     for (let module_name of Object.keys(data)) {
+      if(debug)
+        console.log("processing data for module="+module_name)
       // fix this for multiple instances
       // don't copy config info
       switch (module_name) {
@@ -1111,6 +1115,8 @@ module.exports = NodeHelper.create({
         }
 
         // if a converter script was loaded for ths module
+        if(debug)
+          console.log("checking for module converter script")
         if(this.module_scripts[module_name] !== undefined){
           // call it
           if(module_form_data && module_form_data.config){
