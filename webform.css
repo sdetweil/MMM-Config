@@ -28,7 +28,7 @@
 
 .webform li.active > a.draggable  {
      /*all: revert */
-     display:none;
+     /*display:none;*/
 }
 
 .webform ul.ui-sortable {

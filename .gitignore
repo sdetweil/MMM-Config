@@ -1,21 +1,16 @@
-<<<<<<< Updated upstream
-config_lastchange
-modules_lastchange
+
+config_lastchange*
+modules_lastchange*
 schema3.json
 schema3_*.json
 defaults_*.js
-=======
-config_lastchange*
-modules_lastchange*
-schema3*.json
->>>>>>> Stashed changes
 package-lock.json
 node_modules
-defaults*.js
 .vscode
 *.txt
-*.png
+;*.png
 config.html
 *_lastchanged
 somefile*.*
 workdir/*
+qrfile.png
