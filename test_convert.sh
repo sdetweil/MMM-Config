@@ -48,6 +48,13 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	if [ ! -e config.html ]; then
 		cp templates/config.html .
 	fi
+	# check if list of animations has the export we need
+	# if not copy and add the export
+	rm animateCSS.js 2>/dev/null
+	if [ $(grep export ../../js/animateCSS.js | wc -l) -eq 0 ]; then
+		cp ../../js/animateCSS.js . >/dev/null
+		echo "if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> ./animateCSS.js
+	fi
 	# empty the work directory
 	rm  workdir/*${identifier}.* 2>/dev/null
 	# check for any usage of the spread operator

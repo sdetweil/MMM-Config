@@ -50,6 +50,14 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+del animateCSS.js 2>nul
+rem check if the list of animations has an export statement
+rem if not its downlevel, so copy and add it
+findstr  "export" ..\..\js\animateCSS.js >nul 2&1
+if %errorlevel% equ 1 (
+	copy ../../js/animateCSS.js . >nul
+	echo "if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js
+)
 rem empty the work directory
 del workdir\ *!identifier!.* 2>nul
 rem check for any usage of the spread operator
@@ -86,16 +94,16 @@ rem
    rem make a sorted unique list
    type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
    rem delete the work file
-   del somefile 2>/nul
+   del somefile 2>nul
    rem delete the output to start fresh
-   del defines.js 2>/nul
+   del defines.js 2>nul
    rem add the js header needed
    echo var config = require^('../../!config_name:\=/!'^) >%defaults_file%
    echo var defined_config = {  >>%defaults_file%
    rem loop thru all the files and process the defines for each
    for /f "tokens=1 usebackq delims=~" %%A in (`type somefile2.txt`) do  call :process_define "%%A"  %defaults_file%
    rem delete the work file
-   del somefile2.txt 2>/nul
+   del somefile2.txt 2>nul
    rem add the js trailer
    echo } >>%defaults_file%
    echo module.exports={defined_config,config};  >>%defaults_file%
@@ -149,7 +157,7 @@ if exist sss (
 						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
 						echo MMM-Config
 						rem copy the build error schema for form presentation
-						copy /y schemas\MMM-Config-build-error.json !FILE! >/nul
+						copy /y schemas\MMM-Config-build-error.json !FILE! >nul
 					   )
 				   )
 				)
