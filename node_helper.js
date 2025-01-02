@@ -219,7 +219,8 @@ module.exports = NodeHelper.create({
         console.info(this.name+" pm2 id specified for restart="+pm2_id)
       }
     }
-    console.info(this.name+" restart parm ='"+this.config.restart+"'")
+    if(debug)
+      console.info(this.name+" restart parm ='"+this.config.restart+"'")
     // handle how we restart, if any
     switch (this.config.restart) {
       case "static":
@@ -1061,9 +1062,12 @@ module.exports = NodeHelper.create({
 
     // process for any script modified objects
     Object.keys(data.scriptConvertedObjects).forEach(module_name => {
-      this.module_scripts[module_name] = require(this.check_for_module_file(module_name,'converter'))
-      if(debug){
-          console.log("functions exported="+JSON.stringify(Object.keys(this.module_scripts[module_name])))
+      let t = this.check_for_module_file(module_name,'converter')
+      if(t){
+        this.module_scripts[module_name] = require(t)
+        if(debug){
+            console.log("functions exported="+JSON.stringify(Object.keys(this.module_scripts[module_name])))
+        }
       }
     })
 
