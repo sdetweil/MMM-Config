@@ -140,25 +140,25 @@ if exist sss (
 				   del sss1
 				   FOR /f "tokens=1* delims=:" %%a IN ('findstr /n "^" "sss"') DO (
 					   IF %%a==2 (
-					    FOR /f "tokens=1 delims=:" %%x IN ("%%b") DO set varname=%%x
-						set varname=!varname: =!
-						set "XVALUE=!varname!"
-						set /A XVALUE=!XVALUE!
-						if "!XVALUE!" NEQ "!varname!"  set var_numeric=0
-						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
-						echo MMM-Config
-						echo module !mname1! has an error in the construction of its defaults section
-						echo the error line is %%b
-						if "!var_numeric!"=="1" (
-						    echo config variables with numbers as names are not supported, please contact the module author
-						) else (
-							echo please change it to the literal value of the referenced defaults variable
-						)
-						echo and restart MagicMirror
-						FOR /L %%G IN (1,1,20) DO  echo | set /p=-
-						echo MMM-Config
-						rem copy the build error schema for form presentation
-						copy /y schemas\MMM-Config-build-error.json !FILE! >nul
+						   FOR /f "tokens=1 delims=:" %%x IN ("%%b") DO set varname=%%x
+							set varname=!varname: =!
+							set "XVALUE=!varname!"
+							set /A XVALUE=!XVALUE!
+							if "!XVALUE!" NEQ "!varname!"  set var_numeric=0
+							FOR /L %%G IN (1,1,20) DO  echo | set /p=-
+							echo MMM-Config
+							echo module !mname1! has an error in the construction of its defaults section
+							echo the error line is %%b
+							if "!var_numeric!"=="1" (
+							    echo config variables with numbers as names are not supported, please contact the module author
+							) else (
+								echo please change it to the literal value of the referenced variable
+							)
+							echo and restart MagicMirror
+							FOR /L %%G IN (1,1,20) DO  echo | set /p=-
+							echo MMM-Config
+							rem copy the build error schema for form presentation
+							copy /y schemas\MMM-Config-build-error.json !FILE! >nul
 					   )
 				   )
 				)

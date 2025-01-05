@@ -1,7 +1,8 @@
 let debug = false;
-let path = require("path");
+const path = require("path");
+const inlineComment=" //"
 let add_helper_vars = false;
-let minimized_lines_check = 500;
+const  minimized_lines_check = 500;
 let processMinimized = false;
 let counter = 0;
 const module_define_name_special_char = "ς";
@@ -56,6 +57,14 @@ function readFile(fn) {
         //if(debug) console.log("line="+ ++counter +line);
         // and save the lines
         //if (debug) console.log("line length=" + line.length);
+        // minified won't have comments
+        // watch out for long lines with no useful (computer) info
+        let commentLocation = line.indexOf(inlineComment)
+        if((commentLocation>-1) && (commentLocation === line.lastIndexOf(inlineComment))){
+            line=line.substring(0,commentLocation)
+            if(debug)
+              console.log(" new line, comment removed="+line)
+        }
         if (line.length) {
           lines.push(line);
           if (line.length > minimized_lines_check) processMinimized = true;

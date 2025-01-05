@@ -121,7 +121,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		echo module $mname has an error in the construction of its defaults section
 		echo the error line is "$error"
 		if [ $isnumber == false ]; then
-			echo please change it to the literal value of the referenced defaults variable
+			echo please change it to the literal value of the referenced variable
 		else
 			echo config variables with numbers as names are not supported, please contact the module author
 		fi
