@@ -30,6 +30,8 @@ mod_lastsaved=$(cat $d/$modules_lastchange_file)
 defaults_file=$d/defaults_${identifier}.js
 modules_changed=0
 
+rm $d/extension_list 2>/dev/null
+rm $d/sss 2>/dev/null
 schema_file_exists=0
 FILE=$d/schema3_${identifier}.json
 #if the output file exists
@@ -107,7 +109,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		# find the lines with the module names as first character on line (not blank)
 		# AND the line number is less than in the reported error
 		# extract and reconstruct the module name
-		mname=$(grep -n -v "^\s" $defaults_file | awk 'NR>2' | tac | awk -F: '$1<'$ln| head -n1 | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
+		mname=$(grep -n -v "^\s" $defaults_file | awk 'NR>2' | tac | awk -F: '$1<='$ln| head -n1 | awk -F: '{print $2}' | awk -F_ '{print $1"-"$2}')
 		# all done with error file
 		error=$(grep  "^\s" -m1 sss)
 		nerror=$(echo $error | awk -F: '{print $1}')
@@ -130,6 +132,8 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		echo MMM-Config
 		# copy the build error schema for form presentation
 		cp schemas/MMM-Config-build-error.json  $FILE
+		rm extension_list 2>/dev/null
+		rm sss 2>/dev/null
 		# we cant continue
 		exit 0
 	fi
