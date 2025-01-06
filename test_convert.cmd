@@ -60,16 +60,16 @@ if %errorlevel% equ 1 (
 	echo|set /p="if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js
 )
 rem empty the work directory
-del /q workdir\ *!identifier!.* 2>nul
+del /q workdir\*!identifier!.* 2>nul
 rem check for any usage of the spread operator
 node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix!identifier!.txt workdir\spread_usage!identifier!.json
 rem make sure we don't have old extension list
 del extension_list 2>nul
 rem make empty onel %d%touch extension_list >nul
 
-set defaults_file=%d%/defaults_%identifier%.js
+set defaults_file=%d%defaults_%identifier%.js
 set schema_file_exists=0
-set FILE=!d!/schema3_!identifier!.json
+set FILE=!d!\schema3_!identifier!.json
 
 if exist %FILE% (
 	if "%1." neq "override." (
@@ -88,7 +88,7 @@ rem
 
    del somefile 2>nul
    rem get all the non-default modules installed,
-   rem we are in the modules folder so just back up one to get the list , make sure to ignore default it  module dir is 'modules'
+   rem we are in the modules folder so just back up one to get the list , make sure to ignore default it, default module dir is 'modules\default'
    for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
    rem get all the default modules
    for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\..\modules\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo ..\modules\default\%%i>>somefile
@@ -122,8 +122,8 @@ if exist sss (
 	FOR /F "tokens=* usebackq" %%F IN (`type sss ^| find /c /v ""`) DO set lc=%%F
 	rem echo line count =!lc!
   	 if !lc! NEQ 0 (
-	   rem echo have error file
-	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "\!modules_location!\MMM-Config\defaults" ^| head -n 1`) do set firstline=%%i
+	   rem echo have error file and a line number
+	   for /f "tokens=3 delims=: usebackq" %%i in (`type sss  ^| find "!defaults_file!" ^| head -n 1`) do set firstline=%%i
 	   findstr /r /n /c:"_defaults:" !defaults_file! | perl -e "print reverse <>" >sss1
 	   set firsttime=0
 	   for /f "tokens=1,2 delims=:" %%a in (sss1) do (
@@ -214,7 +214,7 @@ Setlocal EnableDelayedExpansion
 		rem if the module js exists
 		IF EXIST "..\%mf%\%m%\%m%.js" (
 			rem dump it to defauls
-			node %d%\scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
+			node %d%scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
 			rem check for any extensions
 			dir /b "..\%mf%\%m%\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
