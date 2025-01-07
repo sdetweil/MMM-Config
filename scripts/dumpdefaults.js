@@ -4,6 +4,8 @@ const inlineComment=" //"
 let add_helper_vars = false;
 const  minimized_lines_check = 500;
 let processMinimized = false;
+const beginBrace='{'
+const endBrace='}'
 let counter = 0;
 const module_define_name_special_char = "ς";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
@@ -12,6 +14,20 @@ if (debug) console.log("there are " + filelines.length + " lines");
 
 let defines = process_main(filelines, path.parse(process.argv[2]).name);
 if (debug) console.log("defines=" + JSON.stringify(defines, " ", 2));
+
+if(defines.length){
+ if(1){
+  if(!defines.slice(-1)[0].endsWith(",")){
+      if(debug){
+        console.log("add trailing commma on last line")
+
+      }
+      let l = defines.pop()
+      l=l+','
+      defines.push(l)
+    }
+  }
+}
 
 if (add_helper_vars) {
   let other_vars = process_helper(defines);
@@ -73,15 +89,60 @@ function readFile(fn) {
   }
   return lines;
 }
+function findDefaults(input){
+  const start="defaults"
+  for(let xx in input){
+    let line=input[xx]
+    if(debug)
+      console.log("processing line="+line)
+    let s = line.indexOf("defaults")
+    if(s>0){
+      let y = s
+      if(debug)
+        console.log("found defaults keyword at index "+ s)
+      s=line.indexOf(beginBrace,s)
+      let count = 1
+      if(debug)
+        console.log(" found start of defaults at index "+ s)
+      for(let i = s+1;  i<line.length; i++){
+        if(count == 0) {
+          // found match close brace for defaults
+          if(debug)
+            console.log("found defaults in minified="+line.substring(y,i))
+          let x = new Array(line.substring(y,i))
+
+          if(debug)
+            console.log("returning data="+JSON.stringify(x))
+          return x
+        }
+        if(line[i]=== beginBrace){
+          count++
+          if(debug)
+            console.log("defaults open brace counting up one")
+        }
+        if(line[i]=== endBrace){
+          count--
+          if(debug)
+            console.log("defaults open brace counting down one")
+        }
+      }
+    }
+  }
+}
 // we have a minified file, make it readable
 function processMinified(lines) {
   let xlines = [];
   // if there are more than a few lines
+  let ilines=lines
   if (processMinimized) {
+    xlines=findDefaults(lines)
+    if(debug)
+      console.log("returned from processing minfied="+JSON.stringify(xlines))
+    return xlines
     // process it
     let newlines = [];
     // loop thru the lines
-    for (let line of lines) {
+    for (let line of ilines) {
       //while(line.indexOf(';')>=0){
       if (debug)
         console.log(
@@ -113,6 +174,8 @@ function getFileContents(fn) {
     //if (lines.length < minimized_lines_check)
     if (debug) console.log("processing minimized lines");
     lines = processMinified(lines);
+    if(debug)
+    console.log("returned lines ="+JSON.stringify(lines))
   }
   return lines;
 }
@@ -193,6 +256,16 @@ function process_main(lines, name) {
           let info = line.split(":").slice(1).join(':').trim();
           if(debug){
               console.log('parm='+info)
+          }
+          let literalregex=/^["\'].*["\'](,?)$/
+          let mi=info.match(literalregex)
+          if(mi){
+            if(mi.length==2)
+              if(debug){
+               console.log('info contains possibly embedded object='+info)
+              }
+            cache.push(line)
+            continue
           }
           if (info.includes("{") || info.includes("}")) {
             if(debug){
