@@ -82,6 +82,8 @@ $(function () {
     $("#outmessage").html("<p><strong>MagicMirror is not running</strong></p>");
     $("#result").html('<form id="result-form" class="form-vertical"></form>');
     //hideElm('#submit_button')
+    clearTimeout(timerHandle)
+    window.close()
     wasDisconnected = true;
     if (timerHandle) clearTimeout(timerHandle);
   });

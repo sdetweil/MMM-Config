@@ -185,7 +185,7 @@ module.exports = NodeHelper.create({
       // redirect to config form
       res.redirect(
         //this.config.url +
-        "/modules/" + this.name + "/config.html?port=" + socket_io_port
+        "/modules/" + this.name + "/config.html?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
       );
     });
   },
@@ -1381,7 +1381,8 @@ module.exports = NodeHelper.create({
               }
               // reset that variable to the spread operator variable
               c[v.path.slice(-1)]=[ "..."+v.variable ]
-              console.log(" path contents="+JSON.stringify(c,null,2))
+	      if(debug)
+                console.log(" path contents="+JSON.stringify(c,null,2))
               if(debug)
                 console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
             }
