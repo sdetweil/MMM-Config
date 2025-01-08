@@ -262,7 +262,7 @@ function process_main(lines, name) {
           if(mi){
             if(mi.length==2)
               if(debug){
-               console.log('info contains possibly embedded object='+info)
+               console.log('info contains literal string'+info)
               }
             cache.push(line)
             continue
@@ -295,8 +295,11 @@ function process_main(lines, name) {
         if (debug) console.log("counting up index=" + indent);
       }
       index = 0;
+      if(debug)
+        console.log("now check for "+endChar)
       // count any close braces
-      while ((index = line.indexOf(endChar, index + 1)) >= 0) {
+      while ((index = line.indexOf(endChar, index )) !=-1) {
+        index++
         indent--;
         if (debug) console.log("counting down index=" + indent);
         // if we are fully in nested
@@ -306,6 +309,8 @@ function process_main(lines, name) {
           break;
         }
       }
+      if(debug)
+        console.log("done checking for "+endChar)
       let prefix = "";
       // if this is a minified line with content
       if (line[0] == line.trim()[0] && line.trim().length > 0 && counter != 0)
