@@ -1812,7 +1812,7 @@ function getType(value, property, wasObject) {
 //
 //	process a module
 //
-function processModule(schema, form, value, defines, module_name) {
+function processModule(schema, form, value, module_defines, module_name) {
   let stack = [];
 
   // set its default form values
@@ -1824,7 +1824,7 @@ function processModule(schema, form, value, defines, module_name) {
     order: "*",
     inconfig: "0",
     // from the defaults: collector
-    config: defines
+    config: module_defines
   };
 
   if(animations_present){
@@ -1838,7 +1838,7 @@ function processModule(schema, form, value, defines, module_name) {
       "name=" +
         module_name +
         " properties=" +
-        JSON.stringify(defines, tohandler) +
+        JSON.stringify(module_defines, tohandler) +
         "\n"
     );
 
@@ -1946,9 +1946,25 @@ function processModule(schema, form, value, defines, module_name) {
   //
   //	loop thru each property from the defaults
   //
-  Object.keys(defines).forEach((propertyName) => {
+  Object.keys(module_defines).forEach((propertyName) => {
     if (debug) console.log("processing for each property " + propertyName);
-    let property_value = defines[propertyName];
+    let property_value = module_defines[propertyName];
+    if(debug) console.log("property value="+property_value)
+    if(typeof property_value === 'string' && property_value.startsWith("---!")){
+      let property_value_parts=property_value.slice(4).split('.')
+      if(debug)
+        console.log(" have the variable name parts ="+JSON.stringify(property_value_parts))
+      // if this is a config variable
+      if(property_value_parts[0]==='config'){
+        // gets its current value
+        if(debug){
+          console.log("getting config property value from config."+property_value_parts[1])
+        }
+        property_value=defines.config[property_value_parts[1]]
+        if(debug)
+          console.log("config property value "+property_value_parts[1]+'='+property_value)
+      }
+    }
     let type = getType(property_value, propertyName, false);
     //
     // process the property by type to fill in the schema and the form
