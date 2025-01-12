@@ -1,6 +1,7 @@
 let debug = false;
 const path = require("path");
-const inlineComment=" //"
+const inlineComment="//"
+const notComment=":\"'"
 let add_helper_vars = false;
 const  minimized_lines_check = 500;
 let processMinimized = false;
@@ -63,6 +64,7 @@ for (let q of defines) {
 function readFile(fn) {
   if (debug) console.log("file=" + fn);
   let lines = [];
+  comment_found=false
   let fs = require("fs");
   // if the file exists
   if (fs.existsSync(fn)) {
@@ -76,14 +78,15 @@ function readFile(fn) {
         // minified won't have comments
         // watch out for long lines with no useful (computer) info
         let commentLocation = line.indexOf(inlineComment)
-        if((commentLocation>-1) && (commentLocation === line.lastIndexOf(inlineComment))){
+        if((commentLocation>-1) && (notComment.includes(line[commentLocation-1])==false && commentLocation === line.lastIndexOf(inlineComment))){
+            comment_found= true
             line=line.substring(0,commentLocation)
             if(debug)
               console.log(" new line, comment removed="+line)
         }
         if (line.length) {
           lines.push(line);
-          if (line.length > minimized_lines_check) processMinimized = true;
+          if (line.length > minimized_lines_check) processMinimized = comment_found?false:true;
         }
       });
   }
@@ -191,7 +194,7 @@ function process_main(lines, name) {
   let defaultsline=""
   for (let line of lines) {
     // if this is a comment line
-    if (line.trim().startsWith("//"))
+    if (line.trim().startsWith(inlineComment))
       // ignore it
       continue;
     // if this is the defaults definition line
@@ -223,7 +226,7 @@ function process_main(lines, name) {
     if (started) {
       let index = 0;
       // if the line has comment on it, AFTER the important part
-      if ((index = line.indexOf("//")) > -1) {
+      if (((index = line.indexOf(inlineComment)) > -1) && (index>0 && notComment.includes(line[index-1])==false)) {
         if (debug)
           console.log("found comment line=" + line + " index=" + index);
         // get the comment part
