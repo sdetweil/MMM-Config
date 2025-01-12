@@ -2,12 +2,15 @@ let debug = false;
 const path = require("path");
 const inlineComment="//"
 const notComment=":\"'"
+const commentBegin="/*"
+const commentEnd ="*/"
 let add_helper_vars = false;
 const  minimized_lines_check = 500;
 let processMinimized = false;
 const beginBrace='{'
 const endBrace='}'
 let counter = 0;
+const remove_block_comments=true
 const module_define_name_special_char = "ς";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
@@ -56,9 +59,38 @@ if (add_helper_vars) {
   t.unshift(x + ",");
   defines = t.reverse();
 }
-
+//
+// dump out the lines of defaults we have collected
+//
+// skip empty lines, and lines which contain part of a block comment
+//
+let comment_running=false
 for (let q of defines) {
-  console.log(q);
+  let m=q.match(/[^\S]*(.*)/)
+  // get the content of the line only non-whitespace
+  if(m && m[1]!=''){  // if has some content
+    // watch out for block comments
+    if(remove_block_comments){
+      if(comment_running== false && q.trim().startsWith(commentBegin)){
+        if(!q.trim().endsWith(commentEnd))
+          // comment started and not ended
+          comment_running=true
+        // skip this line
+        continue
+      }
+      if(comment_running== true){
+        // comment still going
+        if(q.trim().endsWith(commentEnd)){
+          // its the end
+          comment_running=false;
+        }
+        // skip this line
+        continue
+      }
+    }
+    // print content
+    console.log(q);
+  }
 }
 
 function readFile(fn) {
