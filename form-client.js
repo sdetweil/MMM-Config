@@ -14,7 +14,12 @@ $(function () {
   var timeoutID;
   var timerHandle;
   var wasDisconnected = false;
+  var usercanceled = false;
 
+  window.onbeforeunload=()=>{
+    if(activesocket && usercanceled === false)
+      triggerCancel()
+  }
   // watch out in case the libraries don't load
   if (pos === "config.html") {
     if (typeof JSONForm !== "object") {
@@ -113,6 +118,7 @@ $(function () {
 
   // config socket events
   activesocket.on("json", function (incoming_json) {
+    usercanceled= false
     //data.configJSON =  data
     let data = parseData(incoming_json.slice(1, -1));
     // free the memory
