@@ -32,6 +32,7 @@ modules_changed=0
 
 rm $d/extension_list 2>/dev/null
 rm $d/sss 2>/dev/null
+rm $d/canceled 2>/dev/null
 schema_file_exists=0
 FILE=$d/schema3_${identifier}.json
 #if the output file exists

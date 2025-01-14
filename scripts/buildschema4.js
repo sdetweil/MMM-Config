@@ -609,7 +609,8 @@ if (true) {
   form.push({
     type: "submit",
     title: "Save, Create config",
-    id: "submit_button"
+    id: "submit_button",
+    description:"to cancel the configuration, just close the web page"
   });
 }
 if(debug){

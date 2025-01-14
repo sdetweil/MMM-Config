@@ -1673,6 +1673,14 @@ module.exports = NodeHelper.create({
         self.process_submit(data, self, socket);
       });
 
+      socket.on("cancel", () => {
+        if(debug)
+          console.log("cancel requested")
+        console.log("cancel received, closing config page")
+        fs.writeFileSync(__dirname+'/canceled', '1')
+        socket.emit("close")
+      });
+
       socket.on("getForm", () => {
         //console.log("sending config to client "+JSON.stringify(this.config))
         //if(debug) console.log("sending "+JSON.stringify(self.config.data))

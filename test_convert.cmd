@@ -65,6 +65,7 @@ rem check for any usage of the spread operator
 node scripts\check_for_spread.js ..\..\!config_name! workdir\config_prefix!identifier!.txt workdir\spread_usage!identifier!.json
 rem make sure we don't have old extension list
 del extension_list 2>nul
+del canceled 2>nul
 rem make empty onel %d%touch extension_list >nul
 
 set defaults_file=%d%defaults_%identifier%.js

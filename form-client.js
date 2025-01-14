@@ -25,6 +25,9 @@ $(function () {
       return false;
     }
   }
+  function triggerCancel(){
+     activesocket.emit("cancel");
+  }
   function findGetParameter(parameterName) {
     var result = null,
       tmp = [];
@@ -66,6 +69,10 @@ $(function () {
   const activesocket = io(server + ":" + port, {
     reconnectionDelayMax: 10000
   });
+
+  activesocket.on("close", function(){
+      window.close()
+  })
   // global socket events
   activesocket.on("connected", function () {
     switch (pos) {

@@ -12,12 +12,27 @@ const endBrace='}'
 let counter = 0;
 const remove_block_comments=true
 const module_define_name_special_char = "ς";
+const dummy=["_defaults: {","       },"]
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
 
 let defines = process_main(filelines, path.parse(process.argv[2]).name);
 if (debug) console.log("defines=" + JSON.stringify(defines, " ", 2));
+
+if(defines.length==0){
+  dummy.forEach((l,i)=>{
+    if(i==0){
+      defines.push(process.argv[2].split('/').splice(-1)[0].split('.')[0].replace(/-/g,"_")+l)
+    }
+    else {
+      defines.push(l)
+    }
+  })
+  if(debug)
+    console.log("empty defines="+JSON.stringify(defines,null,2))
+}
+
 
 if(defines.length){
  if(1){
