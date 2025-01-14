@@ -1650,14 +1650,19 @@ module.exports = NodeHelper.create({
       let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(this.config.port)+".json";
 
       if (debug || 1) console.log("path=" + configPath);
-
-      if (fs.existsSync(configPath)) {
+      while(1){
         try {
-          // read in the text file
-          self.config.data = fs.readFileSync(configPath, "utf8");
-        } catch (e) {
-          console.log("config parse error=" + e);
+          if (fs.existsSync(configPath)) {
+            try {
+              // read in the text file
+              self.config.data = fs.readFileSync(configPath, "utf8");
+              break;
+            } catch (e) {
+              console.log("config parse error=" + e);
+            }
+          }
         }
+        catch(e){}
       }
     }
 
