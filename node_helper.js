@@ -1650,27 +1650,25 @@ module.exports = NodeHelper.create({
       let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(this.config.port)+".json";
 
       if (debug || 1) console.log("path=" + configPath);
-      while(1){
-        try {
-          if (fs.existsSync(configPath)) {
-            try {
-              // read in the text file
-              self.config.data = fs.readFileSync(configPath, "utf8");
-              break;
-            } catch (e) {
-              console.log("config parse error=" + e);
-            }
+
+      try {
+        if (fs.existsSync(configPath)) {
+          try {
+            // read in the text file
+            self.config.data = fs.readFileSync(configPath, "utf8");
+
+          } catch (e) {
+            console.log("config parse error=" + e);
           }
         }
-        catch(e){}
       }
+      catch(e){}
     }
 
     function handleConnection(self, socket, type) {
       if (debug) console.log("connection started = " + type);
       //console.log("socket connected")
       socket.emit("connected");
-      if (type === "connect") getFiles(self);
 
       socket.on("saveConfig", (data) => {
         // used to save the form JSON
@@ -1687,6 +1685,7 @@ module.exports = NodeHelper.create({
       });
 
       socket.on("getForm", () => {
+        getFiles(self);
         //console.log("sending config to client "+JSON.stringify(this.config))
         //if(debug) console.log("sending "+JSON.stringify(self.config.data))
         socket.emit("json", "'" + self.config.data + "'");
