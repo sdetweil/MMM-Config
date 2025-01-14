@@ -14,6 +14,8 @@ const updatedDiff = require("deep-object-diff").updatedDiff;
 
 const fs = require("fs");
 
+var our_port=0
+
 const default_config_name=path.sep+"config"+path.sep+"config.js"
 let oc_prefix = ''
 
@@ -96,7 +98,7 @@ module.exports = NodeHelper.create({
           ? this.hostname
           : this.config.address) +
         ":" +
-        this.config.port;
+        our_port;
 
       if (this.config.showQR) {
         let url = this.config.url + "/"+modules_folder+"/" + this.name + "/review";
@@ -138,13 +140,13 @@ module.exports = NodeHelper.create({
     //console.log("in setConfig");
     this.setconfigpath()
     // watch out for env variable setting port
-    let mm_port = process.env.MM_PORT
-    console.log("env port=", mm_port)
+    let mm_port = process.env.MM_PORT || 0
+  //  console.log("env port=", mm_port)
 
     this.config.address = config.address;
-    this.config.port = mm_port || config.port;
+    our_port = mm_port || config.port;
     this.config.whiteList = config.ipWhitelist
-    console.log("usable port=",this.config.port)
+//    console.log("usable port=",our_port)
     for(let m of config.modules){
       if(m.module === this.name){
         debug=this.config.debug = m.config.debug || false
@@ -170,7 +172,7 @@ module.exports = NodeHelper.create({
   // collect the data in background
   launchit() {
     if (debug) console.log("execing " + this.command);
-    exec(this.command, { env: {...process.env, MM_identifier: oc.hashCode(this.config.port)} }, (error, stdout, stderr) => {
+    exec(this.command, { env: {...process.env, MM_identifier: oc.hashCode(our_port)} }, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
@@ -820,7 +822,7 @@ module.exports = NodeHelper.create({
   // handle form submission from web browser
   //
   process_submit: async function (data, self, socket) {
-    let cfg = require(__dirname + "/defaults_"+oc.hashCode(this.config.port)+".js");
+    let cfg = require(__dirname + "/defaults_"+oc.hashCode(our_port)+".js");
     //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
@@ -831,7 +833,7 @@ module.exports = NodeHelper.create({
       console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
     // waited long enough to have it created by batch script
     try {
-        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix"+oc.hashCode(this.config.port)+".txt")
+        oc_prefix = fs.readFileSync(__dirname +"/workdir/config_prefix"+oc.hashCode(our_port)+".txt")
     }
     catch(error){}
 
@@ -1647,7 +1649,7 @@ module.exports = NodeHelper.create({
     let configJSON = "";
 
     function getFiles(self) {
-      let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(this.config.port)+".json";
+      let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(our_port)+".json";
 
       if (debug || 1) console.log("path=" + configPath);
 
