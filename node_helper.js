@@ -139,12 +139,12 @@ module.exports = NodeHelper.create({
     this.setconfigpath()
     // watch out for env variable setting port
     let mm_port = process.env.MM_PORT
-    //console.log("config port=", config.port, " env port=", mm_port)
+    console.log("env port=", mm_port)
 
     this.config.address = config.address;
     this.config.port = mm_port || config.port;
     this.config.whiteList = config.ipWhitelist
-
+    console.log("usable port=",this.config.port)
     for(let m of config.modules){
       if(m.module === this.name){
         debug=this.config.debug = m.config.debug || false
