@@ -1237,7 +1237,9 @@ while ((index = str.indexOf('".', start)) !== -1) {
 }
 // restore the value section with modifications
 value = JSON.parse(str, fromhandler);
-
+value["animationNames"]={}
+value.animationNames['animateIn']=animationNames.AnimateCSSIn
+value.animationNames['animateOut']=animationNames.AnimateCSSOut
 //
 // OK, now done building
 // create the big object that we will emit
@@ -1261,7 +1263,8 @@ let combined = {
   objects: empty_objects,
   mangled_names: mangled_names,
   convertedObjects: convertedObjects,
-  scriptConvertedObjects: scriptConvertedObjects
+  scriptConvertedObjects: scriptConvertedObjects,
+  //tpldata: { animationNames:{animateIn:animationNames.AnimateCSSIn,animateOut:animationNames.AnimateCSSOut}}
 
 };
 
@@ -1861,6 +1864,8 @@ function processModule(schema, form, value, module_defines, module_name) {
       order: { type: "string", title: "order", default: "*" },
       inconfig: { type: "string", title: "inconfig", default: "0" },
       index: { type: "integer" },
+      animateIn: { type:"string", enum:"{{values.animationNames.animateIn}}"},     //"{[animationNames.AnimateCSSIn]}"},
+      animateOut: { type:"string", enum:"{{values.animationNames.animateOut}}"},   //"{[animationNames.AnimateCSSOut]}"},
       config: { type: "object", title: "config", properties: {} }
     }
   };
