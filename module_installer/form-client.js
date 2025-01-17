@@ -112,7 +112,7 @@ $(function () {
       window.location.href = $(this).attr('href');
   });
   activesocket.on('openurl', function(url){
-    $("#openlink").attr("href",url.replace(locahost,window.location.hostname))
+    $("#openlink").attr("href",url.replace("locahost",window.location.hostname))
     $("#openlink").trigger('click');
   })
   // config socket events
