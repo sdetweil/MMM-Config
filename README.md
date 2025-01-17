@@ -10,6 +10,8 @@ Enable form based (in browser) configuration for MagicMirror.
 
 A dynamically built form, based on modules installed (git cloned at least) into the modules folder and the contents of the config.js.
 
+and a module installer is provided as well , see [Module Installer](#minstaller) below
+
 ## Installation
 
 1. `cd ~/MagicMirror/modules`
@@ -39,6 +41,7 @@ A dynamically built form, based on modules installed (git cloned at least) into 
 | | | ===> | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/modules/MMM-Config/review** |
 | | | | `Note:` If MagicMirror is configured for `'address:"localhost"`, you `MUST use a browser ON the same system as MM`, and the QR code will be replaced by text on the screen explaining why the QRCode is not displayed
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
+| `ModuleSortOrder` | OPTIONAL | `date`	| this is used by the installer to organize the modules  in the installer list , either  by last update date or by `name`
 | `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file | managed_process.pm2_env
 
 if you have multiple instances of MagicMirror running under pm2, and you want restart on save, look at the pm2 status output and get the unique name or number of the app, 
@@ -87,3 +90,61 @@ if u don't care, select * (the default)**
 # correcting or improving module presentation, seek the wiki link above
 
 
+# Module installer<a name="minstaller"></a>
+
+
+the module installer is a built in component of this module and can be opened by using the url 
+```
+http://mmserver_ip:mm_port/installer
+```
+###
+
+#### it gets the list of modules from the 3rd party module list
+
+* by default, the categories are sorted alphabetically, with the Outdated category moved to the bottom
+
+* modules are sorted in category by last date updated by default
+* * but you can change this when you start the installer by adding the word **name**  as a parameter (see below)
+
+the installer page looks like this 
+
+![base variables](./module_installer/images/installer_top.png)
+and the bottom looks like this
+![base variables](./module_installer/images/installer_bottom.png)
+
+when the categories are expanded 
+
+![base variables](./module_installer/images/installer_expanded.png)
+
+and a module expanded
+![base variables](./module_installer/images/installer_module.png)
+
+the unregistered section looks like this 
+
+![base variables](./module_installer/images/installer_unregistered.png)
+
+as you select modules to be installed a list is maintained at the bottom 
+
+![base variables](./module_installer/images/installer_module_multi_selected.png)
+
+
+* * if a module is already installed, its selection will be marked (and cannot be unselected)
+* * this application will NOT remove modules.. you can disable them in the configurator (second step)
+
+* * once the selection of modules is done,  press the<br> **Install selected modules** button
+
+when the module installation(s) are completed, the MMM-Config screen will be opened for you to complete configuration 
+
+once you have completed the configuration, press the **Save, Create config** button 
+
+
+MMM-Config will try to restart your MagicMirror system after configuration is complete
+
+if the MagicMirror instance is configured to auto restart due to config.js, that will happen naturally
+
+if the MagicMirror instance is **NOT** configured to auto restart due to config.js, then the restart option will be used to restart 
+
+if the MagicMirror instance is in a docker container, like khassel's
+then the MagicMirror process will be killed, causing the container to restart 
+
+if none of those options work, then you will have to restart the MagicMirror instance manually 
