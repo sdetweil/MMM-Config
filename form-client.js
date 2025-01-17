@@ -3,12 +3,6 @@ $(function () {
   // global vars
   var u = window.location.href;
   var pos = u.substr(u.lastIndexOf("/") + 1);
-  if (pos.includes("?")) pos = pos.slice(0, pos.indexOf("?"));
-  var server = u.slice(0, u.indexOf(":", 5));
-  var socket = io();
-  const port_param = findGetParameter("port");
-
-  let port = port_param || 8200;
 
   // config vars
   var timeoutID;
@@ -21,7 +15,7 @@ $(function () {
       triggerCancel()
   }
   // watch out in case the libraries don't load
-  if (pos === "config.html") {
+  if (pos == "config.html") {
     if (typeof JSONForm !== "object") {
       $("#outMsg").html(
         "Unable to load Required Libraries <br> Please try again in a few moments"
@@ -71,7 +65,8 @@ $(function () {
   }
   // socket
 
-  const activesocket = io(server + ":" + port, {
+  const activesocket = io("/mConfig" // server + ":" + port
+    , {
     reconnectionDelayMax: 10000
   });
 
@@ -99,22 +94,6 @@ $(function () {
     wasDisconnected = true;
     if (timerHandle) clearTimeout(timerHandle);
   });
-  /*activesocket.on('connect_error',(err)=>{
-		console.log("connection error="+JSON.stringify(err))
-	})
-	activesocket.on('connect_timeout', ()=>{
-		console.log("connection timeout error="+JSON.stringify(err))
-	})
-	activesocket.on('reconnect_error',()=>{
-			console.log("reconnection error="+JSON.stringify(err))
-	})
-	activesocket.on('reconnect_failed',()=>{
-		console.log("reconnect failed error="+JSON.stringify(err))
-
-	})
-	activesocket.on('connection_refused',()=>{
-		console.log("connect refused error="+JSON.stringify(err))
-	})*/
 
   // config socket events
   activesocket.on("json", function (incoming_json) {

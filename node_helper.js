@@ -1,16 +1,17 @@
 var NodeHelper = require("node_helper");
 const { spawn, exec } = require("child_process");
-const express = require("express");
+
 const path = require("path");
 const os = require("os");
 const stream = require("stream");
 const _ = require("lodash");
-const remote = new stream.Writable();
-let debug = false;
+
+let debug = false
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
+const socketIOPath="mConfig"
 
 const fs = require("fs");
 
@@ -187,7 +188,7 @@ module.exports = NodeHelper.create({
       // redirect to config form
       res.redirect(
         //this.config.url +
-        "/modules/" + this.name + "/config.html?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
+        "/modules/" + this.name + "/config.html" // ?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
       );
     });
   },
@@ -1643,7 +1644,7 @@ module.exports = NodeHelper.create({
   // setup remote handling
 
   remote_start: function (self) {
-    const app = express();
+
     let config = "";
     let configDefault = "";
     let configJSON = "";
@@ -1693,41 +1694,30 @@ module.exports = NodeHelper.create({
         socket.emit("json", "'" + self.config.data + "'");
       });
     }
-
-    const server = require("http").createServer(app);
-
-    // Use the remote directory and initilize socket connection
-    //this.expressApp.use(express.static( '/review'))
-    remote.io = require("socket.io")(server, {
-      cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
-    });
-
-    getPort({ port: getPort.makeRange(8300, 9500) }).then((port) => {
-      // Start the server
-      if(debug)
-      console.log(" got port=" + port);
-      socket_io_port = port;
-      server.listen(socket_io_port);
-    });
     /**
      * When the connection begins
      */
     var self = this;
-    remote.io.on("connection", (socket) => {
+    this.io.of(socketIOPath).on("hello",function(){
+      console.log("heard hello from client")
+    })
+    this.io.of(socketIOPath).on("connection", (socket) => {
+      if(debug)
+      console.log("connected")
       handleConnection(self, socket, "connect");
     }); // end - connection
-    remote.io.on("reconnect", (socket) => {
+    this.io.of(socketIOPath).on("reconnect", (socket) => {
+      if(debug)
+      console.log("reconnected")
       handleConnection(self, socketm, "reconnect");
     });
     /**
      * When a remote disconnects
      */
-    remote.io.on("disconnect", () => {
+    this.io.of(socketIOPath).on("disconnect", () => {
+      if(debug)
       console.log("socket disconnected");
-      remote.emit("disconnected");
+      //remote.emit("disconnected");
     }); // end - disconnect
   } // end - start,
 });

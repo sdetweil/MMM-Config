@@ -15,4 +15,5 @@ somefile*.*
 workdir/*
 qrfile.png
 animateCSS.js
-
+module_form_schema.json
+canceled
