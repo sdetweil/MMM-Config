@@ -110,7 +110,7 @@
           "items":[
             {
               "title":"source repo url",
-              "htmlClass":"unreg_url",
+              "htmlClass":"unreg_url unregistedUrl",
               "key":"urls[]",
               "onChange":"()=>{$('.btn-submit').removeAttr('disabled')}"
             }
@@ -168,7 +168,7 @@
                 {
                   "title": "Description",
                   "key": "categories[].category.modules[].description",
-                  "htmlClass":"desc_input ModuleDescription",
+                  "htmlClass":"desc_input moduleDescription",
                   "readonly":true
                 },
                 {
@@ -226,6 +226,7 @@
     "hide_add_remove":true,
     "htmlClass":"install-list",
     "title":"modules selected for install",
+    "htmlClass":"moduleInstallList",
     "items":[
     {
     "key":"installable",

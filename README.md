@@ -103,8 +103,8 @@ http://mmserver_ip:mm_port/installer
 
 * by default, the categories are sorted alphabetically, with the Outdated category moved to the bottom
 
-* modules are sorted in category by last date updated by default
-* * but you can change this when you start the installer by adding the word **name**  as a parameter (see below)
+* modules are sorted in category by `last date updated` by default
+* * you can change this by changing the `ModuleSortOrder` config option
 
 the installer page looks like this 
 
@@ -148,3 +148,25 @@ if the MagicMirror instance is in a docker container, like khassel's
 then the MagicMirror process will be killed, causing the container to restart 
 
 if none of those options work, then you will have to restart the MagicMirror instance manually 
+
+
+# styling the installer page
+
+the css class names for the installer page components are
+
+* unregistered
+* * unregistedUrl
+* category
+* * moduleList
+* * * moduleEntry
+* * * * moduleName
+* * * * moduleDescription
+* * * * moduleLastUpdated
+* moduleInstallList
+
+None of these styles are set
+and any changes go in MMM-Config/module_installer/local.css
+
+note that these apply to ALL  modules,  and ALL unregistered URLs at the same time
+so additional select clause elements would be required to target just some. 
+(like modules in a particular category)
