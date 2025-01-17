@@ -377,18 +377,21 @@ async function launchServer(worklist, socket){
     //  wait for new schema file to be written
     // keep trying on interval
     let count=0, countc=0
+    let handle2=null
     let handle=setInterval(()=>{
       // cycling checking the schema file created
       try {
         // see if it exists now
         if(debug)
-          console.log("checking for file existing ="+fp)
+          console.log("checking for schema form file existing ="+fp)
         if(fs.statSync(fp)){
           if(count++==0){
             // hurray, we can stop checking
             if(debug)
               console.log("file exists")
             clearInterval(handle)
+            if(handle2)
+              clearInterval(handle2)
             // then the MM instance with MMM-Config is ready for the config page
             // from the newly generated form schema file
             MagicMirrorWorkServerReady(socket, cpid, env['MM_PORT'])
@@ -401,17 +404,17 @@ async function launchServer(worklist, socket){
       count=0
       try {
         // check to see if the page was closed without submitting
-        let handle=setInterval(()=>{
+        handle2=setInterval(()=>{
         try {
-        if(fs.statSync(canceledfp)){
-            if(countc++ === 0){
-              clearInterval(handle)
-              killWorkConfigServer(processList)
-              console.log("configuration canceled (page closed), exiting installer")
-              setTimeout(()=>{display_no_work(0)},4000)
+          if(fs.statSync(canceledfp)){
+              if(countc++ === 0){
+                clearInterval(handle2)
+                killWorkConfigServer(processList)
+                console.log("configuration canceled (page closed), exiting installer")
+                setTimeout(()=>{display_no_work(0)},4000)
+              }
             }
-          }
-        } catch(e){}
+          } catch(e){/* ok that it doesn't exist*/}
         },2000)
       }
       catch(e){}// watching for exist, error if not, ifnore it
@@ -447,6 +450,9 @@ function MagicMirrorWorkServerReady(socket, pid, port){
       // need to know when that happens.. so we can clean up (however we need to clean up)
       // wait for the config to be written
       //
+
+      // if the server is set to auto restart due to config file change
+      // we will die and this code will never be executed
       let count =0
       fs.watch(__dirname+"/../../../config/config.js",async (eventType, filename) => {
         if (eventType === 'change') {
@@ -456,7 +462,6 @@ function MagicMirrorWorkServerReady(socket, pid, port){
           if(count++ == 0){
             killWorkConfigServer(processList)
             restartMagicMirror()
-           // setTimeout(()=>{process.exit(0)},4000)
           }
         }
       })
@@ -555,11 +560,4 @@ function restartMagicMirror(){
     });
   }
 }
-
-/*
-//launch main as async function
-setTimeout(
-   async ()=>{await mainloop(this.)},
-  1,)
-  */
 
