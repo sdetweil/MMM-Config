@@ -15,7 +15,8 @@ Module.register("MMM-Config", {
     showQR: false,
     force_update: true,
     restart: "",
-    debug: false
+    ModuleSortOrder:"date",
+    debug: false,
   },
 
   getTranslations: function () {

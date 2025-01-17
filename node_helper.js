@@ -55,9 +55,9 @@ const our_name = __dirname.split(path.sep).slice(-1)[0]  // slice returns an arr
 
 const QRCode = require("qrcode");
 const checking_diff = false;
-var socket_io_port = 8200;
+
 var pm2_id = -1;
-const getPort = require("get-port");
+const InstallerSetup= require(__dirname+"/module_installer/runserver.js")
 const closeString =
   ';\n\
 \n\
@@ -188,7 +188,7 @@ module.exports = NodeHelper.create({
       // redirect to config form
       res.redirect(
         //this.config.url +
-        "/modules/" + this.name + "/config.html" // ?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
+        "/modules/" + this.name + "/config.html"
       );
     });
   },
@@ -305,6 +305,7 @@ module.exports = NodeHelper.create({
     this.launchit();
     this.extraRoutes();
     this.remote_start(this);
+    InstallerSetup(this.expressApp, this.io, NodeHelper, this.config.ModuleSortOrder)
   },
 
   // handle messages from our module// each notification indicates a different messages
@@ -1682,7 +1683,7 @@ module.exports = NodeHelper.create({
       socket.on("cancel", () => {
         if(debug)
           console.log("cancel requested")
-        console.log("cancel received, closing config page")
+        //console.log("cancel received, closing config page")
         fs.writeFileSync(__dirname+'/canceled', '1')
         socket.emit("close")
       });

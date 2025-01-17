@@ -1,0 +1,238 @@
+{
+  "schema":{
+    "type":"object",
+      "properties":{
+      "urls":{
+        "type":"array",
+        "items":{
+            "type":"string"
+        }
+      },
+      "categories": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "properties": {
+            "category":{
+            "type":"object",
+            "properties":{
+              "name": {
+                "type": "string",
+                "title": "name"
+              },
+              "description": {
+                "type": "string",
+                "title": "description"
+              },
+              "modules": {
+                  "type": "array",
+                  "title":"modules",
+                  "items": {
+                    "type": "object",
+
+                    "properties": {
+                      "name": {
+                          "type": "string",
+                          "title":"name"
+                        },
+                        "category": {
+                          "type": "string",
+                          "title":"category"
+                        },
+                        "url": {
+                          "type": "string",
+                          "title":"url"
+                        },
+                        "id": {
+                          "type": "string"
+                        },
+                        "maintainer": {
+                          "type": "string"
+                        },
+                        "maintainerURL": {
+                          "type": "string"
+                        },
+                        "description": {
+                          "type": "string"
+                        },
+                        "issues": {
+                          "type": "boolean"
+                        },
+                        "stars": {
+                          "type": "integer"
+                        },
+                        "license": {
+                          "type": "string"
+                        },
+                        "image": {
+                          "type": "string"
+                        },
+                        "defaultSortWeight": {
+                          "type": "integer"
+                        },
+                        "lastCommit": {
+                          "type": "string"
+                        },
+                        "outdated": {
+                          "type": "string"
+                        },
+                        "installed": {
+                          "type": "boolean"
+                        },
+                        "previously_installed": {
+                          "type": "boolean"
+                        }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "installable": {
+        "type":"array",
+        "items":{
+          "type":"string"
+        }
+      }
+    }
+  },"form": [
+    {
+      "type": "fieldset",
+      "expandable":"true",
+      "title":"unregistered modules",
+      "htmlClass":"unregistered",
+      "items": [
+        {
+          "type": "array",
+          "draggable":false,
+          "items":[
+            {
+              "title":"source repo url",
+              "htmlClass":"unreg_url",
+              "key":"urls[]",
+              "onChange":"()=>{$('.btn-submit').removeAttr('disabled')}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "array",
+      "draggable":false,
+      "deleteCurrent":false,
+      "hide_add_remove":true,
+      "order": 0,
+      "items": [
+        {
+          "type":"fieldset",
+          "expandable":true,
+          "legend":"{{value}}",
+          "htmlClass":"category",
+          "items":[
+          {
+            "type":"hidden",
+            "key": "categories[].category.name",
+            "readonly":true,
+            "valueInLegend": true
+          },
+        {
+          "type": "array",
+          "title": "Modules in Category",
+          "deleteCurrent":false,
+          "hide_add_remove":true,
+          "draggable":false,
+          "htmlClass":"moduleList",
+          "items": [
+            {
+              "type": "fieldset",
+              "deleteCurrent":false,
+              "expandable":true,
+              "legend": "{{value}}",
+              "htmlClass":"moduleEntry",
+              "items": [
+                {
+                  "title": "name",
+                  "key": "categories[].category.modules[].name",
+                  "valueInLegend": true,
+                  "htmlClass":"moduleName",
+                  "readonly":true
+                },
+                {
+                  "type":"button",
+                  "title":"Open Module Readme",
+                  "htmlClass":"openclose_readme ModuleButton",
+                  "onClick":"(evt,node)=>{var parent =$(evt.target).closest('fieldset'); var module=parent.find('legend').text();var url=parent.find('.hidden_url input').val();window.open(url);}"
+                },
+                {
+                  "title": "Description",
+                  "key": "categories[].category.modules[].description",
+                  "htmlClass":"desc_input ModuleDescription",
+                  "readonly":true
+                },
+                {
+                  "title": "Last Updated",
+                  "key": "categories[].category.modules[].lastCommit",
+                  "htmlClass":"moduleLastUpdated",
+                  "readonly":true
+                },
+                {
+                  "title":"installed or installable",
+                  "key":"categories[].category.modules[].installed",
+                  "description":"will be installed when checked",
+                  "htmlClass":"moduleInstalled",
+                  "onClick":"(evt,node)=>{var isChecked = $(evt.target).prop('checked');var parent =$(evt.target).closest('fieldset');if(!isChecked){var previously_installed = parent.find('.oinstalled input');if(previously_installed.prop('checked') == true){evt.originalEvent.preventDefault();this.checked = true;}}else{var module=parent.find('legend').text();var listholder=$('.install-list');var list=listholder.find('._jsonform-array-ul');if(isChecked){list.append('<li>'+module+'</li>');listholder.css('display', 'block');$('.btn-submit').removeAttr('disabled')}else{list.find(\"li:contains('\"+module+\"')\").remove()}}}"
+                },
+                {
+                  "key":"categories[].category.modules[].previously_installed",
+                  "type":"checkbox",
+                  "htmlClass":"oinstalled"
+                },
+                {
+                  "title": "outdated reason",
+                  "key": "categories[].category.modules[].outdated",
+                  "type": "hidden",
+                  "htmlClass": "hidden_outdated"
+                },
+                {
+                  "key": "categories[].category.modules[].url",
+                  "htmlClass": "hidden_url"
+                }
+              ]
+            }
+          ]
+        }
+        ]
+        }
+      ]
+    },
+    {
+      "type": "submit",
+      "title": "Install selected modules",
+      "id": "submit_button",
+      "disabled":true,
+      "htmlClass":"btn-submit"
+    },
+    {
+      "type": "button",
+      "title": "Cancel",
+      "onClick":"()=>{triggerCancel()}"
+    },
+    {
+    "type":"array",
+    "deleteCurrent":false,
+    "draggable":false,
+    "hide_add_remove":true,
+    "htmlClass":"install-list",
+    "title":"modules selected for install",
+    "items":[
+    {
+    "key":"installable",
+    "type":"array"
+    }
+    ]
+    }
+  ],
+  "value":{
+    "urls": [],

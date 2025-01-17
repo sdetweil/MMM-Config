@@ -1,0 +1,115 @@
+ .expandable > legend::before {
+  content: '\25B8';
+  padding-right: 5px;
+}
+.expanded > legend::before {
+  content: '\25BE';
+}
+
+.jsonform-required > label:after {
+  content: ' *';
+  color: red;
+}
+
+.jsonform-hasrequired:after {
+  content: '* Required field';
+  display: block;
+  color: red;
+  padding-top: 1em;
+}
+
+.expanded div.form-group {
+	margin-left: 2em;
+ }
+
+.webform .btn {
+  display:none;
+}
+
+.webform li.active > a.draggable  {
+     /*all: revert */
+     /*display:none;*/
+}
+
+.webform ul.ui-sortable {
+   /* all: revert2 */
+}
+
+
+
+div ~ fieldset >legend {
+    color: #333 !important;
+}
+span ~ fieldset >legend {
+    color: #333 !important;
+}
+div > ul > li > fieldset >legend {
+    color: #333 !important;
+}
+/* fieldset ~ fieldset >legend {
+    color: #333 !important;
+} */
+div ~ fieldset  {
+    margin-left: 2em;
+}
+body {
+  background-color: navajowhite;
+}
+.tab-content {
+  background-color: lightgray;
+}
+
+/* used to set the initial state of the modules */
+.module_disabled  legend {
+  color: red ;
+}
+.module_enabled   legend {
+  color: blue ;
+}
+
+.possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item%201"] {
+  display: none;
+}
+
+.jsonform-error-config---logLevel .controls {
+    margin-left: 3em;
+}
+
+
+/*._jsonform-array-addmore, ._jsonform-array-deletelast {
+    display:none;
+}*/
+
+#viewer {
+    position: absolute;
+    width: 50%;
+    height: 85%;
+    left: 40%;
+    top: 15%;
+}
+.hidden_url {
+    display:none;
+}
+.install-list {
+    display:none;
+}
+.openclose_readme {
+    /*display:none;*/
+    margin-left: 2em;
+ }
+ .oinstalled {
+    display:none;
+ }
+ .unregistered label {
+    font-size: 20px;
+ }
+
+.unregistered {
+    margin-left: 3em;
+}
+input[type="text"] {
+    width: 20%;
+}
+.desc_input input[type="text"], .unreg_url input[type="text"] {
+    width: 50%;
+}

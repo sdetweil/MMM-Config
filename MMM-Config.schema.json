@@ -166,6 +166,13 @@
               ],
               "default":"none"
             },
+            "ModuleSortOrder":{
+              "type":"string",
+              "enum":[
+                "date",
+                "name"
+              ]
+            },
             "debug": {
               "type": "boolean"
             }
@@ -233,6 +240,11 @@
           }
         },
         {
+          "title": "SortOrder",
+          "key": "MMM-Config.config.ModuleSortOrder",
+          "description":"installer list sort order, default 'date'"
+        },
+        {
           "title": "debug",
           "key": "MMM-Config.config.debug",
           "description":"turn on save debug"
@@ -252,6 +264,7 @@
       "showQR": false,
       "force_update": true,
       "restart": "none",
+      "ModuleSortOrder":"date",
       "debug": false
     }
   }
