@@ -19,6 +19,7 @@ const cf_name=process.env.MM_CONFIG_FILE?"process.env.MM_CONFIG_FILE":"config/co
 const modules_url="https://kristjanesperanto.github.io/MagicMirror-3rd-Party-Modules/data/modules.json"
 const module_form_template=__dirname+"/module_schema_template.json"
 const module_selector_form=__dirname+"/module_form_schema.json"
+const module_url_hash=__dirname+"/../module_url_hash.json"
 const modules_location=__dirname+"/../../../modules"
 const formTail = ", \"installable\":[]\n}}"
 const formatter=require(__dirname+'/'+'formatModuleInfo.js')
@@ -135,11 +136,13 @@ function buildFormData(NodeHelper, sortOrder){
     .then((response) => response.text())
     .then((responseData) => {
       // make the data
-      let newformdata=fs.readFileSync(module_form_template)+formatter(responseData,sortOrder)+formTail
+      let data=formatter(responseData,sortOrder)
+      let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
       // save it for page load
       formdata=newformdata
       // write it out for next time start
       fs.writeFileSync(module_selector_form, newformdata)
+      fs.writeFileSync(module_url_hash,JSON.stringify(data.hash,null,2))
       }
     )
 }

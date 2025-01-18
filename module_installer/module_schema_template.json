@@ -224,9 +224,8 @@
     "deleteCurrent":false,
     "draggable":false,
     "hide_add_remove":true,
-    "htmlClass":"install-list",
+    "htmlClass":"install-list moduleInstallList",
     "title":"modules selected for install",
-    "htmlClass":"moduleInstallList",
     "items":[
     {
     "key":"installable",

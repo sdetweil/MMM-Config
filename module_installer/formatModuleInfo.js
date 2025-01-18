@@ -17,26 +17,29 @@ let temp=__dirname.split('/').slice(0,-2)
 let MM_modules_Path=temp.join('/')
 if(debug)
 	 console.info("MM folder="+MM_modules_Path)
-categories = {};
-
+let categories = {};
+let hash = {}
 // get the file data
 let moduleList = JSON.parse(data)
 if(debug){
 	if(Array.isArray(moduleList))
 		console.log("have array of module info")
 }
+
 // loop thru the module entries to make data for category ordered structure
 moduleList.forEach(module=>{
 	// assume module is installed
 
 	if(debug)
 		console.log("checking installed for module="+module.name+" at path="+ MM_modules_Path+'/'+module.name)
+	hash[module.name]=module.url
 	try {
 		// check
 		let fn = MM_modules_Path+'/'+module.name
 		fs.statSync(fn)
 		module['installed']=true
 		module['previously_installed']=true
+
   } catch(error){
   	// exception if not
   	// set not installed
@@ -96,5 +99,5 @@ catlist.forEach(c=>{
 
 // generate the structure to stdout
 console.log()
-return('"categories":'+JSON.stringify(outlist, null,2))
+return({categories:outlist,hash:hash })
 }
