@@ -21,8 +21,10 @@ categories = {};
 
 // get the file data
 let moduleList = JSON.parse(data)
-if(Array.isArray(moduleList))
-	console.log("have array of module info")
+if(debug){
+	if(Array.isArray(moduleList))
+		console.log("have array of module info")
+}
 // loop thru the module entries to make data for category ordered structure
 moduleList.forEach(module=>{
 	// assume module is installed

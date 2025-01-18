@@ -304,6 +304,15 @@ module.exports = NodeHelper.create({
     this.launchit();
     this.extraRoutes();
     this.remote_start(this);
+    let sort="date"  // default value set in modulename.js
+    for(m of config.modules){
+      if(m.module == this.name){
+        if(m.config.ModuleSortOrder) // if it was specified
+          sort=m.config.ModuleSortOrder // use it
+        break
+      }
+    }
+    InstallerSetup(this.expressApp, this.io, NodeHelper, sort)
   },
 
   // handle messages from our module// each notification indicates a different messages
@@ -314,7 +323,7 @@ module.exports = NodeHelper.create({
     if (notification === "CONFIG") {
       // save payload config info
       this.config = payload;
-      InstallerSetup(this.expressApp, this.io, NodeHelper, this.config.ModuleSortOrder)
+
       if(this.imageurl){
         this.sendSocketNotification(
               "qr_url",
