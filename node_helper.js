@@ -304,7 +304,6 @@ module.exports = NodeHelper.create({
     this.launchit();
     this.extraRoutes();
     this.remote_start(this);
-    InstallerSetup(this.expressApp, this.io, NodeHelper, this.config.ModuleSortOrder)
   },
 
   // handle messages from our module// each notification indicates a different messages
@@ -313,9 +312,9 @@ module.exports = NodeHelper.create({
 
     // if config message from module
     if (notification === "CONFIG") {
-
       // save payload config info
-      //this.config = payload;
+      this.config = payload;
+      InstallerSetup(this.expressApp, this.io, NodeHelper, this.config.ModuleSortOrder)
       if(this.imageurl){
         this.sendSocketNotification(
               "qr_url",
