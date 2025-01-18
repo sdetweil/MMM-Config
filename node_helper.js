@@ -3,7 +3,6 @@ const { spawn, exec } = require("child_process");
 
 const path = require("path");
 const os = require("os");
-const stream = require("stream");
 const _ = require("lodash");
 
 let debug = false

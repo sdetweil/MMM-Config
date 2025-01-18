@@ -1,30 +1,28 @@
-const express = require('express');
-const app = express();
-const { exec, spawn, execSync } = require("child_process");
+const { exec, execSync } = require("child_process");
 const path=require('path')
 const os= require('os')
 const fs = require('fs')
 const which= require("which")
-const moment = require('moment')
+const moment = require('moment-timezone')
 
 const source_name=__dirname+"/module_form_schema.json"
 
-//var socket_io_port = 8300
 const BASE_INSTANCE_PORT=9000
-var run_port = process.env.PORT || BASE_INSTANCE_PORT;
-let remote_io = 0
+const run_port = process.env.PORT || BASE_INSTANCE_PORT;
+let remote_io = null
 const parm_adjustment=(process.argv[process.argv.length-1]=="debug"?1:0)  // if last parm is debug, others are down 1(adjustment)
 const debug=false
 const startMM=true
 const our_path=__dirname.split('/').slice(0,-2).join('/')
 
+const cf_name=process.env.MM_CONFIG_FILE?"process.env.MM_CONFIG_FILE":"config/config.js"
 const modules_url="https://kristjanesperanto.github.io/MagicMirror-3rd-Party-Modules/data/modules.json"
 const module_form_template=__dirname+"/module_schema_template.json"
 const module_selector_form=__dirname+"/module_form_schema.json"
 const modules_location=__dirname+"/../../../modules"
 const formTail = ", \"installable\":[]\n}}"
 const formatter=require(__dirname+'/'+'formatModuleInfo.js')
-const refresh_time_hour=13
+const refresh_time_hour=5
 
 const socketIOPath="/mInstaller"
 
@@ -42,12 +40,7 @@ which('node', function(err, result) {
   nodejspath=result;
 });
 
-const config_struct = {
-    module:"MMM-Config",
-    config:{
-    }
-}
-
+// check to see if we are running in docker container
 try {
   if(fs.statSync('/.dockerenv'))
     in_docker_container = true
@@ -74,18 +67,18 @@ String.prototype.hashCode = function(port) {
 // startup in async mode
 module.exports=async (expressApp,io, NodeHelper, sortOrder)=>{
   remote_io=io
-  setupServer(expressApp, NodeHelper)
   buildFormData(NodeHelper, sortOrder)
+  setupServer(expressApp, NodeHelper)
 }
 
 // Setup our web form server page html loaded here
 // and socket io server for form data (used by form_client.js)
 async function setupServer(expressApp, NodeHelper, sortOrder){
-  //  expressApp.use(__dirname)
+  // setup the installer url
   expressApp.get("/installer", (req, res) => {
     // redirect to config form
     res.redirect(
-      //this.config.url +
+      // same server, different route
       "/modules/MMM-Config/module_installer/module_installer.html"
     );
   });
@@ -108,20 +101,18 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
   }); // end - disconnect
 
   // setup a refreshing of the source data
-  // initial now til 1am
-  let now = new moment()
+  const now = new moment().tz("Europe/Berlin")  // timezone the list builder is run in
   let then=now.clone()
-  // if before 1pm
-  if(now.hour()<refresh_time_hour){
-    // reset to 13:00
-    then= then.startOf('day').add(13,'h');
-  }
-  else{
-    // after 1 pm, get 1am tomorrow
-    then = then.add(1,'d').startOf('day').add(1,'h')
+
+  if(now.hour()<(refresh_time_hour)){                   //    16>4
+    then= then.startOf('day').add(refresh_time_hour,'h');
+  } else if(now.hour()<(refresh_time_hour+12)){          //    16<16
+    then= then.startOf('day').add(refresh_time_hour+12,'h'); //16:00
+  } else { //if(now.hour()>=(refresh_time_hour+12){
+    then = then.add(1,'d').startOf('day').add(refresh_time_hour,'h') // tomorrow 04:00
   }
 
-  if(debug)
+  if(true)
     console.log("will pull config data at "+then.format("HH:mm:ss")+" in "+ then.diff(now)+" ms")
   // set next refresh time at 1pm/am , then 12hours between,
   // do after the data is refreshed
@@ -314,7 +305,7 @@ async function launchServer(worklist, socket){
   //
   if(startMM && worklist.length>0){
 
-    let cfgpath=path.resolve(__dirname,"../../../config/config.js")
+    let cfgpath=path.resolve(__dirname,"../../../"+cf_name)
     let env=process.env  // get the environment variables
       env['MM_PORT']=run_port=BASE_INSTANCE_PORT  // add a MM custom port value (overrides in MM config.js)
       env["MM_INSTALLER"]=1
@@ -364,8 +355,10 @@ async function launchServer(worklist, socket){
     let cpid=child.pid
     if(debug){
       console.log(" node seerveronly process id = "+cpid)
-      if(!in_docker_container)
-        console.log(JSON.stringify(execSync("ps -ef | grep servero | grep -v grep").toString().trim().split(/\n/),null,2));
+      if(!in_docker_container){
+        if(os.type() !== "Windows_NT")  // linux and macos
+          console.log(JSON.stringify(execSync("ps -ef | grep servero | grep -v grep").toString().trim().split(/\n/),null,2));
+      }
     }
     processList = getWorkConfigServerProcessList(cpid)
 
@@ -438,7 +431,7 @@ function display_no_work(type){
 function MagicMirrorWorkServerReady(socket, pid, port){
       // url to MMM-Config page
 
-      let url = "http://localhost:"+port+"/modules/MMM-Config/review";
+      let url = "http://localhost:"+port+"/modules/MMM-Config/review";  // don't know what our outside address is, browser side will fix
       socket.emit('openurl', url)
       // tell the installer web page we are done
       // we waited so there wasn't a big flash
@@ -454,7 +447,7 @@ function MagicMirrorWorkServerReady(socket, pid, port){
       // if the server is set to auto restart due to config file change
       // we will die and this code will never be executed
       let count =0
-      fs.watch(__dirname+"/../../../config/config.js",async (eventType, filename) => {
+      fs.watch(__dirname+"/../../../"+cf_name,async (eventType, filename) => {
         if (eventType === 'change') {
           if(debug)
             console.log(`File ${filename} has been changed`);
@@ -473,29 +466,33 @@ function getWorkConfigServerProcessList(pid){
     list.push(1)
   }else {
     try {
-        const psRes = execSync(`ps -ef | grep ${pid} | grep -v grep`).toString().trim().split(/\n/);
-        if(debug){
-          console.log("pid list="+ JSON.stringify(psRes))
-        }
-        if(psRes){
-          (psRes || []).forEach(pidGroup => {
-            if(debug)
-              console.log("processing for "+pidGroup)
-            const [x, actual, parent] = pidGroup.trim().split(/ +/);
-            if(debug){
-              console.log("actual ="+actual+" parent="+parent)
-              console.log(`comparing '${parent}' with '${pid}'`)
-            }
-            if (parent.toString() === pid.toString()) {
+         if(os.type() !== "Windows_NT"){
+          const psRes = execSync(`ps -ef | grep ${pid} | grep -v grep`).toString().trim().split(/\n/);
+          if(debug){
+            console.log("pid list="+ JSON.stringify(psRes))
+          }
+          if(psRes){
+            (psRes || []).forEach(pidGroup => {
               if(debug)
-                console.log(`save '${actual}' to list`)
-              list.push(parseInt(actual, 10));
-              if(debug)
-                console.log("added pid=",list.slice(-1)[0]," to the list")
-            }
-          });
+                console.log("processing for "+pidGroup)
+              const [x, actual, parent] = pidGroup.trim().split(/ +/);
+              if(debug){
+                console.log("actual ="+actual+" parent="+parent)
+                console.log(`comparing '${parent}' with '${pid}'`)
+              }
+              if (parent.toString() === pid.toString()) {
+                if(debug)
+                  console.log(`save '${actual}' to list`)
+                list.push(parseInt(actual, 10));
+                if(debug)
+                  console.log("added pid=",list.slice(-1)[0]," to the list")
+              }
+            });
+          }
+        } else {
+          // windows, don't know yet
         }
-        list.push(pid)
+        list.push(pid)  // put parent on the end of list
         if(debug)
           console.log("list="+JSON.stringify(list,null,2))
       }

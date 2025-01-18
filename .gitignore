@@ -18,3 +18,5 @@ animateCSS.js
 module_form_schema.json
 canceled
 installer_w_repo
+local.css
+module_installer/local.css

@@ -13,8 +13,6 @@
     "child_process": "^1.0.2",
     "deep-object-diff": "^1.1.0",
     "electron-reload": "^1.5.0",
-    "express": "^4.17.1",
-    "get-port": "^5.1.1",
     "jsonform": "github:sdetweil/jsonform#w_add_delete_and_template",
     "lodash": "^4.17.21",
     "os": "^0.1.1",
@@ -22,7 +20,6 @@
     "prettier": "^2.0.5",
     "pretty-ms": "^7.0.0",
     "qrcode": "^1.4.4",
-    "socket.io-client": "^4.0.1",
-    "stream": "0.0.2"
+    "socket.io-client": "^4.0.1"
   }
 }
