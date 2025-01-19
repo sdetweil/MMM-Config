@@ -35,7 +35,9 @@
    /* all: revert2 */
 }
 
-
+.repo_button {
+  margin-left: 2em;
+}
 
 div ~ fieldset >legend {
     color: #333 !important;

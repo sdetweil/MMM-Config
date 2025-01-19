@@ -12,9 +12,6 @@ let save_module_form = "";
 const using_overrides = true;
 const MM_identifier=process.env.MM_identifier
 
-
-
-
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
@@ -51,6 +48,7 @@ const our_name = __dirname.split(path.sep).slice(-2,-1)[0]
 var schema = {};
 const openUrlForm_template=[{type:"button",
                             title:"Open module readme",
+                            htmlClass:"repo_button",
                             "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
                            },
                            {
