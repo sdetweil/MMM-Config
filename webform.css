@@ -77,4 +77,13 @@ body {
     margin-left: 3em;
 }
 
+fieldset .moduleName {
+   padding-top: 10px;
+}
+.moduleName legend {
+   display: contents;
+}
+.moduleName legend + button {
+   margin-bottom: 15px;
+}
 

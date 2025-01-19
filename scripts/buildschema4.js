@@ -1959,7 +1959,7 @@ function processModule(schema, form, value, module_defines, module_name) {
       console.log("found module in url hash="+module_name)
     let buttons=clone(openUrlForm_template)
     buttons[1].title=url_hash[module_name]
-    module_form_items.push({ type: "fieldset", title: "config", items: buttons }); // was section
+    module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleName", items: buttons }); // was section
   } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
 
