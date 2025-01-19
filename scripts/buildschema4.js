@@ -5,12 +5,15 @@ const debugging = false;
 const merge = require("lodash").merge;
 
 const interfaces = require("os").networkInterfaces();
-var save_jsonform_info = false;
+let save_jsonform_info = false;
 const fs = require("fs");
-var debug = false;
-var save_module_form = "";
+let debug = false;
+let save_module_form = "";
 const using_overrides = true;
 const MM_identifier=process.env.MM_identifier
+
+
+
 
 if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
@@ -46,6 +49,23 @@ const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
 const our_name = __dirname.split(path.sep).slice(-2,-1)[0]
 var schema = {};
+const openUrlForm_template=[{type:"button",
+                            title:"Open module readme",
+                            "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
+                           },
+                           {
+                             type:"button",
+                             htmlClass:"hidden repo_url",
+                             title:""
+                           }]
+
+let url_hash= null
+const module_url_hash_file="module_url_hash.json"
+//try {
+  url_hash=require(__dirname+"/../"+module_url_hash_file)
+  if(debug)
+    console.log("there are "+Object.keys(url_hash).length+" keys")
+//} catch{}
 var form = [
   {
     title: "Settings",
@@ -1934,7 +1954,19 @@ function processModule(schema, form, value, module_defines, module_name) {
         "(evt,node)=>{let value=$(evt.target).val();let p=$(evt.target).attr('name').split('[');let n=p[0];let i=parseInt(p[1]);$(\"[value*='\"+n+\"']\").closest('.tab-pane').find('.tab-content').find(\"[data-idx='\"+i+\"'] >div >input \").val(value).trigger('change')}"
     });
   }
+  if(debug)
+      console.log("looking in url hash="+module_name+" hash="+(url_hash?"true":"false"))
+  if(url_hash && url_hash[module_name]){
+    if(debug)
+      console.log("found module in url hash="+module_name)
+    let buttons=clone(openUrlForm_template)
+    buttons[1].title=url_hash[module_name]
+    module_form_items.push({ type: "fieldset", title: "config", items: buttons }); // was section
+  } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
+
+  if(debug)
+    console.log("mform.items"+JSON.stringify(module_form_items,null,2))
   let ptr = -1;
   for (let i in module_form_items) {
     if (Object.keys(module_form_items[i]).includes("title")) {
@@ -1948,6 +1980,9 @@ function processModule(schema, form, value, module_defines, module_name) {
       }
     }
   }
+
+  if(debug)
+    console.log("ptr="+ptr)
 
   //
   //	loop thru each property from the defaults
