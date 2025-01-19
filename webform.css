@@ -80,10 +80,10 @@ body {
 fieldset .moduleName {
    padding-top: 10px;
 }
-.moduleName legend {
+.moduleConfig legend {
    display: contents;
 }
-.moduleName legend + button {
+.moduleConfig legend + button {
    margin-bottom: 15px;
 }
 

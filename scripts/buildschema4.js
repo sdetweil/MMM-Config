@@ -313,7 +313,7 @@ let module_disabled_color = getColor(cssfile, "module_disabled");
 const module_form_template = {
   type: "fieldset",
   title: "modulename",
-  htmlClass:"",
+  htmlClass:"moduleEntry ",
   expandable: true,
   items: []
 };
@@ -488,7 +488,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         console.log("post processed config for module = "+module_name+"="+JSON.stringify(temp_value[module_name],null,2)) 
       let mform = clone(module_form_template);
       mform.title = module_name;
-      mform.htmlClass= module_name
+      mform.htmlClass += module_name
 
       parents_parent = "parent=parent.parent().closest('fieldset')";
       // if this is the disabled element in the form
@@ -1959,7 +1959,7 @@ function processModule(schema, form, value, module_defines, module_name) {
       console.log("found module in url hash="+module_name)
     let buttons=clone(openUrlForm_template)
     buttons[1].title=url_hash[module_name]
-    module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleName", items: buttons }); // was section
+    module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
   } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
 
