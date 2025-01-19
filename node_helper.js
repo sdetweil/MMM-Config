@@ -805,7 +805,7 @@ module.exports = NodeHelper.create({
           module_name,
           our_name+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "..", module_name,our_name+module_jsonform_converter);
+      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
       if(debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
