@@ -87,3 +87,16 @@ fieldset .moduleName {
    margin-bottom: 15px;
 }
 
+input[type="text"] {
+    width: 30%;
+}
+.form-control {
+    width: 20%;
+}
+input[type="number"] {
+    width: 10%;
+}
+input1[type="checkbox"] {
+    width: 2.1em;
+    height: 2.1em;
+}
