@@ -113,7 +113,7 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
     then = then.add(1,'d').startOf('day').add(refresh_time_hour,'h') // tomorrow 04:00
   }
 
-  if(true)
+  if(debug)
     console.log("will pull config data at "+then.format("HH:mm:ss")+" in "+ then.diff(now)+" ms")
   // set next refresh time at 1pm/am , then 12hours between,
   // do after the data is refreshed

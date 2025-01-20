@@ -100,3 +100,11 @@ input1[type="checkbox"] {
     width: 2.1em;
     height: 2.1em;
 }
+
+#viewer {
+    position: absolute;
+    width: 50%;
+    height: 85%;
+    left: 40%;
+    top: 15%;
+}

@@ -216,9 +216,20 @@
       "title":"Animation Out style"
     },
     {
-      "type": "section",
+      "type": "fieldset",
       "title": "config",
+      "htmlClass":"moduleConfig",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;$('#viewer').attr('src', url+'?u=https://github.com/sdetweil/MMM-Config');$('#viewer').removeClass('hidden');}"
+        },
+        {
+           "type":"button",
+           "htmlClass":"hidden repo_url",
+           "title":"testpage.html"
+        },
         {
           "title": "showQR",
           "key": "MMM-Config.config.showQR",
