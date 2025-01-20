@@ -1592,7 +1592,7 @@ module.exports = NodeHelper.create({
     // loop thru the modules list
     r.config.modules.forEach(m =>{
       // if not disabled
-      if(m.disabled==false && !defaultModules.includes(m.module)){
+      if((m.disabled==false && !defaultModules.includes(m.module)) || defaultModules.includes(m.module)) {
         // get a list of any extension files in the module folder
         mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
         // if we found some
@@ -1612,9 +1612,10 @@ module.exports = NodeHelper.create({
       if(f.endsWith('.js')){
         if(debug)
           console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</body>'))
-         htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <script type="text/javascript" src="'+'schemas/'+f+'"></script>')
+         htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <iframe id="viewer" class="ourframe hidden"></iframe>')
       }
     })
+    htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <script type="text/javascript" src="'+'schemas/'+f+'"></script>')
     fs.writeFileSync(__dirname+'/config.html',htmlfile_lines.join("\n"))
 
     // get the last mod date of the current config.js

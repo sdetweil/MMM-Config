@@ -18,7 +18,17 @@ let MM_modules_Path=temp.join('/')
 if(debug)
 	 console.info("MM folder="+MM_modules_Path)
 let categories = {};
-let hash = {}
+
+let hash = {
+	"alert":"https://docs.magicmirror.builders/modules/alert.html",
+	"calendar":"https://docs.magicmirror.builders/modules/calendar.html",
+	"clock":"https://docs.magicmirror.builders/modules/clock.html",
+	"compliments":"https://docs.magicmirror.builders/modules/compliments.html",
+	"helloworld":"https://docs.magicmirror.builders/modules/helloworld.html",
+	"newsfeed":"https://docs.magicmirror.builders/modules/newsfeed.html",
+	"updatenotification":"https://docs.magicmirror.builders/modules/updatenotification.html",
+	"weather":"https://docs.magicmirror.builders/modules/weather.html"
+}
 // get the file data
 let moduleList = JSON.parse(data)
 if(debug){

@@ -272,7 +272,18 @@
     {
       "type": "fieldset",
       "title": "config",
+      "htmlClass":"moduleConfig",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
+        },
+        {
+           "type":"button",
+           "htmlClass":"hidden repo_url",
+           "title":"https://docs.magicmirror.builders/modules/compliments.html"
+        },
         {
           "type": "array",
           "title": "compliments",

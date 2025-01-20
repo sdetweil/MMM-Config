@@ -248,7 +248,8 @@
             "pm2": "use pm2 to restart, will autodetect which pm2 instance to restart",
             "static": "MagicMirror started with npm start, may cause flaky windows",
             "docker":" not yet implemented, same as none"
-          }
+          },
+          "description":"if and how to restart MagicMirror after the config file is saved"
         },
         {
           "title": "SortOrder",
@@ -258,7 +259,7 @@
         {
           "title": "debug",
           "key": "MMM-Config.config.debug",
-          "description":"turn on save debug"
+          "description":"turn on debug during save"
         }
       ]
     }

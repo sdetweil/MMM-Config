@@ -1,5 +1,24 @@
 {
   "schema": {
+    "oneEndpoint":{
+      "type":"string",
+      "default":"/onecall"
+    },
+    "otherEndpoints":{
+      "type":"string",
+      "enum":[
+        "/weather",
+        "/forecast",
+        "/forecast/daily"
+      ]
+    },
+    "weatherbitEndpoints":{
+      "type":"string",
+      "enum":[
+        "/current",
+        "/forecast/daily"
+        ]
+    },
     "weather": {
       "type": "object",
       "title": "properties for weather",
@@ -152,25 +171,58 @@
           "title": "config",
           "properties": {
             "weatherProvider": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "openweathermap" ,
+                "pirateweather",
+                "weather.gov",
+                "ukmetoffice",
+                "ukmetofficedatahub",
+                "Weatherbit",
+                "SMHI",
+                "envcanada",
+                "Weatherflow",
+                "openmeteo",
+                "yr"
+              ]
             },
             "roundTemp": {
               "type": "boolean"
             },
             "type": {
-              "type": "string"
+              "type": "string",
+              "enum": [
+                "current" ,
+                "hourly",
+                "daily" ,
+                "forecast"
+              ]
             },
             "units": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "metric",
+                "imperial"
+              ]
             },
             "useKmh": {
               "type": "boolean"
             },
             "tempUnits": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "metric",
+                "imperial"
+              ]
             },
             "windUnits": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "metric",
+                "imperial",
+                "beaufort",
+                "knots"
+              ]
             },
             "updateInterval": {
               "type": "integer"
@@ -179,7 +231,11 @@
               "type": "integer"
             },
             "timeFormat": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                12,
+                24
+              ]
             },
             "showPeriod": {
               "type": "boolean"
@@ -200,7 +256,14 @@
               "type": "string"
             },
             "showHumidity": {
-              "type": "boolean"
+              "type": "string",
+              "enum":[
+                "none",
+                "wind",
+                "temp",
+                "feelslike",
+                "below"
+              ]
             },
             "showSun": {
               "type": "boolean"
@@ -218,7 +281,10 @@
               "type": "boolean"
             },
             "maxNumberOfDays": {
-              "type": "integer"
+              "type": "integer",
+              "minimum":1,
+              "maximum":16,
+              "default":5
             },
             "maxEntries": {
               "type": "integer"
@@ -242,7 +308,14 @@
               "type": "string"
             },
             "tableClass": {
-              "type": "string"
+              "type": "string",
+              "enum":[
+                "small",
+                "xsmall",
+                "medium",
+                "large",
+                "xlarge"
+              ]
             },
             "onlyTemp": {
               "type": "boolean"
@@ -258,6 +331,74 @@
             },
             "absoluteDates": {
               "type": "boolean"
+            },
+            "apiVersion":{
+              "type":"string",
+              "enum":[
+                "3.0",
+                "2.5"
+              ]
+            },
+            "apiKey":{
+              "type":"string"
+            },
+            "apiBase":{
+              "type":"string"
+            },
+            "weatherEndpoint":{
+              "type":"string"
+            },
+            "location":{
+              "type":"string"
+            },
+            "locationID":{
+              "type":"string"
+            },
+            "lat":{
+              "type":"number"
+            },
+            "lon":{
+              "type":"number"
+            },
+            "precipitationValue":{
+              "type":"string",
+              "enum":[
+                  "pmedian",
+                  "pmin",
+                  "pmean",
+                  "pmax"
+              ]
+            },
+            "siteCode":{
+              "type":"string"
+            },
+            "provCode":{
+              "type":"string"
+            },
+            "token":{
+              "type":"string"
+            },
+            "stationid":{
+              "type":"string"
+            },
+            "pastDays":{
+              "type":"integer",
+              "default":0,
+              "minimum":0,
+              "maximum":5
+            },
+            "altitude":{
+              "type":"integer",
+              "default":0,
+              "minimum":0
+            },
+            "currentForecastHours":{
+              "type":"integer",
+              "enum":[
+                1,
+                6,
+                12
+            ]
             }
           }
         }
@@ -301,10 +442,345 @@
     {
       "type": "fieldset",
       "title": "config",
+      "htmlClass":"moduleConfig",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
+        },
         {
-          "title": "weatherProvider",
-          "key": "weather.config.weatherProvider"
+           "type":"button",
+           "htmlClass":"hidden repo_url",
+           "title":"https://docs.magicmirror.builders/modules/weather.html"
+        },
+        {
+          "title": "choose a weather Provider",
+          "key": "weather.config.weatherProvider",
+          "type":"selectfieldset",
+          "items": [
+            {
+              "type":"section",
+              "title":"openweather",
+              "items":[
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "required":true
+                },
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://api.openweathermap.org/data/",
+                  "readonly":true
+                } ,
+                {
+                  "title":"apiVersion",
+                  "key":"weather.config.apiVersion",
+                  "type":"selectfieldset",
+                  "items":[
+                    {
+                      "type":"section",
+                      "items":[
+                        {
+                          "title":"lat",
+                          "key":"weather.config.lat",
+                          "required":true
+                        },
+                        {
+                          "title":"lon",
+                          "key":"weather.config.lon",
+                          "required":true
+                        }
+                      ]
+                    },
+                    {
+                      "type":"section",
+                      "items":[
+                        {
+                          "title":"location",
+                          "key":"weather.config.location",
+                          "required":true
+                        },
+                        {
+                          "title":"locationID",
+                          "key":"weather.config.locationID",
+                          "required":true
+                        }
+                      ]
+                    }
+                  ]
+                }
+              ]
+            },
+            {
+              "type":"section",
+              "title":"pirateweather",
+              "items":[
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "required":true
+                },
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://api.pirateweather.net",
+                  "readonly":true
+                },
+                {
+                  "title":"weatherEndpoint",
+                  "key":"weather.config.weatherEndpoint",
+                  "value":"/forecast",
+                  "readonly":true
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"weather.gov",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://api.weather.gov/points/",
+                  "readonly":true
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                }
+                ]
+            } ,
+            {
+              "type":"section",
+              "title":"ukmetoffice",
+              "items":[
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "required":true
+                },
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://datapoint.metoffice.gov.uk/public/data/val/wxfcs/all/json/",
+                  "readonly":true
+                },
+                {
+                  "title":"locationID",
+                  "key":"weather.config.locationID",
+                  "required":true
+                }
+                ]
+            },
+            {
+
+              "type":"section",
+              "title":"ukmetofficedatahub",
+              "items":[
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "required":true
+
+                },
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://data.hub.api.metoffice.gov.uk/sitespecific/v0/point/",
+                  "readonly":true
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"Weatherbit",
+              "items":[
+                {
+                  "title":"apiKey",
+                  "key":"weather.config.apiKey",
+                  "required":true
+                },
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://api.weatherbit.io/v2.0",
+                  "readonly":true
+                },
+                {
+                  "title":"weatherEndpoint",
+                  "key":"weather.config.weatherEndpoint",
+                  "type":"select",
+                  "value":"{{value.weatherbitEndpoints}}",
+                  "readonly":true
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"SMHI",
+              "items":[
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                },
+                {
+                  "title":"precipitationValue",
+                  "key":"weather.config.precipitationValue"
+                },
+                {
+                  "title":"location",
+                  "key":"weather.config.location",
+                  "required":true
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"envcanada",
+              "items":[
+                {
+                  "title":"siteCode",
+                  "key":"weather.config.siteCode",
+                  "required":true,
+                  "description": "To determine the siteCode value for a Canadian city/town, look at the Environment Canada document at <a>https://dd.weather.gc.ca/citypage_weather/docs/site_list_en.csv</a> (or site_list_fr.csv). There you will find a table with city/town names you can search under column B (English Names), with the corresponding siteCode under column A (Codes)"
+                },
+                {
+                  "title":"provCode",
+                  "key":"weather.config.provCode",
+                  "required":true,
+                  "description":"To determine the provCode value for a Canadian city/town, look at the Environment Canada document at <a>https://dd.weather.gc.ca/citypage_weather/docs/site_list_en.csv</a> (or site_list_fr.csv). There you will find a table with city/town names you can search under column B (English Names), with the corresponding provCode under column C (Province) - and of course the siteCode under column A (Codes)"
+                },
+                {
+                  "title":"location",
+                  "key":"weather.config.location",
+                  "required":true,
+                  "description":"The free-format text string intended to hold a location name (e.g. city) that should appear in the module header. for example:Toronto, ON"
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"Weatherflow",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://swd.weatherflow.com/swd/rest/",
+                  "readonly":true
+                },
+                {
+                  "title":"token",
+                  "key":"weather.config.token",
+                  "required":true,
+                  "description": "The <a href=\"https://weatherflow.github.io/Tempest/api/token\">Weatherflow</a> token which can be obtained in the webapp of Weatherflow)"
+                },
+                {
+                  "title":"stationid",
+                  "key":"weather.config.stationid",
+                  "required":true,
+                  "description":"The id of your weather station from wich you want to show the data. This also can be obtained in the webapp of Weatherflow"
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"openmeteo",
+              "items":[
+                {
+                  "title":"apiBase",
+                  "key":"weather.config.apiBase",
+                  "value":"https://api.open-meteo.com/v1",
+                  "readonly":true
+                },
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                },
+                {
+                  "title":"maxNumberOfDays",
+                  "key":"weather.config.maxNumberOfDays"
+                },
+                {
+                  "title":"pastDays",
+                  "key":"weather.config.pastDays"
+                }
+                ]
+            },
+            {
+              "type":"section",
+              "title":"yr",
+              "items":[
+                {
+                  "title":"lat",
+                  "key":"weather.config.lat",
+                  "required":true
+                },
+                {
+                  "title":"lon",
+                  "key":"weather.config.lon",
+                  "required":true
+                },
+                {
+                  "title":"altitude",
+                  "key":"weather.config.altitude"
+                } ,
+                {
+                  "title":"currentForecastHours",
+                  "key":"weather.config.currentForecastHours"
+                }
+                ]
+            }
+          ]
         },
         {
           "title": "roundTemp",
