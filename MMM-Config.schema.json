@@ -223,12 +223,12 @@
         {"type":"button",
           "title":"Open module readme",
           "htmlClass":"repo_button",
-          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;$('#viewer').attr('src', url+'?u=https://github.com/sdetweil/MMM-Config');$('#viewer').removeClass('hidden');}"
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
         },
         {
            "type":"button",
            "htmlClass":"hidden repo_url",
-           "title":"testpage.html"
+           "title":"https://github.com/sdetweil/MMM-Config"
         },
         {
           "title": "showQR",
