@@ -4,7 +4,7 @@ Enable form based (in browser) configuration for MagicMirror.
 
 ## Dependencies
 
-* An installation of [MagicMirror<sup>2</sup>](https://github.com/MichMich/MagicMirror)
+* An installation of [MagicMirror<sup>2</sup>](https://github.com/MagicMirrorOrg/MagicMirror)
 
 ## Explanation of module
 
@@ -64,20 +64,26 @@ MMM-Config uses the [jsonform](https://github.com/jsonform/jsonform/wiki) librar
 ### The form looks like this
 
 Main form page. The form colors can be set in webform.css
-![main page](./doc_images/MMM-Config%20form.png)
+![main page](./doc_images/MMM-Config_base.png)
 
 The base expanded.
-![base variables](./doc_images/MMM-Config%20base.png)
+![main page](./doc_images/MMM-Config_form.png)
 
 Modules expanded.
+
 Module names in red are disabled or not in config.js.
 Module names in blue are in config.js and enabled.
+the top section are in config.js
+once they all turn red, these are 'installed' in the modules folder, but not in config.js
 
-![base variables](./doc_images/MMM-Config%20modules.png)
+![base variables](./doc_images/MMM-Config_modules.png)
+
+a module expanded
+![base variables](./doc_images/MMM-Config_module_expanded.png)
 
 ### The Module Positions section
 
-![base variables](./doc_images/MMM-Config%20positions.png)
+![base variables](./doc_images/MMM-Config_positions.png)
 
 **Because the order of modules is top down by position, all the positioning is moved to this section of the form.**
 
@@ -118,6 +124,9 @@ when the categories are expanded
 
 and a module expanded
 ![base variables](./module_installer/images/installer_module.png)
+
+and a module with readme open
+![base variables](./module_installer/images/installer_readme_open.png)
 
 the unregistered section looks like this 
 

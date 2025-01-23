@@ -1,13 +1,14 @@
 {
-  "name": "mmm-config",
+  "name": "MMM-Config",
   "version": "1.0.0",
-  "description": "",
+  "description": "Enable form based (in browser) configuration for MagicMirror",
   "main": "MMM-Config.js",
   "scripts": {
     "postinstall": "node exec_script.js ./postinstall:postinstall.cmd",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "author": "",
+  "repository":"https://github.com/sdetweil/MMM-Config",
+  "author": "Sam Detweiler",
   "license": "ISC",
   "dependencies": {
     "child_process": "^1.0.2",
