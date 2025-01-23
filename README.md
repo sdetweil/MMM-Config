@@ -179,3 +179,8 @@ and any changes go in MMM-Config/module_installer/local.css
 note that these apply to ALL  modules,  and ALL unregistered URLs at the same time
 so additional select clause elements would be required to target just some. 
 (like modules in a particular category)
+
+all changes go in
+```
+  MMM-Config/module_installer/local.css
+```
