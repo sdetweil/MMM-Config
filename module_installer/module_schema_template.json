@@ -81,6 +81,9 @@
                         },
                         "previously_installed": {
                           "type": "boolean"
+                        },
+                        "readme_url": {
+                          "type": "string"
                         }
                     }
                   }
@@ -153,18 +156,19 @@
               "htmlClass":"moduleEntry",
               "items": [
                 {
-                  "title": "name",
-                  "key": "categories[].category.modules[].name",
-                  "valueInLegend": true,
-                  "htmlClass":"moduleName",
-                  "readonly":true
-                },
-                {
                   "type":"button",
                   "title":"Open Module Readme",
                   "htmlClass":"openclose_readme ModuleButton",
-                  "onClick":"(evt,node)=>{var parent =$(evt.target).closest('fieldset'); var module=parent.find('legend').text();var url=parent.find('.hidden_url input').val();window.open(url);}"
+                  "onClick":"(evt,node)=>{var parent =$(evt.target).closest('fieldset');let element=parent.find('.readme_url').find('input');let url=element.val();let pos=$(evt.target).offset();process_readme(url,pos)}"
                 },
+                {
+                  "title": "name",
+                  "key": "categories[].category.modules[].name",
+                  "valueInLegend": true,
+                  "htmlClass":"moduleName hidden",
+                  "readonly":true
+                },
+
                 {
                   "title": "Description",
                   "key": "categories[].category.modules[].description",
@@ -197,7 +201,11 @@
                 },
                 {
                   "key": "categories[].category.modules[].url",
-                  "htmlClass": "hidden_url"
+                  "htmlClass": "hidden"
+                },
+                {
+                  "key": "categories[].category.modules[].readme_url",
+                  "htmlClass": "readme_url hidden"
                 }
               ]
             }

@@ -113,3 +113,7 @@ input[type="text"] {
 .desc_input input[type="text"], .unreg_url input[type="text"] {
     width: 50%;
 }
+.moduleList label {
+    font-size:22px;
+    margin-bottom: 12px;
+}

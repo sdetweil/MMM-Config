@@ -4,3 +4,5 @@ cp .pre-commit .git/hooks
 
 touch module_installer/local.css
 touch local.css
+cp templates/module_url_hash.json .
+

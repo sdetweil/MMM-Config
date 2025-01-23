@@ -271,12 +271,12 @@
         {"type":"button",
           "title":"Open module readme",
           "htmlClass":"repo_button",
-          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
         },
         {
            "type":"button",
-           "htmlClass":"hidden repo_url",
-           "title":"https://github.com/totoluto/MMM-NewsAPI"
+           "htmlClass":"hidden readme_url",
+           "title":"https://raw.githubusercontent.com/totoluto/MMM-NewsAPI/refs/heads/main/README.md"
         },
         {
           "title": "apiKey",

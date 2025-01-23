@@ -103,8 +103,12 @@ input1[type="checkbox"] {
 
 #viewer {
     position: absolute;
+    background-color: white;
     width: 50%;
     height: 85%;
     left: 40%;
     top: 15%;
 }
+#viewer thead {
+    border-color: black;
+ }

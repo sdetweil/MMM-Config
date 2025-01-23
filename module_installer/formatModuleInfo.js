@@ -20,15 +20,19 @@ if(debug)
 let categories = {};
 
 let hash = {
-	"alert":"https://docs.magicmirror.builders/modules/alert.html",
-	"calendar":"https://docs.magicmirror.builders/modules/calendar.html",
-	"clock":"https://docs.magicmirror.builders/modules/clock.html",
-	"compliments":"https://docs.magicmirror.builders/modules/compliments.html",
-	"helloworld":"https://docs.magicmirror.builders/modules/helloworld.html",
-	"newsfeed":"https://docs.magicmirror.builders/modules/newsfeed.html",
-	"updatenotification":"https://docs.magicmirror.builders/modules/updatenotification.html",
-	"weather":"https://docs.magicmirror.builders/modules/weather.html"
+	"alert":{"readme_url":"https://docs.magicmirror.builders/modules/alert.html"},
+	"calendar":{"readme_url":"https://docs.magicmirror.builders/modules/calendar.html"},
+	"clock":{"readme_url":"https://docs.magicmirror.builders/modules/clock.html"},
+	"compliments":{"readme_url":"https://docs.magicmirror.builders/modules/compliments.html"},
+	"helloworld":{"readme_url":"https://docs.magicmirror.builders/modules/helloworld.html"},
+	"newsfeed":{"readme_url":"https://docs.magicmirror.builders/modules/newsfeed.html"},
+	"updatenotification":{"readme_url":"https://docs.magicmirror.builders/modules/updatenotification.html"},
+	"weather":{"readme_url":"https://docs.magicmirror.builders/modules/weather.html"}
 }
+
+try {
+	hash = require(__dirname+"/../module_url_hash.json")
+} catch(e){}
 // get the file data
 let moduleList = JSON.parse(data)
 if(debug){
@@ -42,7 +46,10 @@ moduleList.forEach(module=>{
 
 	if(debug)
 		console.log("checking installed for module="+module.name+" at path="+ MM_modules_Path+'/'+module.name)
-	hash[module.name]=module.url
+	if(!hash[module.name]){
+	  hash[module.name]={ "repo_url":module.url,"readme_url":"null"}
+	  // we should get the readme_url here
+	}
 	try {
 		// check
 		let fn = MM_modules_Path+'/'+module.name
@@ -59,10 +66,13 @@ moduleList.forEach(module=>{
 		if(debug)
 			console.log("module="+module.name+" not installed")
   }
+  // set the readme_url from the hash
+	module['readme_url']= hash[module.name].readme_url
   // if nothing in that category yet
 	if(categories[module.category] === undefined)
 		// make it an empty array
 	  categories[module.category]=[]
+
 	// put the module in its category
 	categories[module.category].push(module) 	
 })

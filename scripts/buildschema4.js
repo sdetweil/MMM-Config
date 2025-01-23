@@ -49,13 +49,14 @@ var schema = {};
 const openUrlForm_template=[{type:"button",
                             title:"Open module readme",
                             htmlClass:"repo_button",
-                            "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.repo_url');let element=siblings.toArray()[0];let url=element.innerText;window.open(url)}"
+                            "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
                            },
                            {
                              type:"button",
-                             htmlClass:"hidden repo_url",
+                             htmlClass:"hidden readme_url",
                              title:""
-                           }]
+                           }
+                         ]
 
 let url_hash= null
 const module_url_hash_file="module_url_hash.json"
@@ -1956,9 +1957,9 @@ function processModule(schema, form, value, module_defines, module_name) {
       console.log("looking in url hash="+module_name+" hash="+(url_hash?"true":"false"))
   if(url_hash && url_hash[module_name]){
     if(debug)
-      console.log("found module in url hash="+module_name)
+      console.log("found module in url hash="+module_name, url_hash[module_name] )
     let buttons=clone(openUrlForm_template)
-    buttons[1].title=url_hash[module_name]
+    buttons[1].title=url_hash[module_name].readme_url
     module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
   } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section

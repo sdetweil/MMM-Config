@@ -1,3 +1,62 @@
+async function process_readme(readme_url, pos){
+
+const manipulateSource = false
+
+function detectBrowser() {
+  const userAgent = navigator.userAgent;
+
+  if (userAgent.indexOf("Chrome") > -1) {
+    return "Chrome";
+  } else if (userAgent.indexOf("Firefox") > -1) {
+    return "Firefox";
+  } else if (userAgent.indexOf("Safari") > -1 && userAgent.indexOf("Chrome") === -1) {
+    return "Safari";
+  } else if (userAgent.indexOf("Edge") > -1) {
+    return "Edge";
+  } else if (userAgent.indexOf("Opera") > -1) {
+    return "Opera";
+  } else {
+    return "Unknown";
+  }
+}
+
+  const browserName = detectBrowser();
+
+    let viewer = $('#viewer')
+    let x=readme_url.split('/')
+    converter = new showdown.Converter({tables: true})
+    if(!readme_url.endsWith('.html') && !readme_url.includes('gitlab.com')){
+      let response=await fetch(readme_url) //, { signal: AbortSignal.timeout(10000)} )// ,{ mode: 'no-cors'})
+      let text = await response.text();
+      //console.log("readme="+text)
+      if(readme_url.includes("github")){
+        user = x[3]
+        repo = x[4]
+        branch = x[7]
+        text= text.replace(/\]\(\.\//g,"]("+`https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+      }
+      html      = converter.makeHtml(text).toString();
+      if(!html.startsWith("<html><head><body>")){
+        html ='<html><head><link rel="stylesheet" type="text/css" href="viewer.css"/></head><body>' +html+'"</body></html>'
+      }
+      window.sHTML = html;
+      viewer.attr('src', 'javascript:parent.sHTML')
+
+    } else {
+      if(manipulateSource){
+        let response=await fetch(readme_url, { mode: 'no-cors'})
+        let text = await response.text();
+        html      = converter.makeHtml(text).toString()
+        window.sHTML = html;
+        viewer.attr('src', 'javascript:parent.sHTML')
+      } else {
+        viewer.attr('src', "/cors?url="+readme_url)
+      }
+    }
+    viewer.css("top", pos.top)
+    viewer.removeClass('hidden')
+}
+
 $(function () {
   const event = new Event("form_loaded");
   // global vars
