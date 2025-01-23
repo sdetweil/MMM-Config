@@ -23,6 +23,9 @@
   <script type="text/javascript" src="../node_modules/socket.io-client/dist/socket.io.js"></script>
   <script type="text/javascript" src="../node_modules/showdown/dist/showdown.min.js"></script>
   <script type="text/javascript" src="form-client.js"></script>
-  <iframe id="viewer" class="ourframe hidden"/>
+  <div id="viewerFrame" class="ourframe" style="display:none">
+    <button id="closeViewer" type="button">Close Readme</button>
+    <iframe id="viewer" />
+  </div>
 </body>
 </html>

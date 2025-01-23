@@ -16,7 +16,7 @@ workdir/*
 qrfile.png
 animateCSS.js
 module_form_schema.json
-#module_url_hash.json
+module_url_hash.json
 canceled
 installer_w_repo
 local.css

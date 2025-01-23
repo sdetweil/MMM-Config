@@ -53,13 +53,27 @@ function detectBrowser() {
         viewer.attr('src', "/cors?url="+readme_url)
       }
     }
-    viewer.css("top", pos.top)
-    viewer.removeClass('hidden')
+    $('#viewerFrame').css("top", pos.top)
+    toggle_visibility('viewerFrame')
+}
+
+function toggle_visibility(id) {
+   var e = document.getElementById(id);
+   if(e.style.display == 'block')
+      e.style.display = 'none';
+   else
+      e.style.display = 'block';
+}
+function closeViewer(event){
+  //event.preventDefault();
+  toggle_visibility('viewerFrame') //addClass('hidden')
+  return false
 }
 
 
 $(function () {
   const event = new Event("form_loaded");
+  $("#closeViewer").on("click", closeViewer)
   // global vars
   var u = window.location.href;
   var pos = u.substr(u.lastIndexOf("/") + 1);

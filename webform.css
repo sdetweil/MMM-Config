@@ -101,14 +101,22 @@ input1[type="checkbox"] {
     height: 2.1em;
 }
 
-#viewer {
+#viewer thead {
+    border-color: black;
+}
+#viewerFrame {
     position: absolute;
-    background-color: white;
     width: 50%;
     height: 85%;
     left: 40%;
     top: 15%;
 }
-#viewer thead {
-    border-color: black;
- }
+#viewer {
+    width: 100%;
+    height: 95%;
+}
+#closeViewer{
+    position: relative;
+    top:0%;
+    left:0%;
+}

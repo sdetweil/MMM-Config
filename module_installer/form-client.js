@@ -50,15 +50,35 @@ function detectBrowser() {
         window.sHTML = html;
         viewer.attr('src', 'javascript:parent.sHTML')
       } else {
-        viewer.attr('src', "/cors?url="+readme_url)
+        //if(readme_url.includes("gitlab.com"))
+        //  viewer.attr('src', readme_url)
+        //else
+          viewer.attr('src', "/cors?url="+readme_url)
       }
     }
-    viewer.css("top", pos.top)
-    viewer.removeClass('hidden')
+
+    $('#viewerFrame').css("top", pos.top)
+    toggle_visibility('viewerFrame')
+    //$('#viewerFrame').removeClass('hidden')
+    //$('#viewerFrame').toggle();
+}
+
+ function toggle_visibility(id) {
+     var e = document.getElementById(id);
+     if(e.style.display == 'block')
+        e.style.display = 'none';
+     else
+        e.style.display = 'block';
+ }
+function closeViewer(event){
+  //event.preventDefault();
+  toggle_visibility('viewerFrame') //addClass('hidden')
+  return false
 }
 
 $(function () {
   const event = new Event("form_loaded");
+  $("#closeViewer").on("click", closeViewer)
   // global vars
   var u = window.location.href;
   // get the page name
