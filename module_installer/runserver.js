@@ -118,7 +118,7 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
   // set next refresh time at 1pm/am , then 12hours between,
   // do after the data is refreshed
   setTimeout(()=>{
-    setInterval(async ()=>{
+    setInterval(()=>{
       buildFormData(NodeHelper, sortOrder)
       },
       12*60*60*1000 // 12 hours in ms
@@ -128,23 +128,29 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
   )
 }
 
-function buildFormData(NodeHelper, sortOrder){
-  // get the latest data
-  fetch(modules_url)
-    .then(NodeHelper.checkFetchStatus)
-    //  in text form
-    .then((response) => response.text())
-    .then((responseData) => {
-      // make the data
-      let data=formatter(responseData,sortOrder)
-      let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
-      // save it for page load
-      formdata=newformdata
-      // write it out for next time start
-      fs.writeFileSync(module_selector_form, newformdata)
-      fs.writeFileSync(module_url_hash,JSON.stringify(data.hash,null,2))
-      }
-    )
+async function buildFormData(NodeHelper, sortOrder){
+  // get the latest data from the 3rd party repo
+  const response = await fetch(modules_url);
+  if (!response.ok) {
+    const message = `An error occured: ${response.status}`;
+    throw new Error(message);
+  }
+  // we need the json
+  const responseData = await response.json();
+
+  // format in category and in category sorted as requested (date or time)
+  let data = await formatter(responseData, sortOrder)
+  // make the form for the installer page
+  let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
+  // save it for page load
+  formdata=newformdata
+  // write it out for next time start
+  // write it out to be loaded by installer page
+  fs.writeFileSync(module_selector_form, newformdata)
+  // write out the updated url hash (adds/deletes done twice a day) 
+  fs.writeFileSync(module_url_hash, JSON.stringify(data.hash, null, 2))
+  // async, return something
+  return true
 }
 
 //

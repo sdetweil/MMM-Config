@@ -1,8 +1,13 @@
-const rm= "/README.md"
-let debug=false
+const { execSync } = require("child_process");
 
-function getrm(raw, repoURL){
-	if(debug) console.log("processing for url="+repoURL)
+const rm = "/README.md"
+let debug=true
+
+module.exports=async ( index, module_name, moduleinfo) =>{
+	let repoURL=moduleinfo.repo_url
+	if (debug) console.log("processing for url=" + repoURL)
+	var raw =execSync(__dirname + '/geturlcontents.sh ' + moduleinfo.repo_url).toString();
+	
 	let xregex=/(\/readme\.(md|org)\")/gi
     let searchstring=rm
     let m = raw.match(xregex)
@@ -10,32 +15,14 @@ function getrm(raw, repoURL){
     	console.log("matches=",m)
     let newurl=repoURL
     if(m){
-    	searchstring=m[1]
-
-    /*while(true){
-        let index=raw.indexOf(searchstring)
-        if(debug) console.log("uppercase index="+index)
-        if(index==-1){
-            index=raw.indexOf(rm.toLowerCase())
-            if(index>-1){
-                searchstring=rm.toLowerCase()
-                break;
-            }else {
-            	return null
-            	break
-            }
-
-        } else {
-            break
-        }
-    }*/
-
+		searchstring = m[1];
 
 	    for(let index=raw.indexOf(searchstring);index>=0;index=raw.indexOf(searchstring,index)){
 	        if(debug) console.log("found a hit index="+index)
 	       let start= raw.lastIndexOf('"',index)
 	       let path=raw.substring(start,index+rm.length).split('/')
-	       if(debug) console.log("path parts=", path)
+			if (debug) console.log("path parts=", path)
+			
 	       if(repoURL.includes('github.com')){
 	       	 // https://raw.githubusercontent.com/sdetweil/MM-Config/refs/heads/main/README.md
 		       let user=path.slice(1,2)
@@ -75,21 +62,7 @@ function getrm(raw, repoURL){
 	       index++
 	    }
 	}
-    if(debug) console.log("returing url="+newurl)
-    return newurl
-}
-
-let data = "";
-
-async function main() {
-  if(process.argv.length>3 && process.argv[3]==='debug')
-  	debug=true
-
-  if(debug) console.log("entered main")
-  for await (const chunk of process.stdin) data += chunk;
-
-  if(debug) console.log("calling processor, "+process.argv[2])
-  console.log(getrm(data, process.argv[2]))
-}
-
-main();
+	if (debug) console.log("returing url=" + newurl)
+	moduleinfo.readme_url=newurl
+	return ({index:index,moduleinfo:moduleinfo, name:module_name})
+};
