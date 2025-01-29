@@ -1,7 +1,6 @@
 
-let debug=true
 const fs=require('fs')
-const { result } = require('lodash')
+//const { result } = require('lodash')
 const outdated_category="Outdated Modules"
 //const file = process.argv[2]
 const sort_types = ['date', 'name']
@@ -9,7 +8,7 @@ let fixer = require(__dirname+"/fixupurl.js")
 
 let sort_type="date"
 
-module.exports= async (data,sorttype)=>{
+module.exports= async (data,sorttype, debug)=>{
 
 	sort_type=sorttype
 
@@ -96,7 +95,7 @@ module.exports= async (data,sorttype)=>{
 				if (use_promise) {
 					console.log("adding to the list for module="+module.name)
 					// call the url fixer.. not to many at a time
-					promise_list.push(fixer(index, module.name, hash[module.name]))
+					promise_list.push(fixer( module.name, hash[module.name], module.category, debug))
 				}
 				//we should get the read me_url here
 			} else {
@@ -115,18 +114,31 @@ module.exports= async (data,sorttype)=>{
 			// if we called the fixer its promise as added to the list
 			// if we have our batch
 			// or we hit the end and there are some
-			console.log("index="+index)
+			if(debug)
+			  console.log("index="+index)
 			if ((promise_list.length == max_promises) || (promise_list.length > 0 && index == numb_module_entries)) {
-				console.log("awaiting")
+				if(debug)
+					console.log("awaiting")
 				let results = await Promise.allSettled(promise_list)
 				promise_list = []
-				console.log("back from awaiting")
+				if(debug)
+					console.log("back from awaiting")
 				results.forEach(result => {
 					if (result.status === "fulfilled") {
-						let info = result.value						
-						console.log("setting readme_url for module " + info.name + " url=" + info.moduleinfo.readme_url +" index="+info.index)
+						let info = result.value	
+						if(debug)
+							console.log("setting readme_url for module " + info.name + " url=" + info.moduleinfo.readme_url)
+						// if there is a radme_url provided
 						if (info.moduleinfo.readme_url)
-							module.readme_url = info.moduleinfo.readme_url
+							// loop thru the modules in the category for this module
+							for (m of categories[info.category]) {
+								// if this module foune
+								if (m.name === info.name) {
+									// update its readme_url
+									m.readme_url = info.moduleinfo.readme_url
+									break
+								}
+							}
 						hash[info.name] = info.moduleinfo
 					}
 				})

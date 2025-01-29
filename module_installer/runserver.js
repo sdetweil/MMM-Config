@@ -10,8 +10,9 @@ const source_name=__dirname+"/module_form_schema.json"
 const BASE_INSTANCE_PORT=9000
 const run_port = process.env.PORT || BASE_INSTANCE_PORT;
 let remote_io = null
-const parm_adjustment=(process.argv[process.argv.length-1]=="debug"?1:0)  // if last parm is debug, others are down 1(adjustment)
-const debug=false
+  // if last parm is debug, others are down 1(adjustment)
+let local_debug = false
+const parm_adjustment = (process.argv[process.argv.length - 1] == "debug" ? 1 : 0)
 const startMM=true
 const our_path=__dirname.split('/').slice(0,-2).join('/')
 
@@ -48,7 +49,7 @@ try {
 }
 catch(error){}
 
-if(debug)
+if(local_debug)
   console.log("running in docker container="+in_docker_container)
 
 // same code as in MMM-Config to make control files unique by instance
@@ -66,7 +67,8 @@ String.prototype.hashCode = function(port) {
 }
 
 // startup in async mode
-module.exports=async (expressApp,io, NodeHelper, sortOrder)=>{
+module.exports = async (expressApp, io, NodeHelper, sortOrder, debug) => {
+  local_debug = debug
   remote_io=io
   buildFormData(NodeHelper, sortOrder)
   setupServer(expressApp, NodeHelper)
@@ -113,7 +115,7 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
     then = then.add(1,'d').startOf('day').add(refresh_time_hour,'h') // tomorrow 04:00
   }
 
-  if(debug)
+  if(local_debug)
     console.log("will pull config data at "+then.format("HH:mm:ss")+" in "+ then.diff(now)+" ms")
   // set next refresh time at 1pm/am , then 12hours between,
   // do after the data is refreshed
@@ -139,7 +141,7 @@ async function buildFormData(NodeHelper, sortOrder){
   const responseData = await response.json();
 
   // format in category and in category sorted as requested (date or time)
-  let data = await formatter(responseData, sortOrder)
+  let data = await formatter(responseData, sortOrder, local_debug)
   // make the form for the installer page
   let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
   // save it for page load
@@ -159,7 +161,7 @@ async function buildFormData(NodeHelper, sortOrder){
 function getFile() {
   let configPath = __dirname + path.sep+source_name;
 
-  if (debug ) console.log("path=" + configPath);
+  if (local_debug ) console.log("path=" + configPath);
 
   if (fs.existsSync(configPath)) {
     try {
@@ -176,7 +178,7 @@ function getFile() {
 // handle the socket connection from the web page
 let cancount=0
 function handleConnection(socket, type) {
-  if (debug) console.log("connection started = " + type);
+  if (local_debug) console.log("connection started = " + type);
   //console.log("socket connected")
   socket.emit("connected");
 
@@ -189,7 +191,7 @@ function handleConnection(socket, type) {
 
   socket.on("cancel", () => {
     if(cancount++==0){
-      if(debug)
+      if(local_debug)
         console.log("cancel requested")
       console.log("cancel received, closing installer")
       socket.emit("close")
@@ -199,7 +201,7 @@ function handleConnection(socket, type) {
 
   // when the page askes for form
   socket.on("getForm", () => {
-    if(debug)
+    if(local_debug)
   	  console.log("form requested")
     // send it via socket io, string data
     socket.emit("json", "'" + formdata + "'");
@@ -217,11 +219,11 @@ async function process_submit(data, socket){
   if(data.urls && data.urls.length){
     // if so, add them to the install work list
     data.urls.forEach(url=>{
-      if(debug)
+      if(local_debug)
         console.log("url='"+url+"'")
       if(url.toLowerCase().startsWith("http")){
         modulename=url.split('/').slice(-1)[0].split('.')[0]
-        if(debug)
+        if(local_debug)
           console.log("url based module name ="+modulename)
         worklist.push({
           url:url,
@@ -235,11 +237,11 @@ async function process_submit(data, socket){
 
   // loop thru the catagories returned on the form
   data.categories.forEach(categorylist =>{
-    //if(debug)
+    //if(local_debug)
     //  console.log("categorylist ="+JSON.stringify(categorylist,null,2)+"\n")
     // loop thru the modules in the catefory
     categorylist.category.modules.forEach(module=>{
-      //if(debug)
+      //if(local_debug)
       //  console.log("module "+ module.name+ " installed status="+module.installed+ (" previously="+module.previously_installed))
       // if install is selected and not previously
       if(module.installed && (module.previously_installed === false)){
@@ -251,14 +253,14 @@ async function process_submit(data, socket){
 
   // install each module in the list
   // inform web page of activity
-  if(debug)
+  if(local_debug)
     console.log("worklist="+JSON.stringify(worklist,null, 2))
 
   // now work thru the work list, one at a time
 
   let count=0
   worklist.forEach((module)=>{
-    if(debug)
+    if(local_debug)
       console.log("processing for module ="+module.name)
     let extension=os.type() === "Windows_NT"?"cmd":"sh"
     // inform web page  we are processing for this module
@@ -267,23 +269,23 @@ async function process_submit(data, socket){
     // launch the background script to do this install
     // this is exec, so we are stopped while it works
     let cmdstring=`${__dirname}/install_module.${extension} ${module.name} ${module.url}`
-    if(debug)
+    if(local_debug)
       console.log("processing command="+cmdstring)
     count++
     let child=exec(cmdstring, (error, stdout, stderr) => {
       if (error) {
-        if(debug)
+        if(local_debug)
           console.error(`exec error: ${error}`);
         return;
       }
-      if(debug){
+      if(local_debug){
         console.log(`stdout: ${stdout}`);
         console.error(`stderr: ${stderr}`);
       }
     })
     // watch for the module install to end
     child.on('exit', (code, signal) => {
-      if(debug)
+      if(local_debug)
         console.log("module install ended for module "+module.name)
       count--
       // inform the web page we are done processing for this module
@@ -293,7 +295,7 @@ async function process_submit(data, socket){
   // check every 2 seconds to see if installers ended
   const waitHandle=setInterval(
     ()=>{
-        if(debug)
+        if(local_debug)
           console.log("checking for installers to end, count="+count)
        // if all installers finished
        if(count<=0){
@@ -328,7 +330,7 @@ async function launchServer(worklist, socket){
       if(fs.statSync(fp)){
         // erase it
         // makes it easier later to check for it
-        if(debug)
+        if(local_debug)
           console.log("removing the old schema file=",fp," \nand canceled flag", canceledfp)
         fs.unlinkSync(fp)
         fs.unlinkSync(canceledfp)
@@ -351,18 +353,18 @@ async function launchServer(worklist, socket){
           env:env
         },
        (error, stdout, stderr)=>{
-          if(debug){
+          if(local_debug){
             if(error)
               console.log("error=",error)
           }
-          if(debug){
+          if(local_debug){
             if(stdout)
               console.log("error=",stdout)
           }
        }
     );
     let cpid=child.pid
-    if(debug){
+    if(local_debug){
       console.log(" node seerveronly process id = "+cpid)
       if(!in_docker_container){
         if(os.type() !== "Windows_NT")  // linux and macos
@@ -374,7 +376,7 @@ async function launchServer(worklist, socket){
     // make sure not to get nodejs blocked
     child.unref()
 
-    if(debug)
+    if(local_debug)
       console.log("about to watch for schema file write ="+fp)
     //  wait for new schema file to be written
     // keep trying on interval
@@ -384,12 +386,12 @@ async function launchServer(worklist, socket){
       // cycling checking the schema file created
       try {
         // see if it exists now
-        if(debug)
+        if(local_debug)
           console.log("checking for schema form file existing ="+fp)
         if(fs.statSync(fp)){
           if(count++==0){
             // hurray, we can stop checking
-            if(debug)
+            if(local_debug)
               console.log("file exists")
             clearInterval(handle)
             if(handle2)
@@ -400,7 +402,7 @@ async function launchServer(worklist, socket){
           }
         }
       } catch(error){
-        if(debug)
+        if(local_debug)
           console.log("file doesn't exist yet ="+fp)
       }
       count=0
@@ -458,7 +460,7 @@ function MagicMirrorWorkServerReady(socket, pid, port){
       let count =0
       fs.watch(__dirname+"/../../../"+cf_name,async (eventType, filename) => {
         if (eventType === 'change') {
-          if(debug)
+          if(local_debug)
             console.log(`File ${filename} has been changed`);
           // watch out we could get called multiple times
           if(count++ == 0){
@@ -477,23 +479,23 @@ function getWorkConfigServerProcessList(pid){
     try {
          if(os.type() !== "Windows_NT"){
           const psRes = execSync(`ps -ef | grep ${pid} | grep -v grep`).toString().trim().split(/\n/);
-          if(debug){
+          if(local_debug){
             console.log("pid list="+ JSON.stringify(psRes))
           }
           if(psRes){
             (psRes || []).forEach(pidGroup => {
-              if(debug)
+              if(local_debug)
                 console.log("processing for "+pidGroup)
               const [x, actual, parent] = pidGroup.trim().split(/ +/);
-              if(debug){
+              if(local_debug){
                 console.log("actual ="+actual+" parent="+parent)
                 console.log(`comparing '${parent}' with '${pid}'`)
               }
               if (parent.toString() === pid.toString()) {
-                if(debug)
+                if(local_debug)
                   console.log(`save '${actual}' to list`)
                 list.push(parseInt(actual, 10));
-                if(debug)
+                if(local_debug)
                   console.log("added pid=",list.slice(-1)[0]," to the list")
               }
             });
@@ -502,7 +504,7 @@ function getWorkConfigServerProcessList(pid){
           // windows, don't know yet
         }
         list.push(pid)  // put parent on the end of list
-        if(debug)
+        if(local_debug)
           console.log("list="+JSON.stringify(list,null,2))
       }
     catch(error){
@@ -514,7 +516,7 @@ function getWorkConfigServerProcessList(pid){
 function killWorkConfigServer (list)  {
 
   list.forEach(childPid => {
-      if(debug)
+      if(local_debug)
         console.log("killing child pid=",childPid)
       try {
          process.kill(childPid)
@@ -540,13 +542,13 @@ function restartMagicMirror(){
         for(let managed_process of output){
           if(managed_process.pm2_env.status === 'online' ){
             if(managed_process.pm2_env.pm_exec_path.startsWith(our_path)){
-              if (debug)
+              if (local_debug)
                 console.info(
                   "found our pm2 entry, id=" + managed_process.pm_id
                 );
               pm2_id = managed_process.pm_id;
               exec("pm2 restart "+pm2_id, (error, stdout, stderr)=>{
-                if(debug){
+                if(local_debug){
                   if(error)
                     console.log("pm2 restart error=",error)
                 }

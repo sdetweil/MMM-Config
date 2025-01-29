@@ -29,11 +29,23 @@ function detectBrowser() {
       let response=await fetch(readme_url ) //,{ mode: 'no-cors'})
       let text = await response.text();
       //console.log("readme="+text)
-      if(readme_url.includes("github")){
+      if (readme_url.startsWith("http://")) {
+        var u = window.location.href;
+        var home = u.split('/').slice(0, -2)
+        home.push(x[4])
+        text = text.replace(/\]\(https:/g,"!!!!!#")
+        text = text.replace(/\]\(/g, "](" + home.join('/')+'/')
+        text = text.replace(/!!!!!#/g,"](https:")
+      }
+      if (readme_url.includes("github")) {
         user = x[3]
         repo = x[4]
         branch = x[7]
-        text= text.replace(/\]\(\.\//g,"]("+`https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+        if (text.indexOf("](.")) {
+          text = text.replace(/\]\(\.\//g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+        } else if (!text.indexOf("](https://")) {
+          text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+        }        
       }
       html      = converter.makeHtml(text).toString();
       if(!html.startsWith("<html><head><body>")){

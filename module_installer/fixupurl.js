@@ -1,9 +1,9 @@
 const { execSync } = require("child_process");
 
 const rm = "/README.md"
-let debug=true
 
-module.exports=async ( index, module_name, moduleinfo) =>{
+
+module.exports=async ( module_name, moduleinfo, category, debug) =>{
 	let repoURL=moduleinfo.repo_url
 	if (debug) console.log("processing for url=" + repoURL)
 	var raw =execSync(__dirname + '/geturlcontents.sh ' + moduleinfo.repo_url).toString();
@@ -18,10 +18,10 @@ module.exports=async ( index, module_name, moduleinfo) =>{
 		searchstring = m[1];
 
 	    for(let index=raw.indexOf(searchstring);index>=0;index=raw.indexOf(searchstring,index)){
-	        if(debug) console.log("found a hit index="+index)
+	       if(debug) console.log("found a hit index="+index)
 	       let start= raw.lastIndexOf('"',index)
 	       let path=raw.substring(start,index+rm.length).split('/')
-			if (debug) console.log("path parts=", path)
+		   if (debug) console.log("path parts=", path)
 			
 	       if(repoURL.includes('github.com')){
 	       	 // https://raw.githubusercontent.com/sdetweil/MM-Config/refs/heads/main/README.md
@@ -30,7 +30,7 @@ module.exports=async ( index, module_name, moduleinfo) =>{
 		       let branch=path.slice(-2,-1)
 		       let fn=path.slice(-1)
 	         newurl=`https://raw.githubusercontent.com/${user}/${repo}/refs/heads/${branch}/${fn}`
-		     }
+		   }
 
 	       if(repoURL.includes('gitlab.com')){
 	       	 //https://gitlab.com/dnmmrdr1/MMM-NCTtimes/-/blob/main/README.md?ref_type=heads
@@ -55,14 +55,14 @@ module.exports=async ( index, module_name, moduleinfo) =>{
 		       let branch=path.slice(-2,-1)
 		       let fn=path.slice(-1)
 		       newurl=`https://gitlab.com/${user}/${repo}/-/blob/${branch}/${fn}?ref_type=heads`
-		     }
+		   }
 	       if(debug) console.log("start="+start+" index="+index+" hit ="+path.join('/'))
 	       if(debug) console.log("newurl="+newurl)
 	       break
 	       index++
 	    }
 	}
-	if (debug) console.log("returing url=" + newurl)
+	if (debug) console.log("fixup returing url=" + newurl)
 	moduleinfo.readme_url=newurl
-	return ({index:index,moduleinfo:moduleinfo, name:module_name})
+	return ({moduleinfo:moduleinfo, name:module_name, category:category})
 };

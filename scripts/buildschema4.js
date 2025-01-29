@@ -1955,11 +1955,16 @@ function processModule(schema, form, value, module_defines, module_name) {
   }
   if(debug)
       console.log("looking in url hash="+module_name+" hash="+(url_hash?"true":"false"))
-  if(url_hash && url_hash[module_name]){
-    if(debug)
-      console.log("found module in url hash="+module_name, url_hash[module_name] )
-    let buttons=clone(openUrlForm_template)
-    buttons[1].title=url_hash[module_name].readme_url
+  if (url_hash && url_hash[module_name]) {
+    if (debug)
+      console.log("found module in url hash=" + module_name, url_hash[module_name])
+    let buttons = clone(openUrlForm_template)
+    if (url_hash[module_name].readme_url.endsWith('.html')){
+      buttons[1].title = url_hash[module_name].readme_url
+    }
+    else {
+      buttons[1].title = "http://localhost:8090/modules/" + module_name + "/" + url_hash[module_name].readme_url.split('/').slice(-1)[0]
+    }
     module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
   } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
