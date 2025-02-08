@@ -38,7 +38,7 @@ and a module installer is provided as well , see [Module Installer](#minstaller)
 | **Option** | **Default** | **Default** | **Info**
 | --- | --- | --- | --- |
 | `showQR` | OPTIONAL | `false` | Show a QR code on the MM screen to allow quick access to the configuration form |
-| | | ===> | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/modules/MMM-Config/review** |
+| | | ===> | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/configure** |
 | | | | `Note:` If MagicMirror is configured for `'address:"localhost"`, you `MUST use a browser ON the same system as MM`, and the QR code will be replaced by text on the screen explaining why the QRCode is not displayed
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
 | `ModuleSortOrder` | OPTIONAL | `date`	| this is used by the installer to organize the modules  in the installer list , either  by last update date or by `name`
