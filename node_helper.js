@@ -102,7 +102,7 @@ module.exports = NodeHelper.create({
         our_port;
 
       if (this.config.showQR) {
-        let url = this.config.url + "/"+modules_folder+"/" + this.name + "/review";
+        let url = this.config.url + "/configure";
         this.imageurl =
           //this.config.url +
           "/"+modules_folder+"/" + this.name + "/qrfile.png";
