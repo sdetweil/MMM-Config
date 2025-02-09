@@ -34,10 +34,15 @@ function detectBrowser() {
         repo = x[4]
         branch = x[7]
         // if the image link has a leading dot
-        if (text.indexOf("](.")) {
+        if (text.indexOf("](.")>0) {
           text = text.replace(/\]\(\.\//g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
           // if its NOT an absolute url
-        } else if (!text.indexOf("](https://")) {
+        }
+        if (text.indexOf("=\"./")>0) {
+          text = text.replace(/=\"\.\//g, "=\""+ `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+          // if its NOT an absolute url
+        }
+        if (text.indexOf("](https://")==-1) {
           text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
         }
       }

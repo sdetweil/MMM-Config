@@ -8,7 +8,7 @@ const moment = require('moment-timezone')
 const source_name=__dirname+"/module_form_schema.json"
 
 const BASE_INSTANCE_PORT=9000
-const run_port = process.env.PORT || BASE_INSTANCE_PORT;
+let run_port = process.env.PORT || BASE_INSTANCE_PORT;
 let remote_io = null
   // if last parm is debug, others are down 1(adjustment)
 let local_debug = false

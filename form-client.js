@@ -34,7 +34,8 @@ function detectBrowser() {
         var home = u.split('/').slice(0, -2)
         home.push(x[4])
         text = text.replace(/\]\(https:/g,"!!!!!#")
-        text = text.replace(/\]\(/g, "](" + home.join('/')+'/')
+        text = text.replace(/\]\(/g, "](" + home.join('/') + '/')
+        text = text.replace(/\="\.\//g, "=\"" + home.join('/') + '/')
         text = text.replace(/!!!!!#/g,"](https:")
       }
       if (readme_url.includes("github")) {
