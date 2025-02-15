@@ -1080,11 +1080,11 @@ module.exports = NodeHelper.create({
 
     // process for any script modified objects
     Object.keys(data.scriptConvertedObjects).forEach(module_name => {
-      let t = this.check_for_module_file(module_name,'converter')
-      if(t){
-        this.module_scripts[module_name] = require(t)
-        if(debug){
-            console.log("functions exported="+JSON.stringify(Object.keys(this.module_scripts[module_name])))
+      let t1 = this.check_for_module_file(module_name, 'converter')
+      if (t1) {
+        this.module_scripts[module_name] = require(t1)
+        if (debug) {
+          console.log("functions exported=" + JSON.stringify(Object.keys(this.module_scripts[module_name])))
         }
       }
     })

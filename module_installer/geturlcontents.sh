@@ -1,6 +1,6 @@
 #!/bin/bash 
 
-curl_found=$(which curl1 | wc -l)
+curl_found=$(which curl | wc -l)
 wget_found=$(which wget | wc -l)
 
 url=$1
