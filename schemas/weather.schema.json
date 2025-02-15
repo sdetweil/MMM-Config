@@ -44,6 +44,21 @@
           "title": "classes",
           "default": ""
         },
+        "header": {
+          "type": "string",
+          "title": "header",
+          "default": ""
+        },
+        "hiddenOnStartup": {
+          "type": "boolean",
+          "title": "hiddenOnStartup",
+          "default": false
+        },
+        "configDeepMerge": {
+          "type": "boolean",
+          "title": "configDeepMerge",
+          "default": false
+        },        
         "order": {
           "type": "string",
           "title": "order",
@@ -415,6 +430,18 @@
       "key": "weather.position",
       "description": "use Module Positions section below to set or change"
     },
+    {
+      "key": "weather.header",
+      "description": "header to use for this module"
+    },
+    {
+      "key": "weather.hiddenOnStartup",
+      "description": "Set module as being hidden on startup. This field is optional."
+    },
+    {
+      "key": "weather.configDeepMerge",
+      "description": "Allow to merge with internal configuration in deep"
+    },    
     {
       "key": "weather.classes",
       "description": "css classes to use for this module, beyond what MM provides"
@@ -969,7 +996,9 @@
       "showPrecipitationAmount": false,
       "colored": false,
       "showFeelsLike": true,
-      "absoluteDates": false
+      "absoluteDates": false,
+      "lat": 51.67638,
+      "lon": 8.34665
     }
   }
 }

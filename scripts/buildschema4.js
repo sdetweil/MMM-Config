@@ -1924,6 +1924,18 @@ function processModule(schema, form, value, module_defines, module_name) {
     description: "use Module Positions section below to set or change"
   });
   module_form_items.push({
+    key: module_name + "." + "header",
+    description: "header to use for this module"
+  });
+  module_form_items.push({
+    key: module_name + "." + "hiddenOnStartup",
+    description: "Set module as being hidden on startup. This field is optional."
+  });
+  module_form_items.push({
+    key: module_name + "." + "configDeepMerge",
+    description: "Allow to merge with internal configuration in deep"
+  });
+  module_form_items.push({
     key: module_name + "." + "classes",
     description: "css classes to use for this module, beyond what MM provides"
   });
