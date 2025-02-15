@@ -16,17 +16,18 @@ if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
 }
-if(debug)
+if(debug )
   console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
-  //console.log("save form")
+  console.log("save form")
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
-    if(debug){
+    if(debug ){
       console.log("setting saveform="+process.argv[4])
     }
     save_module_form = process.argv[4];
-     if (process.argv.length > 5 && process.argv[5] === "debug") {
+    if (process.argv.length > 5 && process.argv[5] === "debug") {
+       //console.log("setting debug = true")
         debug = true
      }
   }
