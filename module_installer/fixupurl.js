@@ -1,4 +1,5 @@
 const { execSync } = require("child_process");
+const os = require('os')
 
 const rm = "/README.md"
 
@@ -6,7 +7,8 @@ const rm = "/README.md"
 module.exports=async ( module_name, moduleinfo, category, debug) =>{
 	let repoURL=moduleinfo.repo_url
 	if (debug) console.log("processing for url=" + repoURL)
-	var raw =execSync(__dirname + '/geturlcontents.sh ' + moduleinfo.repo_url).toString();
+	let extension=os.type() === "Windows_NT"?"cmd":"sh"
+	var raw =execSync(__dirname + '/geturlcontents.'+ extension+' '+ moduleinfo.repo_url).toString();
 	
 	let xregex=/(\/readme\.(md|org)\")/gi
     let searchstring=rm
