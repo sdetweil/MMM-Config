@@ -33,8 +33,12 @@ function detectBrowser() {
         var u = window.location.href;
         var home = u.split('/').slice(0, -2)
         home.push(x[4])
-        text = text.replace(/\]\(https:/g,"!!!!!#")
-        text = text.replace(/\]\(/g, "](" + home.join('/') + '/')
+        text = text.replace(/\]\(https:/g, "!!!!!#")
+        if(text.indexOf("t](s"))
+          text = text.replace(/t\]\(s/g, "t](" + home.join('/') + '/s')
+        else 
+          text = text.replace(/\]\(/g, "](" + home.join('/') + '/')
+        text = text.replace(/\="\//g, "=\"" + home.join('/') + '/')
         text = text.replace(/\="\.\//g, "=\"" + home.join('/') + '/')
         text = text.replace(/!!!!!#/g,"](https:")
       }
@@ -46,7 +50,9 @@ function detectBrowser() {
           text = text.replace(/\]\(\.\//g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
         } else if (!text.indexOf("](https://")) {
           text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
-        }        
+        } else if (!text.indexOf("=\"\/")) {
+          text = text.replace(/="/ / g, "=\"" + `https://raw.githubusercontent.com`)
+        }
       }
       html      = converter.makeHtml(text).toString();
       if(!html.startsWith("<html><head><body>")){

@@ -45,6 +45,9 @@ function detectBrowser() {
         if (text.indexOf("](https://")==-1) {
           text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
         }
+        if (text.indexOf("t](s")) {
+          text = text.replace(/\]\(s/g, "t](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/s`)
+        }
       }
       html      = converter.makeHtml(text).toString();
       if(!html.startsWith("<html><head><body>")){
