@@ -66,6 +66,28 @@ const module_url_hash_file="module_url_hash.json"
   if(debug)
     console.log("there are "+Object.keys(url_hash).length+" keys")
 //} catch{}
+var color_key = {
+  type: "fieldset",
+  expandable: true,
+  title: "color key",
+  items: [
+    {
+      "type": "help",
+      "helpvalue": "in config.js and enabled",
+      htmlClass: "help_module_enabled"
+    },
+    {
+      "type": "help",
+      "helpvalue": "in config.js and DISABLED",
+      htmlClass: "help_module_disabled"
+    },
+    {
+      "type": "help",
+      "helpvalue": "installed but NOT in config.js",
+      htmlClass: "help_module_notloaded"
+    }
+  ]
+}
 var form = [
   {
     title: "Settings",
@@ -83,7 +105,7 @@ var form = [
       },
       {
         type: "fieldset",
-        title: "Modules",
+        title: "Modules (in config.js order)",
         expandable: true,
         items: [
           // per module
@@ -619,6 +641,7 @@ if (!sort) {
   xy.push.apply(xy, temp);
   // reset the form to the new order
   form[0].items[1].items = xy;
+  form[0].items[1].items.unshift(color_key)
   xy = null;
 }
 
