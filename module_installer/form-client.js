@@ -25,33 +25,28 @@ function detectBrowser() {
     let viewer = $('#viewer')
     let x=readme_url.split('/')
     converter = new showdown.Converter({tables: true})
-    if(!readme_url.endsWith('.html')){
-      let response=await fetch(readme_url ) //,{ mode: 'no-cors'})
+    if(!readme_url.endsWith('.html') && !readme_url.includes('gitlab.com')){
+      let response=await fetch(readme_url) //, { signal: AbortSignal.timeout(10000)} )// ,{ mode: 'no-cors'})
       let text = await response.text();
       //console.log("readme="+text)
-      if (readme_url.startsWith("http://")) {
-        var u = window.location.href;
-        var home = u.split('/').slice(0, -2)
-        home.push(x[4])
-        text = text.replace(/\]\(https:/g, "!!!!!#")
-        if(text.indexOf("t](s"))
-          text = text.replace(/t\]\(s/g, "t](" + home.join('/') + '/s')
-        else 
-          text = text.replace(/\]\(/g, "](" + home.join('/') + '/')
-        text = text.replace(/\="\//g, "=\"" + home.join('/') + '/')
-        text = text.replace(/\="\.\//g, "=\"" + home.join('/') + '/')
-        text = text.replace(/!!!!!#/g,"](https:")
-      }
       if (readme_url.includes("github")) {
         user = x[3]
         repo = x[4]
         branch = x[7]
-        if (text.indexOf("](.")) {
+        // if the image link has a leading dot
+        if (text.indexOf("](.")>0) {
           text = text.replace(/\]\(\.\//g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
-        } else if (!text.indexOf("](https://")) {
+          // if its NOT an absolute url
+        }
+        if (text.indexOf("=\"./")>0) {
+          text = text.replace(/=\"\.\//g, "=\""+ `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+          // if its NOT an absolute url
+        }
+        if (text.indexOf("](https://")==-1) {
           text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
-        } else if (!text.indexOf("=\"\/")) {
-          text = text.replace(/="/ / g, "=\"" + `https://raw.githubusercontent.com`)
+        }
+        if (text.indexOf("t](s")) {
+          text = text.replace(/\]\(s/g, "t](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/s`)
         }
       }
       html      = converter.makeHtml(text).toString();
@@ -69,32 +64,38 @@ function detectBrowser() {
         window.sHTML = html;
         viewer.attr('src', 'javascript:parent.sHTML')
       } else {
-        viewer.attr('src', "/cors?url="+readme_url)
+        //if(readme_url.includes("gitlab.com"))
+        //  viewer.attr('src', readme_url)
+        //else
+          viewer.attr('src', "/cors?url="+readme_url)
       }
     }
+
     $('#viewerFrame').css("top", pos.top)
     toggle_visibility('viewerFrame')
+    //$('#viewerFrame').removeClass('hidden')
+    //$('#viewerFrame').toggle();
 }
 
-function toggle_visibility(id) {
-   var e = document.getElementById(id);
-   if(e.style.display == 'block')
-      e.style.display = 'none';
-   else
-      e.style.display = 'block';
-}
+ function toggle_visibility(id) {
+     var e = document.getElementById(id);
+     if(e.style.display == 'block')
+        e.style.display = 'none';
+     else
+        e.style.display = 'block';
+ }
 function closeViewer(event){
   //event.preventDefault();
   toggle_visibility('viewerFrame') //addClass('hidden')
   return false
 }
 
-
 $(function () {
   const event = new Event("form_loaded");
   $("#closeViewer").on("click", closeViewer)
   // global vars
   var u = window.location.href;
+  // get the page name
   var pos = u.substr(u.lastIndexOf("/") + 1);
 
   // config vars
@@ -105,10 +106,10 @@ $(function () {
 
   window.onbeforeunload=()=>{
     if(activesocket && usercanceled === false)
-      triggerCancel()
+      activesocket.emit('cancel')
   }
   // watch out in case the libraries don't load
-  if (pos == "config.html") {
+  if (pos.endsWith("installer.html")) {
     if (typeof JSONForm !== "object") {
       $("#outMsg").html(
         "Unable to load Required Libraries <br> Please try again in a few moments"
@@ -118,7 +119,8 @@ $(function () {
     }
   }
   function triggerCancel(){
-     activesocket.emit("cancel");
+    usercanceled= true
+    activesocket.emit("cancel");
   }
   function findGetParameter(parameterName) {
     var result = null,
@@ -129,6 +131,13 @@ $(function () {
       if (tmp[0] === parameterName) result = decodeURIComponent(tmp[1]);
     }
     return result;
+  }
+
+  function updateInstallableList(moduleName, status){
+    var listholder = $('.install-list');
+    var list = listholder.find('._jsonform-array-ul');
+    var li = list.find("li:contains('"+moduleName+"')")
+    li.text(moduleName+"-"+status)
   }
 
   function parseData(data) {
@@ -158,36 +167,47 @@ $(function () {
   }
   // socket
 
-  const activesocket = io("/mConfig" // server + ":" + port
+  const activesocket = io("/mInstaller"
     , {
     reconnectionDelayMax: 10000
   });
-
-  activesocket.on("close", function(){
-      window.close()
-  })
   // global socket events
   activesocket.on("connected", function () {
-    switch (pos) {
-      case "config.html":
+
+    if(pos.endsWith("installer.html"))
         config_init();
-        break;
-      default:
-        index_init();
-    }
   });
+
+  activesocket.on("close", function(){
+      usercanceled= true
+      window.close()
+  })
+
+  activesocket.on('processing', function(moduleName){
+      updateInstallableList(moduleName, "processing")
+  })
+
+  activesocket.on('completed', function(moduleName){
+      updateInstallableList(moduleName, "completed")
+  })
 
   activesocket.on("disconnect", function () {
     // don't know what to do on disconnect
-    $("#outmessage").html("<p><strong>MagicMirror is not running</strong></p>");
+    window.close()
+    $("#outmessage").html("<p><strong>MagicMirror module installer is not running</strong></p>");
     $("#result").html('<form id="result-form" class="form-vertical"></form>');
     //hideElm('#submit_button')
-    clearTimeout(timerHandle)
-    window.close()
     wasDisconnected = true;
     if (timerHandle) clearTimeout(timerHandle);
   });
 
+  $("#openlink").bind('click', function() {
+      window.location.href = $(this).attr('href');
+  });
+  activesocket.on('openurl', function(url){
+    $("#openlink").attr("href",url.replace("localhost",window.location.hostname))
+    $("#openlink").trigger('click');
+  })
   // config socket events
   activesocket.on("json", function (incoming_json) {
     usercanceled= false
@@ -220,7 +240,7 @@ $(function () {
 
         activesocket.emit("saveConfig", values);
         $("#outmessage").html(
-          "<p><strong>Your Configuration has been submitted.</strong></p>"
+          "<p><strong>your selected modules are being installed</strong></p>"
         );
       };
       data.onSubmit = function (errors, values) {
@@ -303,6 +323,7 @@ $(function () {
     }
     $("#outmessage").html("<p><strong>" + msg + "</strong></p>");
   });
+   activesocket.emit("hello")
 
   /*
 

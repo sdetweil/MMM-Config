@@ -35,9 +35,7 @@
    /* all: revert2 */
 }
 
-.repo_button {
-  margin-left: 2em;
-}
+
 
 div ~ fieldset >legend {
     color: #333 !important;
@@ -66,25 +64,7 @@ body {
   color: red ;
 }
 .module_enabled   legend {
-  color: rgb(34, 99, 4) 
-}
-.module_notLoaded  legend { 
-  color: blue;
-}
-/* used to set the initial state of the modules */
-.help_module_disabled > div > span {
-      line-height: .3;
-  color: red;
-}
-
-.help_module_enabled > div > span{
-      line-height: .3;
-  color: rgb(34, 99, 4)
-}
-
-.help_module_notloaded > div > span {
-      line-height: .3;
-  color: blue;
+  color: blue ;
 }
 
 .possibly-hidden-tab div:nth-child(2)  > div > div >div >ul >li:only-child >a[rel*="Item%201"] {
@@ -95,33 +75,11 @@ body {
     margin-left: 3em;
 }
 
-fieldset .moduleName {
-   padding-top: 10px;
-}
-.moduleConfig legend {
-   display: contents;
-}
-.moduleConfig legend + button {
-   margin-bottom: 15px;
-}
 
-input[type="text"] {
-    width: 30%;
-}
-.form-control {
-    width: 20%;
-}
-input[type="number"] {
-    width: 10%;
-}
-input1[type="checkbox"] {
-    width: 2.1em;
-    height: 2.1em;
-}
+/*._jsonform-array-addmore, ._jsonform-array-deletelast {
+    display:none;
+}*/
 
-#viewer thead {
-    border-color: black;
-}
 #viewerFrame {
     position: absolute;
     width: 50%;
@@ -137,4 +95,37 @@ input1[type="checkbox"] {
     position: relative;
     top:0%;
     left:0%;
+}
+.hidden_url {
+    display:none;
+}
+.install-list {
+    display:none;
+}
+.openclose_readme {
+    /*display:none;*/
+    margin-left: 2em;
+ }
+ .oinstalled {
+    display:none;
+ }
+ .unregistered label {
+    font-size: 20px;
+ }
+
+.unregistered {
+    margin-left: 3em;
+}
+input[type="text"] {
+    width: 20%;
+}
+.desc_input input[type="text"], .unreg_url input[type="text"] {
+    width: 50%;
+}
+.moduleList label {
+    font-size:22px;
+    margin-bottom: 12px;
+}
+.ourframe {
+    display: block;
 }

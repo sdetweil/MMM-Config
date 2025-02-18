@@ -3,7 +3,6 @@ const { spawn, exec } = require("child_process");
 
 const path = require("path");
 const os = require("os");
-const stream = require("stream");
 const _ = require("lodash");
 
 let debug = false
@@ -55,9 +54,9 @@ const our_name = __dirname.split(path.sep).slice(-1)[0]  // slice returns an arr
 
 const QRCode = require("qrcode");
 const checking_diff = false;
-var socket_io_port = 8200;
+
 var pm2_id = -1;
-const getPort = require("get-port");
+const InstallerSetup= require(__dirname+"/module_installer/runserver.js")
 const closeString =
   ';\n\
 \n\
@@ -188,7 +187,14 @@ module.exports = NodeHelper.create({
       // redirect to config form
       res.redirect(
         //this.config.url +
-        "/modules/" + this.name + "/config.html" // ?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
+        "/modules/" + this.name + "/config.html"
+      );
+    });
+    this.expressApp.get("/configure", (req, res) => {
+      // redirect to config form
+      res.redirect(
+        //this.config.url +
+        "/modules/" + this.name + "/config.html"
       );
     });
     this.expressApp.get("/configure", (req, res) => {
@@ -312,6 +318,15 @@ module.exports = NodeHelper.create({
     this.launchit();
     this.extraRoutes();
     this.remote_start(this);
+    let sort="date"  // default value set in modulename.js
+    for(m of config.modules){
+      if(m.module == this.name){
+        if(m.config.ModuleSortOrder) // if it was specified
+          sort=m.config.ModuleSortOrder // use it
+        break
+      }
+    }
+    InstallerSetup(this.expressApp, this.io, NodeHelper, sort)
   },
 
   // handle messages from our module// each notification indicates a different messages
@@ -320,9 +335,9 @@ module.exports = NodeHelper.create({
 
     // if config message from module
     if (notification === "CONFIG") {
-
       // save payload config info
-      //this.config = payload;
+      this.config = payload;
+
       if(this.imageurl){
         this.sendSocketNotification(
               "qr_url",
@@ -804,7 +819,7 @@ module.exports = NodeHelper.create({
           module_name,
           our_name+"."+module_jsonform_converter.slice(1)
         )
-      : path.join(__dirname, "..", module_name,our_name+module_jsonform_converter);
+      : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
       if(debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
@@ -1591,7 +1606,7 @@ module.exports = NodeHelper.create({
     // loop thru the modules list
     r.config.modules.forEach(m =>{
       // if not disabled
-      if(m.disabled==false && !defaultModules.includes(m.module)){
+      if((m.disabled==false && !defaultModules.includes(m.module)) || defaultModules.includes(m.module)) {
         // get a list of any extension files in the module folder
         mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
         // if we found some
@@ -1611,9 +1626,10 @@ module.exports = NodeHelper.create({
       if(f.endsWith('.js')){
         if(debug)
           console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</body>'))
-         htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <script type="text/javascript" src="'+'schemas/'+f+'"></script>')
+         htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <iframe id="viewer" class="ourframe hidden"></iframe>')
       }
     })
+    htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <script type="text/javascript" src="'+'schemas/'+f+'"></script>')
     fs.writeFileSync(__dirname+'/config.html',htmlfile_lines.join("\n"))
 
     // get the last mod date of the current config.js
@@ -1689,7 +1705,7 @@ module.exports = NodeHelper.create({
       socket.on("cancel", () => {
         if(debug)
           console.log("cancel requested")
-        console.log("cancel received, closing config page")
+        //console.log("cancel received, closing config page")
         fs.writeFileSync(__dirname+'/canceled', '1')
         socket.emit("close")
       });

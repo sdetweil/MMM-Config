@@ -1,0 +1,903 @@
+{
+  "schema": {
+    "calendar": {
+      "type": "object",
+      "title": "properties for calendar",
+      "properties": {
+        "module": {
+          "type": "string",
+          "title": "module",
+          "default": "calendar",
+          "readonly": true
+        },
+        "disabled": {
+          "type": "boolean",
+          "title": "disabled",
+          "default": false
+        },
+        "position": {
+          "type": "string",
+          "title": "module position",
+          "readonly": "true"
+        },
+        "classes": {
+          "type": "string",
+          "title": "classes",
+          "default": ""
+        },
+        "header": {
+          "type": "string",
+          "title": "header",
+          "default": ""
+        },
+        "hiddenOnStartup": {
+          "type": "boolean",
+          "title": "hiddenOnStartup",
+          "default": false
+        },
+        "configDeepMerge": {
+          "type": "boolean",
+          "title": "configDeepMerge",
+          "default": false
+        },
+        "order": {
+          "type": "string",
+          "title": "order",
+          "default": "*"
+        },
+        "inconfig": {
+          "type": "string",
+          "title": "inconfig",
+          "default": "0"
+        },
+        "index": {
+          "type": "integer"
+        },
+        "animateIn": {
+          "type": "string",
+          "enum": [
+            "None",
+            "bounce",
+            "flash",
+            "pulse",
+            "rubberBand",
+            "shakeX",
+            "shakeY",
+            "headShake",
+            "swing",
+            "tada",
+            "wobble",
+            "jello",
+            "heartBeat",
+            "backInDown",
+            "backInLeft",
+            "backInRight",
+            "backInUp",
+            "bounceIn",
+            "bounceInDown",
+            "bounceInLeft",
+            "bounceInRight",
+            "bounceInUp",
+            "fadeIn",
+            "fadeInDown",
+            "fadeInDownBig",
+            "fadeInLeft",
+            "fadeInLeftBig",
+            "fadeInRight",
+            "fadeInRightBig",
+            "fadeInUp",
+            "fadeInUpBig",
+            "fadeInTopLeft",
+            "fadeInTopRight",
+            "fadeInBottomLeft",
+            "fadeInBottomRight",
+            "flip",
+            "flipInX",
+            "flipInY",
+            "lightSpeedInRight",
+            "lightSpeedInLeft",
+            "rotateIn",
+            "rotateInDownLeft",
+            "rotateInDownRight",
+            "rotateInUpLeft",
+            "rotateInUpRight",
+            "jackInTheBox",
+            "rollIn",
+            "zoomIn",
+            "zoomInDown",
+            "zoomInLeft",
+            "zoomInRight",
+            "zoomInUp",
+            "slideInDown",
+            "slideInLeft",
+            "slideInRight",
+            "slideInUp"
+          ]
+        },
+        "animateOut": {
+          "type": "string",
+          "enum": [
+            "None",
+            "backOutDown",
+            "backOutLeft",
+            "backOutRight",
+            "backOutUp",
+            "bounceOut",
+            "bounceOutDown",
+            "bounceOutLeft",
+            "bounceOutRight",
+            "bounceOutUp",
+            "fadeOut",
+            "fadeOutDown",
+            "fadeOutDownBig",
+            "fadeOutLeft",
+            "fadeOutLeftBig",
+            "fadeOutRight",
+            "fadeOutRightBig",
+            "fadeOutUp",
+            "fadeOutUpBig",
+            "fadeOutTopLeft",
+            "fadeOutTopRight",
+            "fadeOutBottomRight",
+            "fadeOutBottomLeft",
+            "flipOutX",
+            "flipOutY",
+            "lightSpeedOutRight",
+            "lightSpeedOutLeft",
+            "rotateOut",
+            "rotateOutDownLeft",
+            "rotateOutDownRight",
+            "rotateOutUpLeft",
+            "rotateOutUpRight",
+            "hinge",
+            "rollOut",
+            "zoomOut",
+            "zoomOutDown",
+            "zoomOutLeft",
+            "zoomOutRight",
+            "zoomOutUp",
+            "slideOutDown",
+            "slideOutLeft",
+            "slideOutRight",
+            "slideOutUp"
+          ]
+        },
+        "config": {
+          "type": "object",
+          "title": "config",
+          "properties": {
+            "maximumEntries": {
+              "type": "integer"
+            },
+            "maximumNumberOfDays": {
+              "type": "integer"
+            },
+            "limitDays": {
+              "type": "integer"
+            },
+            "pastDaysCount": {
+              "type": "integer"
+            },
+            "displaySymbol": {
+              "type": "boolean"
+            },
+            "defaultSymbol": {
+              "type": "string"
+            },
+            "defaultSymbolClassName": {
+              "type": "string"
+            },
+            "showLocation": {
+              "type": "boolean"
+            },
+            "displayRepeatingCountTitle": {
+              "type": "boolean"
+            },
+            "defaultRepeatingCountTitle": {
+              "type": "string"
+            },
+            "maxTitleLength": {
+              "type": "integer"
+            },
+            "maxLocationTitleLength": {
+              "type": "integer"
+            },
+            "wrapEvents": {
+              "type": "boolean"
+            },
+            "wrapLocationEvents": {
+              "type": "boolean"
+            },
+            "maxTitleLines": {
+              "type": "integer"
+            },
+            "maxEventTitleLines": {
+              "type": "integer"
+            },
+            "fetchInterval": {
+              "type": "integer"
+            },
+            "animationSpeed": {
+              "type": "integer"
+            },
+            "fade": {
+              "type": "boolean"
+            },
+            "fadePoint": {
+              "type": "integer"
+            },
+            "urgency": {
+              "type": "integer"
+            },
+            "timeFormat": {
+              "type": "string"
+            },
+            "dateFormat": {
+              "type": "string"
+            },
+            "dateEndFormat": {
+              "type": "string"
+            },
+            "fullDayEventDateFormat": {
+              "type": "string"
+            },
+            "showEnd": {
+              "type": "boolean"
+            },
+            "showEndsOnlyWithDuration": {
+              "type": "boolean"
+            },
+            "getRelative": {
+              "type": "integer"
+            },
+            "hidePrivate": {
+              "type": "boolean"
+            },
+            "hideOngoing": {
+              "type": "boolean"
+            },
+            "hideTime": {
+              "type": "boolean"
+            },
+            "hideDuplicates": {
+              "type": "boolean"
+            },
+            "showTimeToday": {
+              "type": "boolean"
+            },
+            "colored": {
+              "type": "boolean"
+            },
+            "forceUseCurrentTime": {
+              "type": "boolean"
+            },
+            "tableClass": {
+              "type": "string"
+            },
+            "calendars": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "symbol": {
+                    "type": "string"
+                  },
+                  "url": {
+                    "type": "string"
+                  },
+                  "symbolClassName":{
+                    "type":"string",
+                    "default":"fas fa-fw fa-"
+                  },
+                  "color":{
+                    "type":"string"
+                  },
+                  "bgColor":{
+                    "type":"string"
+                  },
+                  "repeatingCountTitle":{
+                    "type":"string"
+                  },
+                  "maximumEntries":{
+                    "type":"integer",
+                    "minimum":0,
+                    "maximum":100
+                  },
+                  "maximumNumberOfDays":{
+                    "type":"integer"
+                  },
+                  "pastDaysCount":{
+                    "type":"integer"
+                  },
+                  "name":{
+                    "type":"string"
+                  },
+                  "symbolClass":{
+                    "type":"string"
+                  },
+                  "titleClass":{
+                    "type":"string"
+                  },
+                  "timeClass":{
+                    "type":"string"
+                  },
+                  "broadcastPastEvents":{
+                    "type":"boolean"
+                  },
+                  "auth":{
+                    "type":"object",
+                    "properties":{
+                      "user":{
+                        "type":"string"
+                      },
+                      "password":{
+                        "type":"password"
+                      },
+                      "method":{
+                        "type":"string",
+                        "enum":[
+                          "basic",
+                          "bearer"
+                        ]
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "customEvents": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "keyword": {
+                    "type": "string"
+                  },
+                  "transform": {
+                    "type": "object",
+                    "properties": {
+                      "search": {
+                        "type": "string"
+                      },
+                      "replace": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "locationTitleReplace": {
+              "type": "array",
+              "items": {
+                "type": "pair"
+              }
+            },
+            "broadcastEvents": {
+              "type": "boolean"
+            },
+            "excludedEvents": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "sliceMultiDayEvents": {
+              "type": "boolean"
+            },
+            "broadcastPastEvents": {
+              "type": "boolean"
+            },
+            "nextDaysRelative": {
+              "type": "boolean"
+            },
+            "selfSignedCert": {
+              "type": "boolean"
+            },
+            "coloredText": {
+              "type": "boolean"
+            },
+            "coloredBorder": {
+              "type": "boolean"
+            },
+            "coloredSymbol": {
+              "type": "boolean"
+            },
+            "coloredBackground": {
+              "type": "boolean"
+            },
+            "limitDaysNeverSkip": {
+              "type": "boolean"
+            },
+            "flipDateHeaderTitle": {
+              "type": "boolean"
+            },
+            "updateOnFetch": {
+              "type": "boolean"
+            }
+          }
+        }
+      }
+    }
+  },
+  "form": [
+    {
+      "key": "calendar.disabled",
+      "htmlClass": "disabled_checkbox",
+      "description": "when checked the module will not be used by MagicMirror<br> but will remain in config.js if already present"
+    },
+    {
+      "key": "calendar.position",
+      "description": "use Module Positions section below to set or change"
+    },
+    {
+      "key": "calendar.header",
+      "description": "header to use for this module"
+    },
+    {
+      "key": "calendar.hiddenOnStartup",
+      "description": "Set module as being hidden on startup. This field is optional."
+    },
+    {
+      "key": "calendar.configDeepMerge",
+      "description": "Allow to merge with internal configuration in deep"
+    },
+    {
+      "key": "calendar.classes",
+      "description": "css classes to use for this module, beyond what MM provides"
+    },
+    {
+      "key": "calendar.order",
+      "type": "hidden"
+    },
+    {
+      "key": "calendar.inconfig",
+      "type": "hidden"
+    },
+    {
+      "key": "calendar.animateIn",
+      "title": "animateIn",
+      "description": "select one of these to change the behavior when the module is shown"
+    },
+    {
+      "key": "calendar.animateOut",
+      "title": "animateOut",
+      "description": "select one of these to change the behavior when the module is hidden"
+    },
+    {
+      "key": "calendar.index",
+      "type": "hidden"
+    },
+    {
+      "type": "fieldset",
+      "title": "config",
+      "htmlClass": "moduleConfig",
+      "items": [
+        {
+          "type": "button",
+          "title": "Open module readme",
+          "htmlClass": "repo_button",
+          "onClick": "(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
+        },
+        {
+          "type": "button",
+          "htmlClass": "hidden readme_url",
+          "title": "https://docs.magicmirror.builders/modules/calendar.html"
+        },
+        {
+          "title": "maximumEntries",
+          "key": "calendar.config.maximumEntries"
+        },
+        {
+          "title": "maximumNumberOfDays",
+          "key": "calendar.config.maximumNumberOfDays"
+        },
+        {
+          "title": "limitDays",
+          "key": "calendar.config.limitDays"
+        },
+        {
+          "title": "pastDaysCount",
+          "key": "calendar.config.pastDaysCount"
+        },
+        {
+          "title": "displaySymbol",
+          "key": "calendar.config.displaySymbol"
+        },
+        {
+          "title": "defaultSymbol",
+          "key": "calendar.config.defaultSymbol"
+        },
+        {
+          "title": "defaultSymbolClassName",
+          "key": "calendar.config.defaultSymbolClassName"
+        },
+        {
+          "title": "showLocation",
+          "key": "calendar.config.showLocation"
+        },
+        {
+          "title": "displayRepeatingCountTitle",
+          "key": "calendar.config.displayRepeatingCountTitle"
+        },
+        {
+          "title": "defaultRepeatingCountTitle",
+          "key": "calendar.config.defaultRepeatingCountTitle"
+        },
+        {
+          "title": "maxTitleLength",
+          "key": "calendar.config.maxTitleLength"
+        },
+        {
+          "title": "maxLocationTitleLength",
+          "key": "calendar.config.maxLocationTitleLength"
+        },
+        {
+          "title": "wrapEvents",
+          "key": "calendar.config.wrapEvents"
+        },
+        {
+          "title": "wrapLocationEvents",
+          "key": "calendar.config.wrapLocationEvents"
+        },
+        {
+          "title": "maxTitleLines",
+          "key": "calendar.config.maxTitleLines"
+        },
+        {
+          "title": "maxEventTitleLines",
+          "key": "calendar.config.maxEventTitleLines"
+        },
+        {
+          "title": "fetchInterval",
+          "key": "calendar.config.fetchInterval"
+        },
+        {
+          "title": "animationSpeed",
+          "key": "calendar.config.animationSpeed"
+        },
+        {
+          "title": "fade",
+          "key": "calendar.config.fade"
+        },
+        {
+          "title": "fadePoint",
+          "key": "calendar.config.fadePoint"
+        },
+        {
+          "title": "urgency",
+          "key": "calendar.config.urgency"
+        },
+        {
+          "title": "timeFormat",
+          "key": "calendar.config.timeFormat"
+        },
+        {
+          "title": "dateFormat",
+          "key": "calendar.config.dateFormat"
+        },
+        {
+          "title": "dateEndFormat",
+          "key": "calendar.config.dateEndFormat"
+        },
+        {
+          "title": "fullDayEventDateFormat",
+          "key": "calendar.config.fullDayEventDateFormat"
+        },
+        {
+          "title": "showEnd",
+          "key": "calendar.config.showEnd"
+        },
+        {
+          "title": "showEndsOnlyWithDuration",
+          "key": "calendar.config.showEndsOnlyWithDuration"
+        },
+        {
+          "title": "getRelative",
+          "key": "calendar.config.getRelative"
+        },
+        {
+          "title": "hidePrivate",
+          "key": "calendar.config.hidePrivate"
+        },
+        {
+          "title": "hideOngoing",
+          "key": "calendar.config.hideOngoing"
+        },
+        {
+          "title": "hideTime",
+          "key": "calendar.config.hideTime"
+        },
+        {
+          "title": "hideDuplicates",
+          "key": "calendar.config.hideDuplicates"
+        },
+        {
+          "title": "showTimeToday",
+          "key": "calendar.config.showTimeToday"
+        },
+        {
+          "title": "colored",
+          "key": "calendar.config.colored"
+        },
+        {
+          "title": "forceUseCurrentTime",
+          "key": "calendar.config.forceUseCurrentTime"
+        },
+        {
+          "title": "tableClass",
+          "key": "calendar.config.tableClass"
+        },
+        {
+          "type": "array",
+          "title": "calendars",
+          "deleteCurrent": false,
+          "items": {
+            "type": "fieldset",
+            "title": "calendar",
+            "items": [
+              {
+                "title": "symbol",
+                "key": "calendar.config.calendars[].symbol"
+              },
+              {
+                "title": "url",
+                "key": "calendar.config.calendars[].url"
+              },
+              {
+                "title":"symbolClassName",
+                "key": "calendar.config.calendars[].symbolClassName"
+              },
+              {
+                "title":"color",
+                "key": "calendar.config.calendars[].color"
+              },
+              {
+                "title":"bgColor",
+                "key": "calendar.config.calendars[].bgColor"                
+              },
+              {
+                "title":"repeatingCountTitle",
+                "key": "calendar.config.calendars[].repeatingCountTitle"
+              },
+              {
+                "title":"maximumEntries",
+                "key": "calendar.config.calendars[].maximumEntries"
+              },
+              {
+                "title":"maximumNumberOfDays",
+                "key": "calendar.config.calendars[].maximumNumberOfDays"
+              },
+              {
+                "title":"pastDaysCount",
+                "key": "calendar.config.calendars[].pastDaysCount"
+              },
+              {
+                "title":"name",
+                "key": "calendar.config.calendars[].name"
+              },
+              {
+                "title":"symbolClass",
+                "key": "calendar.config.calendars[].symbolClass"
+              },
+              {
+                "title":"titleClass",
+                "key": "calendar.config.calendars[].titleClass"
+              },
+              {
+                "title":"timeClass",                
+                "key": "calendar.config.calendars[].timeClass"
+              },
+              {
+                "title":"broadcastPastEvents",                
+                "key": "calendar.config.calendars[].broadcastPastEvents"
+              },
+              {
+                "type": "fieldset",
+                "title":"auth",
+                "items": [
+                  {
+                  "title":"user",
+                  "key": "calendar.config.calendars[].auth.user"
+                  },
+                  {
+                    "title":"password",
+                    "key": "calendar.config.calendars[].auth.password"
+                  },
+                  {
+                    "title":"method",
+                    "key": "calendar.config.calendars[].auth.method"
+                  }
+                ]
+              }              
+            ]
+          }
+        },
+        {
+          "type": "array",
+          "title": "customEvents",
+          "deleteCurrent": false,
+          "items": {
+            "type": "fieldset",
+            "title": "customEvents",
+            "items": [
+              {
+                "title": "keyword",
+                "key": "calendar.config.customEvents[].keyword"
+              },
+              {
+                "type": "fieldset",
+                "title": "transform",
+                "items": [
+                  {
+                    "title": "search",
+                    "key": "calendar.config.customEvents[].transform.search"
+                  },
+                  {
+                    "title": "replace",
+                    "key": "calendar.config.customEvents[].transform.replace"
+                  }
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "type": "array",
+          "title": "locationTitleReplace",
+          "deleteCurrent": false,
+          "items": [
+            {
+              "key": "calendar.config.locationTitleReplace[]",
+              "title": "locationTitleReplace {{idx}}"
+            }
+          ]
+        },
+        {
+          "title": "broadcastEvents",
+          "key": "calendar.config.broadcastEvents"
+        },
+        {
+          "type": "array",
+          "title": "excludedEvents",
+          "deleteCurrent": false,
+          "items": [
+            {
+              "title": "excludedEvents {{idx}}",
+              "key": "calendar.config.excludedEvents[]"
+            }
+          ]
+        },
+        {
+          "title": "sliceMultiDayEvents",
+          "key": "calendar.config.sliceMultiDayEvents"
+        },
+        {
+          "title": "broadcastPastEvents",
+          "key": "calendar.config.broadcastPastEvents"
+        },
+        {
+          "title": "nextDaysRelative",
+          "key": "calendar.config.nextDaysRelative"
+        },
+        {
+          "title": "selfSignedCert",
+          "key": "calendar.config.selfSignedCert"
+        },
+        {
+          "title": "coloredText",
+          "key": "calendar.config.coloredText"
+        },
+        {
+          "title": "coloredBorder",
+          "key": "calendar.config.coloredBorder"
+        },
+        {
+          "title": "coloredSymbol",
+          "key": "calendar.config.coloredSymbol"
+        },
+        {
+          "title": "coloredBackground",
+          "key": "calendar.config.coloredBackground"
+        },
+        {
+          "title": "limitDaysNeverSkip",
+          "key": "calendar.config.limitDaysNeverSkip"
+        },
+        {
+          "title": "flipDateHeaderTitle",
+          "key": "calendar.config.flipDateHeaderTitle"
+        },
+        {
+          "title": "updateOnFetch",
+          "key": "calendar.config.updateOnFetch"
+        }
+      ]
+    }
+  ],
+  "value": {
+    "disabled": true,
+    "module": "calendar",
+    "position": "none",
+    "order": "*",
+    "inconfig": "0",
+    "config": {
+      "maximumEntries": 10,
+      "maximumNumberOfDays": 365,
+      "limitDays": 0,
+      "pastDaysCount": 0,
+      "displaySymbol": true,
+      "defaultSymbol": "calendar-alt",
+      "defaultSymbolClassName": "fas fa-fw fa-",
+      "showLocation": false,
+      "displayRepeatingCountTitle": false,
+      "defaultRepeatingCountTitle": "",
+      "maxTitleLength": 25,
+      "maxLocationTitleLength": 25,
+      "wrapEvents": false,
+      "wrapLocationEvents": false,
+      "maxTitleLines": 3,
+      "maxEventTitleLines": 3,
+      "fetchInterval": 3600000,
+      "animationSpeed": 2000,
+      "fade": true,
+      "fadePoint": 0.25,
+      "urgency": 7,
+      "timeFormat": "relative",
+      "dateFormat": "MMM Do",
+      "dateEndFormat": "LT",
+      "fullDayEventDateFormat": "MMM Do",
+      "showEnd": false,
+      "showEndsOnlyWithDuration": false,
+      "getRelative": 6,
+      "hidePrivate": false,
+      "hideOngoing": false,
+      "hideTime": false,
+      "hideDuplicates": true,
+      "showTimeToday": false,
+      "colored": false,
+      "forceUseCurrentTime": false,
+      "tableClass": "small",
+      "calendars": [
+        {
+          "symbol": "calendar-alt",
+          "url": "https://www.calendarlabs.com/templates/ical/US-Holidays.ics"
+        }
+      ],
+      "customEvents": [
+        {
+          "keyword": ".*",
+          "transform": {
+            "search": "De verjaardag van ",
+            "replace": ""
+          }
+        },
+        {
+          "keyword": ".*",
+          "transform": {
+            "search": "'s birthday",
+            "replace": ""
+          }
+        }
+      ],
+      "locationTitleReplace": {
+        "street ": ""
+      },
+      "broadcastEvents": true,
+      "excludedEvents": [],
+      "sliceMultiDayEvents": false,
+      "broadcastPastEvents": false,
+      "nextDaysRelative": false,
+      "selfSignedCert": false,
+      "coloredText": false,
+      "coloredBorder": false,
+      "coloredSymbol": false,
+      "coloredBackground": false,
+      "limitDaysNeverSkip": false,
+      "flipDateHeaderTitle": false,
+      "updateOnFetch": true
+    },
+    "animateIn": "none",
+    "animateOut": "none"
+  }
+}

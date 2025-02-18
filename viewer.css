@@ -1,0 +1,12 @@
+body {
+    position: absolute;
+    background-color: white;
+    width: 50%;
+    height: 50%;
+}
+thead {
+    border-color: black;
+ }
+ table, th, td {
+  border: 1px solid black;
+}

@@ -5,10 +5,10 @@ const debugging = false;
 const merge = require("lodash").merge;
 
 const interfaces = require("os").networkInterfaces();
-var save_jsonform_info = false;
+let save_jsonform_info = false;
 const fs = require("fs");
-var debug = false;
-var save_module_form = "";
+let debug = false;
+let save_module_form = "";
 const using_overrides = true;
 const MM_identifier=process.env.MM_identifier
 
@@ -16,17 +16,18 @@ if (process.argv.length > 3 && process.argv[3] === "debug") {
   //console.log("setting debug = true")
   debug = true;
 }
-if(debug)
+if(debug )
   console.log("parms=", process.argv)
 if (process.argv.length > 3 && process.argv[3] === "saveform") {
-  //console.log("save form")
+  console.log("save form")
   save_jsonform_info = true;
   if (process.argv.length > 4) { 
-    if(debug){
+    if(debug ){
       console.log("setting saveform="+process.argv[4])
     }
     save_module_form = process.argv[4];
-     if (process.argv.length > 5 && process.argv[5] === "debug") {
+    if (process.argv.length > 5 && process.argv[5] === "debug") {
+       //console.log("setting debug = true")
         debug = true
      }
   }
@@ -46,6 +47,47 @@ const module_jsonform_info_name = "schema.json";
 const module_jsonform_converter = "_converter.js"
 const our_name = __dirname.split(path.sep).slice(-2,-1)[0]
 var schema = {};
+const openUrlForm_template=[{type:"button",
+                            title:"Open module readme",
+                            htmlClass:"repo_button",
+                            "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
+                           },
+                           {
+                             type:"button",
+                             htmlClass:"hidden readme_url",
+                             title:""
+                           }
+                         ]
+
+let url_hash= null
+const module_url_hash_file="module_url_hash.json"
+//try {
+  url_hash=require(__dirname+"/../"+module_url_hash_file)
+  if(debug)
+    console.log("there are "+Object.keys(url_hash).length+" keys")
+//} catch{}
+var color_key = {
+  type: "fieldset",
+  expandable: true,
+  title: "color key",
+  items: [
+    {
+      "type": "help",
+      "helpvalue": "in config.js and enabled",
+      htmlClass: "help_module_enabled"
+    },
+    {
+      "type": "help",
+      "helpvalue": "in config.js and DISABLED",
+      htmlClass: "help_module_disabled"
+    },
+    {
+      "type": "help",
+      "helpvalue": "installed but NOT in config.js",
+      htmlClass: "help_module_notloaded"
+    }
+  ]
+}
 var form = [
   {
     title: "Settings",
@@ -63,7 +105,7 @@ var form = [
       },
       {
         type: "fieldset",
-        title: "Modules",
+        title: "Modules (in config.js order)",
         expandable: true,
         items: [
           // per module
@@ -295,7 +337,7 @@ let module_disabled_color = getColor(cssfile, "module_disabled");
 const module_form_template = {
   type: "fieldset",
   title: "modulename",
-  htmlClass:"",
+  htmlClass:"moduleEntry ",
   expandable: true,
   items: []
 };
@@ -470,7 +512,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
         console.log("post processed config for module = "+module_name+"="+JSON.stringify(temp_value[module_name],null,2)) 
       let mform = clone(module_form_template);
       mform.title = module_name;
-      mform.htmlClass= module_name
+      mform.htmlClass += module_name
 
       parents_parent = "parent=parent.parent().closest('fieldset')";
       // if this is the disabled element in the form
@@ -599,6 +641,7 @@ if (!sort) {
   xy.push.apply(xy, temp);
   // reset the form to the new order
   form[0].items[1].items = xy;
+  form[0].items[1].items.unshift(color_key)
   xy = null;
 }
 
@@ -1237,7 +1280,9 @@ while ((index = str.indexOf('".', start)) !== -1) {
 }
 // restore the value section with modifications
 value = JSON.parse(str, fromhandler);
-
+value["animationNames"]={}
+value.animationNames['animateIn']=animationNames.AnimateCSSIn
+value.animationNames['animateOut']=animationNames.AnimateCSSOut
 //
 // OK, now done building
 // create the big object that we will emit
@@ -1261,7 +1306,8 @@ let combined = {
   objects: empty_objects,
   mangled_names: mangled_names,
   convertedObjects: convertedObjects,
-  scriptConvertedObjects: scriptConvertedObjects
+  scriptConvertedObjects: scriptConvertedObjects,
+  //tpldata: { animationNames:{animateIn:animationNames.AnimateCSSIn,animateOut:animationNames.AnimateCSSOut}}
 
 };
 
@@ -1860,10 +1906,12 @@ function processModule(schema, form, value, module_defines, module_name) {
       classes: { type: "string", title: "classes", default: "" },
       header: { type: "string", title: "header", default: "" },
       hiddenOnStartup: { type: "boolean", title: "hiddenOnStartup", default: false },
-      configDeepMerge: { type: "boolean", title: "configDeepMerge", default: false },      
+      configDeepMerge: { type: "boolean", title: "configDeepMerge", default: false },       
       order: { type: "string", title: "order", default: "*" },
       inconfig: { type: "string", title: "inconfig", default: "0" },
       index: { type: "integer" },
+      animateIn: { type:"string", enum:"{{values.animationNames.animateIn}}"},     //"{[animationNames.AnimateCSSIn]}"},
+      animateOut: { type:"string", enum:"{{values.animationNames.animateOut}}"},   //"{[animationNames.AnimateCSSOut]}"},
       config: { type: "object", title: "config", properties: {} }
     }
   };
@@ -1900,6 +1948,18 @@ function processModule(schema, form, value, module_defines, module_name) {
     description: "use Module Positions section below to set or change"
   });
   module_form_items.push({
+    key: module_name + "." + "header",
+    description: "header to use for this module"
+  });
+  module_form_items.push({
+    key: module_name + "." + "hiddenOnStartup",
+    description: "Set module as being hidden on startup. This field is optional."
+  });
+  module_form_items.push({
+    key: module_name + "." + "configDeepMerge",
+    description: "Allow to merge with internal configuration in deep"
+  });
+  module_form_items.push({
     key: module_name + "." + "classes",
     description: "css classes to use for this module, beyond what MM provides"
   });
@@ -1932,7 +1992,24 @@ function processModule(schema, form, value, module_defines, module_name) {
         "(evt,node)=>{let value=$(evt.target).val();let p=$(evt.target).attr('name').split('[');let n=p[0];let i=parseInt(p[1]);$(\"[value*='\"+n+\"']\").closest('.tab-pane').find('.tab-content').find(\"[data-idx='\"+i+\"'] >div >input \").val(value).trigger('change')}"
     });
   }
+  if(debug)
+      console.log("looking in url hash="+module_name+" hash="+(url_hash?"true":"false"))
+  if (url_hash && url_hash[module_name]) {
+    if (debug)
+      console.log("found module in url hash=" + module_name, url_hash[module_name])
+    let buttons = clone(openUrlForm_template)
+    if (url_hash[module_name].readme_url.endsWith('.html')){
+      buttons[1].title = url_hash[module_name].readme_url
+    }
+    else {
+      buttons[1].title = "http://localhost:8090/modules/" + module_name + "/" + url_hash[module_name].readme_url.split('/').slice(-1)[0]
+    }
+    module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
+  } else
   module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
+
+  if(debug)
+    console.log("mform.items"+JSON.stringify(module_form_items,null,2))
   let ptr = -1;
   for (let i in module_form_items) {
     if (Object.keys(module_form_items[i]).includes("title")) {
@@ -1946,6 +2023,9 @@ function processModule(schema, form, value, module_defines, module_name) {
       }
     }
   }
+
+  if(debug)
+    console.log("ptr="+ptr)
 
   //
   //	loop thru each property from the defaults

@@ -268,6 +268,16 @@
       "type": "fieldset",
       "title": "config",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
+        },
+        {
+           "type":"button",
+           "htmlClass":"hidden readme_url",
+           "title":"https://raw.githubusercontent.com/totoluto/MMM-NewsAPI/refs/heads/main/README.md"
+        },
         {
           "title": "apiKey",
           "key": "MMM-NewsAPI.config.apiKey"

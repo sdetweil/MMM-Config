@@ -478,9 +478,20 @@
       "description": "select one of these to change the behavior when the module is hidden"
     },
     {
-      "type": "section",
+      "type": "fieldset",
       "title": "config",
+      "htmlClass":"moduleConfig",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
+        },
+        {
+           "type":"button",
+           "htmlClass":"hidden readme_url",
+           "title":"https://raw.githubusercontent.com/MMM-CalendarExt2/MMM-CalendarExt2/refs/heads/main/README.md"
+        },
         {
           "title": "locale",
           "key": "MMM-CalendarExt2.config.locale"

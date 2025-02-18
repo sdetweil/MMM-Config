@@ -166,6 +166,13 @@
               ],
               "default":"none"
             },
+            "ModuleSortOrder":{
+              "type":"string",
+              "enum":[
+                "date",
+                "name"
+              ]
+            },
             "debug": {
               "type": "boolean"
             }
@@ -209,9 +216,20 @@
       "title":"Animation Out style"
     },
     {
-      "type": "section",
+      "type": "fieldset",
       "title": "config",
+      "htmlClass":"moduleConfig",
       "items": [
+        {"type":"button",
+          "title":"Open module readme",
+          "htmlClass":"repo_button",
+          "onClick":"(evt,node)=>{let siblings=$(evt.target).siblings('.readme_url');let element=siblings.toArray()[0];let url=element.innerText;let pos=$(evt.target).offset();process_readme(url,pos)}"
+        },
+        {
+           "type":"button",
+           "htmlClass":"hidden readme_url",
+           "title":"https://raw.githubusercontent.com/sdetweil/MMM-Config/refs/heads/main/README.md"
+        },
         {
           "title": "showQR",
           "key": "MMM-Config.config.showQR",
@@ -230,12 +248,18 @@
             "pm2": "use pm2 to restart, will autodetect which pm2 instance to restart",
             "static": "MagicMirror started with npm start, may cause flaky windows",
             "docker":" not yet implemented, same as none"
-          }
+          },
+          "description":"if and how to restart MagicMirror after the config file is saved"
+        },
+        {
+          "title": "SortOrder",
+          "key": "MMM-Config.config.ModuleSortOrder",
+          "description":"installer list sort order, default 'date'"
         },
         {
           "title": "debug",
           "key": "MMM-Config.config.debug",
-          "description":"turn on save debug"
+          "description":"turn on debug during save"
         }
       ]
     }
@@ -252,6 +276,7 @@
       "showQR": false,
       "force_update": true,
       "restart": "none",
+      "ModuleSortOrder":"date",
       "debug": false
     }
   }
