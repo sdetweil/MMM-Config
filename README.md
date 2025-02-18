@@ -109,7 +109,7 @@ http://mmserver_ip:mm_port/installer
 
 * the categories are sorted alphabetically, with the Outdated category moved to the bottom
 
-* by default, modules in a category are sorted by `last date updated` by default
+* modules in a category are sorted by `last date updated` by default
 * * you can change this by changing the `ModuleSortOrder` config option
 
 the installer page looks like this 
