@@ -197,6 +197,13 @@ module.exports = NodeHelper.create({
         "/modules/" + this.name + "/config.html"
       );
     });
+    this.expressApp.get("/configure", (req, res) => {
+      // redirect to config form
+      res.redirect(
+        //this.config.url +
+        "/modules/" + this.name + "/config.html" // ?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
+      );
+    });    
   },
   getIPAddress(){
     const nets = os.networkInterfaces();
