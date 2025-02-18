@@ -107,9 +107,9 @@ http://mmserver_ip:mm_port/installer
 
 #### it gets the list of modules from the 3rd party module list
 
-* by default, the categories are sorted alphabetically, with the Outdated category moved to the bottom
+* the categories are sorted alphabetically, with the Outdated category moved to the bottom
 
-* modules are sorted in category by `last date updated` by default
+* by default, modules in a category are sorted by `last date updated` by default
 * * you can change this by changing the `ModuleSortOrder` config option
 
 the installer page looks like this 
