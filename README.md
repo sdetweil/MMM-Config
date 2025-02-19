@@ -35,7 +35,7 @@ and a module installer is provided as well , see [Module Installer](#minstaller)
 
 ### All options are case sensitive
 
-| **Option** | **Default** | **Default** | **Info**
+| **Option** | **status** | **Default** | **Info**
 | --- | --- | --- | --- |
 | `showQR` | OPTIONAL | `false` | Show a QR code on the MM screen to allow quick access to the configuration form |
 | | | ===> | **Otherwise, use a browser to open http://MM_IP_Address:MM_Port/configure** |
@@ -71,10 +71,9 @@ The base expanded.
 
 Modules expanded.
 
-Module names in red are disabled or not in config.js.
-Module names in blue are in config.js and enabled.
-the top section are in config.js
-once they all turn red, these are 'installed' in the modules folder, but not in config.js
+Module names in green are in config.js and enabled.
+Module names in red are in config.js but disabl.
+Module names in blue are installed but NOT in config.js
 
 ![base variables](./doc_images/MMM-Config_modules.png)
 
