@@ -66,7 +66,7 @@ MMM-Config uses the [jsonform](https://github.com/jsonform/jsonform/wiki) librar
 Main form page. The form colors can be set in webform.css
 ![main page](./doc_images/MMM-Config_base.png)
 
-The base expanded.
+The base expanded
 ![main page](./doc_images/MMM-Config_form.png)
 
 Modules color key.
