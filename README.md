@@ -77,7 +77,8 @@ Module names in blue are installed but NOT in config.js<br>
 
 ![base variables](./doc_images/MMM-Config_modules-color-key.png)
 
-Modules expanded.
+Modules expanded
+
 ![base variables](./doc_images/MMM-Config_modules.png)
 
 ![base variables](./doc_images/MMM-Config_module_expanded.png)
