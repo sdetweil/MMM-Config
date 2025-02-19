@@ -69,15 +69,17 @@ Main form page. The form colors can be set in webform.css
 The base expanded.
 ![main page](./doc_images/MMM-Config_form.png)
 
+Modules color key.
+
+Module names in green are in config.js and enabled.<br>
+Module names in red are in config.js but disabled.<br>
+Module names in blue are installed but NOT in config.js<br>
+
+![base variables](./doc_images/MMM-Config_modules-color-key.png)
+
 Modules expanded.
-
-Module names in green are in config.js and enabled.
-Module names in red are in config.js but disabl.
-Module names in blue are installed but NOT in config.js
-
 ![base variables](./doc_images/MMM-Config_modules.png)
 
-a module expanded
 ![base variables](./doc_images/MMM-Config_module_expanded.png)
 
 ### The Module Positions section
@@ -141,7 +143,7 @@ as you select modules to be installed a list is maintained at the bottom
 
 * * once the selection of modules is done,  press the<br> **Install selected modules** button
 
-when the module installation(s) are completed, the MMM-Config screen will be opened for you to complete configuration 
+when the module installation(s) are completed, you need to restart MagicMirror and go to the the MMM-Config screen
 
 once you have completed the configuration, press the **Save, Create config** button 
 
