@@ -95,7 +95,7 @@ if u don't care, select * (the default)**
 **Disabled modules are left in config.js, just disabled.  Otherwise, we would lose the configuration information , like api keys, latitude/longitude, etc.**
 
 
-# correcting or improving module presentation, seek the wiki link above
+# correcting or improving module presentation, see the wiki link above
 
 
 # Module installer<a name="minstaller"></a>
