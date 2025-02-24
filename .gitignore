@@ -15,6 +15,7 @@ somefile*.*
 workdir/*
 qrfile.png
 animateCSS.js
+module_positions.json
 module_form_schema.json
 module_url_hash.json
 canceled

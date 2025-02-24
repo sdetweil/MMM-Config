@@ -10,6 +10,7 @@ set npm_config_loglevel=silent
 set mod=node_helper.js
 setlocal EnableExtensions
 Setlocal EnableDelayedExpansion
+cd "%~dp0"
 goto :continue
 :check_update_dependencies
 setlocal EnableExtensions

@@ -51,10 +51,10 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
-del animateCSS.js 2>nul
+del CSS.js 2>nul
 rem check if the list of animations has an export statement
 rem if not its downlevel, so copy and add it
-findstr  "export" ..\..\js\animateCSS.js 
+findstr  "export" ..\..\js\animateCSS.js >nul
 if %errorlevel% equ 1 (
 	copy ..\..\js\animateCSS.js  >nul
 	echo|set /p="if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js

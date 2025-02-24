@@ -1,6 +1,7 @@
 
 const fs=require('fs')
 //const { result } = require('lodash')
+const path = require('path')
 const outdated_category="Outdated Modules"
 //const file = process.argv[2]
 const sort_types = ['date', 'name']
@@ -10,14 +11,14 @@ let sort_type="date"
 
 module.exports= async (data,sorttype, debug)=>{
 
-	sort_type=sorttype
-
-	let temp=__dirname.split('/').slice(0,-2)
+	sort_type=sorttype	
+	
+	let temp=__dirname.split(path.sep).slice(0,-2)
 	///home/sam/MagicMirror/modules/MMM-Config/module_installer
-	//temp.push('modules')
-	let MM_modules_Path=temp.join('/')
-	if(debug)
-		console.info("MM folder="+MM_modules_Path)
+	/// C:\Users\sdetw\MagicMirror\modules\MMM-Config\module_installer
+
+	let MM_modules_Path=temp.join(path.sep)
+
 	let categories = {};
 
 	let default_hash = {
@@ -72,7 +73,7 @@ module.exports= async (data,sorttype, debug)=>{
 			console.log("checking installed for module=" + module.name + " at path=" + MM_modules_Path + '/' + module.name)		
 		try {
 			// check
-			let fn = MM_modules_Path + '/' + module.name
+			let fn = MM_modules_Path + path.sep + module.name
 			fs.statSync(fn)
 			module['installed'] = true
 			module['previously_installed'] = true

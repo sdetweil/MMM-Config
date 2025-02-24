@@ -27,19 +27,21 @@ if (process.argv[2]) {
     switch (process.platform) {
       case "win32":
         if (shell_command.length > 1) cmd = shell_command[1];
-        else console.log("no windows script specified, aborting");
-        return;
+        else {
+			console.log("no windows script specified, aborting");
+			return;
+		}
         break;
       default:
         cmd = shell_command[0];
         break;
     }
   }
-
   let command_output = spawnSync(cmd, { shell: true });
 
   if (command_output.stderr) console.log(command_output.stderr.toString());
-  if (command_output.stdout) console.log(command_output.stdout.toString());
+  if(process.argv[3] && process.argv[3] ==='verbose')
+    if (command_output.stdout) console.log(command_output.stdout.toString());
 } else {
   console.log(helpstring);
 }

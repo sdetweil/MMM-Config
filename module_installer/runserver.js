@@ -259,7 +259,9 @@ async function process_submit(data, socket){
   // now work thru the work list, one at a time
 
   let count=0
+  local_debug = true
   worklist.forEach((module)=>{
+
     if(local_debug)
       console.log("processing for module ="+module.name)
     let extension=os.type() === "Windows_NT"?"cmd":"sh"
@@ -348,7 +350,7 @@ async function launchServer(worklist, socket){
     const child = await exec(nodejspath +' serveronly',
         {
           detached: true, // Make the child process independent from the parent
-          stdio: 'ignore', // Prevent child process from inheriting parent's stdio
+          stdio: 'inherit', // was 'ignore' // Prevent child process from inheriting parent's stdio
           cwd: __dirname.split('/').slice(0,-3).join('/'),
           env:env
         },
@@ -359,7 +361,7 @@ async function launchServer(worklist, socket){
           }
           if(local_debug){
             if(stdout)
-              console.log("error=",stdout)
+              console.log("stdout=",stdout)
           }
        }
     );
@@ -369,6 +371,8 @@ async function launchServer(worklist, socket){
       if(!in_docker_container){
         if(os.type() !== "Windows_NT")  // linux and macos
           console.log(JSON.stringify(execSync("ps -ef | grep servero | grep -v grep").toString().trim().split(/\n/),null,2));
+		else   
+		  console.log(JSON.stringify(execSync(`wmic process get Caption,ParentProcessId,ProcessId | findstr ${cpid} | findstr node.exe`).toString().trim().split(/\n/),null,2))	
       }
     }
     processList = getWorkConfigServerProcessList(cpid)
@@ -419,10 +423,10 @@ async function launchServer(worklist, socket){
               }
             }
           } catch(e){/* ok that it doesn't exist*/}
-        },2000)
+        },1000)
       }
       catch(e){}// watching for exist, error if not, ifnore it
-    }, 2000)
+    }, 1000)
   }
   else {
     display_no_work(1)
@@ -442,7 +446,7 @@ function display_no_work(type){
 function MagicMirrorWorkServerReady(socket, pid, port){
       // url to MMM-Config page
 
-      let url = "http://localhost:"+port+"/modules/MMM-Config/review";  // don't know what our outside address is, browser side will fix
+      let url = "http://localhost:"+port+"/configure";  // don't know what our outside address is, browser side will fix
       socket.emit('openurl', url)
       // tell the installer web page we are done
       // we waited so there wasn't a big flash
@@ -464,6 +468,7 @@ function MagicMirrorWorkServerReady(socket, pid, port){
             console.log(`File ${filename} has been changed`);
           // watch out we could get called multiple times
           if(count++ == 0){
+			socket.emit('close')
             killWorkConfigServer(processList)
             restartMagicMirror()
           }
@@ -501,11 +506,13 @@ function getWorkConfigServerProcessList(pid){
             });
           }
         } else {
-          // windows, don't know yet
+			const psRes = execSync(`wmic process get Caption,ParentProcessId,ProcessId | findstr ${pid} | findstr node.exe`).toString().trim().match(/\b\w+\b/g);	
+			console.log("psRes=",psRes)
+			pid = psRes[3]
         }
         list.push(pid)  // put parent on the end of list
         if(local_debug)
-          console.log("list="+JSON.stringify(list,null,2))
+          console.log("list=",list)
       }
     catch(error){
 
@@ -519,8 +526,13 @@ function killWorkConfigServer (list)  {
       if(local_debug)
         console.log("killing child pid=",childPid)
       try {
-         process.kill(childPid)
-      } catch(e){}
+		 if(os.type() !== "Windows_NT"){
+            process.kill(childPid)
+		 } else {
+			console.log("killing pid="+childPid)
+			execSync(`taskkill /f /pid:${childPid}`)
+		 }
+      } catch(e){console.log("error=",e)}
   });
 };
 
