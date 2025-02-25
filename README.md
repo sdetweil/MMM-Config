@@ -144,16 +144,16 @@ as you select modules to be installed a list is maintained at the bottom
 
 * * once the selection of modules is done,  press the<br> **Install selected modules** button
 
-when the module installation(s) are completed, you need to restart MagicMirror and go to the the MMM-Config screen
+when the module installation(s) are completed, the configuration screen will be opened with the recently installed modules included. 
 
 once you have completed the configuration, press the **Save, Create config** button 
 
 
 MMM-Config will try to restart your MagicMirror system after configuration is complete
 
-if the MagicMirror instance is configured to auto restart due to config.js, that will happen naturally
+if the MagicMirror instance is configured to auto restart due to config.js change,  that will happen naturally
 
-if the MagicMirror instance is **NOT** configured to auto restart due to config.js, then the restart option will be used to restart 
+if the MagicMirror instance is **NOT** configured to auto restart due to config.js change, then the MMM-Config restart option will be used to restart 
 
 if the MagicMirror instance is in a docker container, like khassel's
 then the MagicMirror process will be killed, causing the container to restart 
