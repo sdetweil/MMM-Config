@@ -23,5 +23,7 @@ installer_w_repo
 local.css
 module_installer/local.css
 module_installer/module_selector_schema.json
+module_installer/.DS_Store
 fribble.js
 testpage.html
+.DS_Store

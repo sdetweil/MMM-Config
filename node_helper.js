@@ -85,7 +85,9 @@ let doSave = true;
 module.exports = NodeHelper.create({
   config: {debug:false},
   module_scripts: {},
-  imageurl:null,
+  imageurl: null,
+  
+  requiresVersion: "2.28.0",
 
   buildQR_URI(){
       //console.log("in buildQR_URI");
@@ -149,6 +151,7 @@ module.exports = NodeHelper.create({
 //    console.log("usable port=",our_port)
     for(let m of config.modules){
       if(m.module === this.name){
+	if(m.config){
         debug=this.config.debug = m.config.debug || false
         this.config.force_update = m.config.force_update || true
         this.config.restart = m.config.restart || ""
@@ -156,7 +159,8 @@ module.exports = NodeHelper.create({
           this.config.showQR=m.config.showQR || false
           this.buildQR_URI()
         }
-        break;
+      }
+      break;
       }
     }
 

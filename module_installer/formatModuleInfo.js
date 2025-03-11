@@ -94,7 +94,8 @@ module.exports= async (data,sorttype, debug)=>{
 				hash[module.name] = { "repo_url": module.url, "readme_url": "null" }
 				// we need to figure out the  url of the readme
 				if (use_promise) {
-					console.log("adding to the list for module="+module.name)
+					if(debug)
+					    console.log("adding to the list for module="+module.name)
 					// call the url fixer.. not to many at a time
 					promise_list.push(fixer( module.name, hash[module.name], module.category, debug))
 				}
