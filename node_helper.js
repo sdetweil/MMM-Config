@@ -151,15 +151,15 @@ module.exports = NodeHelper.create({
 //    console.log("usable port=",our_port)
     for(let m of config.modules){
       if(m.module === this.name){
-	if(m.config){
-        debug=this.config.debug = m.config.debug || false
-        this.config.force_update = m.config.force_update || true
-        this.config.restart = m.config.restart || ""
-        if(m.config.showQR){
-          this.config.showQR=m.config.showQR || false
-          this.buildQR_URI()
+	      if(m.config){
+          debug=this.config.debug = m.config.debug || false
+          this.config.force_update = m.config.force_update || true
+          this.config.restart = m.config.restart || ""
+          if(m.config.showQR){
+            this.config.showQR=m.config.showQR || false
+            this.buildQR_URI()
+          }
         }
-      }
       break;
       }
     }
@@ -231,83 +231,85 @@ module.exports = NodeHelper.create({
   startit() {
     //console.log("in startit")
     // if restart is the old pm2: value, fix it
-    if (this.config.restart.toLowerCase().startsWith("pm2:")){
-      const parts=this.config.restart.split(':')
-      this.config.restart = parts[0]
-      pm2_id=parts[1]
-      if(debug){
-        console.info(this.name+" pm2 id specified for restart="+pm2_id)
+    if (this.config.restart) {
+      if (this.config.restart.toLowerCase().startsWith("pm2:")) {
+        const parts = this.config.restart.split(':')
+        this.config.restart = parts[0]
+        pm2_id = parts[1]
+        if (debug) {
+          console.info(this.name + " pm2 id specified for restart=" + pm2_id)
+        }
       }
-    }
-    if(debug)
-      console.info(this.name+" restart parm ='"+this.config.restart+"'")
-    // handle how we restart, if any
-    switch (this.config.restart) {
-      case "static":
-        // setup the handler
-        let ep =
-          __dirname.split(path.sep).slice(0, -2).join(path.sep) +
-          "/node_modules/.bin/electron" +
-          (os.platform() == "win32" ? ".cmd" : "");
-        if(debug) console.log("electron path=" + ep);
-        require("electron-reload")(oc, {
-          electron: ep,
-          argv: [
+      if (debug)
+        console.info(this.name + " restart parm ='" + this.config.restart + "'")
+      // handle how we restart, if any
+      switch (this.config.restart) {
+        case "static":
+          // setup the handler
+          let ep =
             __dirname.split(path.sep).slice(0, -2).join(path.sep) +
+            "/node_modules/.bin/electron" +
+            (os.platform() == "win32" ? ".cmd" : "");
+          if (debug) console.log("electron path=" + ep);
+          require("electron-reload")(oc, {
+            electron: ep,
+            argv: [
+              __dirname.split(path.sep).slice(0, -2).join(path.sep) +
               "/js/electron.js"
-          ],
-          forceHardReset: true,
-          hardResetMethod: "exit"
-        });
-        break;
-      case "pm2":
-        // if the id was not set from config
-        if(pm2_id  ==  -1){
-          // if the pm2 process_env is set
-          if(process.env.unique_id !== undefined){
-            // running under pm2
-            if (debug) console.log("getting pm2 process list");
-            exec("pm2 jlist", (error, stdout, stderr) => {
-              if (!error) {
-                let o=stdout.toString()
-                // maybe there is a pm2 error message in front of the json
-                if(!o.startsWith('[')){
-                  // remove everything before process list
-                  o=o.slice(o.indexOf('['))
-                }
-                if(debug){
-                  console.log("json="+o)
-                }
-                let output = JSON.parse(o);
-                if (debug)
-                  console.log(
-                    "processing pm2 jlist output, " + output.length + " entries"
-                  );
-                output.forEach((managed_process) => {
-                  if(managed_process.pm2_env.status === 'online' ){
-                    if(process.env.unique_id === managed_process.pm2_env.env.unique_id){
-                      if (debug)
-                        console.info(
-                          "found our pm2 entry, id=" + managed_process.pm_id
-                        );
-                      pm2_id = managed_process.pm_id;
-                    }
+            ],
+            forceHardReset: true,
+            hardResetMethod: "exit"
+          });
+          break;
+        case "pm2":
+          // if the id was not set from config
+          if (pm2_id == -1) {
+            // if the pm2 process_env is set
+            if (process.env.unique_id !== undefined) {
+              // running under pm2
+              if (debug) console.log("getting pm2 process list");
+              exec("pm2 jlist", (error, stdout, stderr) => {
+                if (!error) {
+                  let o = stdout.toString()
+                  // maybe there is a pm2 error message in front of the json
+                  if (!o.startsWith('[')) {
+                    // remove everything before process list
+                    o = o.slice(o.indexOf('['))
                   }
-                });
-              }
-            });
-          } else {
-            if(debug)
-              console.info(this.name+" MagicMirror not running under pm2")
+                  if (debug) {
+                    console.log("json=" + o)
+                  }
+                  let output = JSON.parse(o);
+                  if (debug)
+                    console.log(
+                      "processing pm2 jlist output, " + output.length + " entries"
+                    );
+                  output.forEach((managed_process) => {
+                    if (managed_process.pm2_env.status === 'online') {
+                      if (process.env.unique_id === managed_process.pm2_env.env.unique_id) {
+                        if (debug)
+                          console.info(
+                            "found our pm2 entry, id=" + managed_process.pm_id
+                          );
+                        pm2_id = managed_process.pm_id;
+                      }
+                    }
+                  });
+                }
+              });
+            } else {
+              if (debug)
+                console.info(this.name + " MagicMirror not running under pm2")
+            }
           }
-        }
-        else {
-          if(debug){
-            console.info(this.name+" pm2 restart app id is ", pm2_id)
+          else {
+            if (debug) {
+              console.info(this.name + " pm2 restart app id is ", pm2_id)
+            }
           }
-        }
-        break;
-      default:
+          break;
+        default:
+      }
     }
 
     this.command =
@@ -324,10 +326,12 @@ module.exports = NodeHelper.create({
     this.remote_start(this);
     let sort="date"  // default value set in modulename.js
     for(m of config.modules){
-      if(m.module == this.name){
-        if(m.config.ModuleSortOrder) // if it was specified
-          sort=m.config.ModuleSortOrder // use it
-        break
+      if (m.module == this.name) {
+        if (m.config && m.config.ModuleSortOrder) {
+          if (m.config.ModuleSortOrder) // if it was specified
+            sort = m.config.ModuleSortOrder // use it
+          break
+        }
       }
     }
     InstallerSetup(this.expressApp, this.io, NodeHelper, sort)

@@ -55,7 +55,9 @@ Module.register("MMM-Config", {
       this.config.address = config.address;
       this.config.port = config.port;
       this.config.whiteList = config.ipWhitelist;
-      this.config.id=this.identifier
+      this.config.id = this.identifier
+      if (!this.config.restart)
+        this.config.restart=this.defaults.restart
       this.sendSocketNotification("CONFIG", this.config);
     }
   },
