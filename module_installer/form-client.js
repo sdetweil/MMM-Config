@@ -188,9 +188,13 @@ $(function () {
   })
 
   activesocket.on('completed', function(moduleName){
-      updateInstallableList(moduleName, "completed")
+    updateInstallableList(moduleName, "completed")
+ 
   })
 
+  activesocket.on('waitfor', function () {
+    $('#waitforit').css("display", "block")
+  })
   activesocket.on("disconnect", function () {
     // don't know what to do on disconnect
     window.close()

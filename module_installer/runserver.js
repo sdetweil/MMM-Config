@@ -317,7 +317,7 @@ async function launchServer(worklist, socket){
   //  we will open the MMM-Config page when the schema file is created under the instance
   //
   if(startMM && worklist.length>0){
-
+    socket.emit("waitfor")
     let cfgpath=path.resolve(__dirname,"../../../"+cf_name)
     let env=process.env  // get the environment variables
       env['MM_PORT']=run_port=BASE_INSTANCE_PORT  // add a MM custom port value (overrides in MM config.js)
@@ -341,7 +341,7 @@ async function launchServer(worklist, socket){
     catch(error) {
 
     }
-
+ 
     // starting config server (MM with MMM-Config installed, added on the fly if not present in prior config)
     // module was installed in the script it not already present
     // on a specific port
