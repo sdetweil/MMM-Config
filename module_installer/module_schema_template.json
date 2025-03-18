@@ -111,7 +111,8 @@
         "key":"search",
         "title":"module search",
         "htmlClass":"module_search",
-        "onKeyUp": "(evt, node)=>{function addClass(x, y){ x.addClass(y) };function displayit(x){ x.find('>div').css('display', 'block') };function openit(x){addClass(x, 'expanded');displayit(x)};var mname = $(evt.target).val().toUpperCase();var mod=$('.'+mname);if (mod.length){openit(mod);openit(mod.closest('.moduleList').closest('fieldset'));$('html, body').animate({scrollTop: mod.offset().top},2000);}}"
+        "onKeyUp": "(evt, node)=>{function addClass(x, y){ x.addClass(y) };function displayit(x){ x.find('>div').css('display', 'block') };function openit(x){addClass(x, 'expanded');displayit(x)};var mname = $(evt.target).val().toUpperCase();var mod=$('.'+mname);if (mod.length){openit(mod);openit(mod.closest('.moduleList').closest('fieldset'));$('html, body').animate({scrollTop: mod.offset().top},2000);}}",
+        "placeholder":"enter module name, not case sensitive"
         }
       ]
     }, 
@@ -129,7 +130,8 @@
               "title":"source repo url",
               "htmlClass":"unreg_url unregistedUrl",
               "key":"urls[]",
-              "onChange":"()=>{$('.btn-submit').removeAttr('disabled')}"
+              "onChange":"()=>{$('.btn-submit').removeAttr('disabled')}",
+              "placeholder":"enter full url to git repo"
             }
           ]
         }
