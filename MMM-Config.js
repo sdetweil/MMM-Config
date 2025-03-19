@@ -14,7 +14,7 @@ Module.register("MMM-Config", {
   defaults: {
     showQR: false,
     force_update: true,
-    restart: "",
+    restart: "none",
     ModuleSortOrder:"date",
     debug: false,
   },

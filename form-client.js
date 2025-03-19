@@ -166,6 +166,16 @@ $(function () {
   activesocket.on("close", function(){
       window.close()
   })
+
+  $("#openlink").bind('click', function () {
+    window.location.href = $(this).attr('href');
+  });
+  
+  activesocket.on('openurl', function (url) {
+    $("#openlink").attr("href", url.replace("localhost", window.location.hostname))
+    $("#openlink").trigger('click');
+  })
+  
   // global socket events
   activesocket.on("connected", function () {
     switch (pos) {

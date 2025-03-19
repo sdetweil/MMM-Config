@@ -232,6 +232,8 @@ module.exports = NodeHelper.create({
     //console.log("in startit")
     // if restart is the old pm2: value, fix it
     if (this.config.restart) {
+      if (debug)
+        console.log("restart property="+this.config.restart)
       if (this.config.restart.toLowerCase().startsWith("pm2:")) {
         const parts = this.config.restart.split(':')
         this.config.restart = parts[0]
@@ -1664,11 +1666,18 @@ module.exports = NodeHelper.create({
           // inform the form all went well
           socket.emit("saved", logname+ " created successfully");
           // and restart with pm2. then
-          if (self.config.restart === "pm2") {
-            if (debug) console.log("restarting using pm2, id=" + pm2_id);
-            // exec pm2 restart with the name of the app
-            exec("pm2 restart " + pm2_id);
-          }
+          setTimeout(() => {
+            //if(debug)
+              console.log("self.config=",self.config)
+            if (self.config.restart.startsWith("pm2") && pm2_id != -1) {
+              socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "restarting.html")
+              if (debug) console.log("restarting using pm2, id=" + pm2_id);
+              // exec pm2 restart with the name of the app
+              exec("pm2 restart " + pm2_id);
+            } else {
+              socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "notrestarting.html")
+            }
+          },2000)
         }
       });
       xx=null
