@@ -347,7 +347,7 @@ async function launchServer(worklist, socket){
     // on a specific port
     // launch another instance of MagicMirror in server mode, on a different port
     // with the same config.js, so MMM-Config modifies the correct file
-    const child = await exec(nodejspath +' serveronly',
+    const child = exec(nodejspath +' serveronly',
         {
           detached: true, // Make the child process independent from the parent
           stdio: 'inherit', // was 'ignore' // Prevent child process from inheriting parent's stdio
@@ -468,9 +468,10 @@ function MagicMirrorWorkServerReady(socket, pid, port){
             console.log(`File ${filename} has been changed`);
           // watch out we could get called multiple times
           if(count++ == 0){
-			socket.emit('close')
+			      socket.emit('close')
             killWorkConfigServer(processList)
-            restartMagicMirror()
+            /* no point us restarting MM, as the restart will be done by the config process save */
+            //restartMagicMirror()
           }
         }
       })
