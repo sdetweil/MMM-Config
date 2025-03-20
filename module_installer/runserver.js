@@ -11,7 +11,7 @@ const BASE_INSTANCE_PORT=9000
 let run_port = process.env.PORT || BASE_INSTANCE_PORT;
 let remote_io = null
   // if last parm is debug, others are down 1(adjustment)
-let local_debug = false
+let local_debug = true
 const parm_adjustment = (process.argv[process.argv.length - 1] == "debug" ? 1 : 0)
 const startMM=true
 const our_path=__dirname.split('/').slice(0,-2).join('/')
@@ -468,8 +468,11 @@ function MagicMirrorWorkServerReady(socket, pid, port){
             console.log(`File ${filename} has been changed`);
           // watch out we could get called multiple times
           if(count++ == 0){
-			      socket.emit('close')
-            killWorkConfigServer(processList)
+            // give the client MM config  server time to  put out the wait page
+            setTimeout(()=>{
+	        //socket.emit('close')
+            	killWorkConfigServer(processList)
+	    },3000)
             /* no point us restarting MM, as the restart will be done by the config process save */
             //restartMagicMirror()
           }

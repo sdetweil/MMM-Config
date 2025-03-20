@@ -5,7 +5,7 @@ const path = require("path");
 const os = require("os");
 const _ = require("lodash");
 
-let debug = false
+var static_debug = false
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
@@ -29,7 +29,7 @@ let module_positions = JSON.parse(
 
 // set the modules folder to the environment variable if set
 let  modules_folder=process.env.MM_MODULES_DIR?process.env.MM_MODULES_DIR:"modules"
-if(debug){
+if(static_debug){
   console.log("modules folder set at init to ="+modules_folder)
 }
 
@@ -109,7 +109,7 @@ module.exports = NodeHelper.create({
           "/"+modules_folder+"/" + this.name + "/qrfile.png";
         QRCode.toFile(this.path + "/qrfile.png", url, (err) => {
           if (!err) {
-            if (debug) console.log("QRCode build done");
+            if (static_debug) console.log("QRCode build done");
           } else {
             console.log("QR image create failed =" + JSON.stringif(err));
           }
@@ -120,6 +120,9 @@ module.exports = NodeHelper.create({
     //console.log("in setconfigpath");
     // get the environment var for config files
     let cf = process.env.MM_CONFIG_FILE
+    if(!cf){
+	cf=default_config_name
+    }
     // if set and it does not contain path separator, its only the filename, not the folder
     if(cf && !cf.includes(path.sep)){
 
@@ -133,7 +136,7 @@ module.exports = NodeHelper.create({
     // set the output config file name
     oc=__dirname.split(path.sep).slice(0, -2).join(path.sep) + (cf?cf:default_config_name);
 
-    if(debug){
+    if(static_debug){
       console.log("config folder set at form start ="+cf);
       console.log("modules folder set at form start="+modules_folder)
     }
@@ -151,8 +154,8 @@ module.exports = NodeHelper.create({
 //    console.log("usable port=",our_port)
     for(let m of config.modules){
       if(m.module === this.name){
-	      if(m.config){
-          debug=this.config.debug = m.config.debug || false
+	if(m.config){
+          static_debug=this.config.debug = m.config.debug || false
           this.config.force_update = m.config.force_update || true
           this.config.restart = m.config.restart || ""
           if(m.config.showQR){
@@ -168,20 +171,20 @@ module.exports = NodeHelper.create({
   },
   // MM calls start
   start() {
-    if(this.config.debug) console.log('Starting module helper:' +this.name+ JSON.stringify(this.data));
+    if(this.config.debug) console.log('Starting module helper:' +this.name);
     //console.log("full config=",config)
     this.setConfig()
 
   },
   // collect the data in background
   launchit() {
-    if (debug) console.log("execing " + this.command);
+    if (static_debug) console.log("execing " + this.command);
     exec(this.command, { env: {...process.env, MM_identifier: oc.hashCode(our_port)} }, (error, stdout, stderr) => {
       if (error) {
         console.error(`exec error: ${error}`);
         return;
       }
-      if (debug) console.log(`stdout: ${stdout}`);
+      if (static_debug) console.log(`stdout: ${stdout}`);
       if (stderr) console.error(`stderr 2: ${stderr}`);
     });
   },
@@ -232,17 +235,19 @@ module.exports = NodeHelper.create({
     //console.log("in startit")
     // if restart is the old pm2: value, fix it
     if (this.config.restart) {
-      if (debug)
+      if (this.config.debug){
+	static_debug=this.config.debug
         console.log("restart property="+this.config.restart)
+      }
       if (this.config.restart.toLowerCase().startsWith("pm2:")) {
         const parts = this.config.restart.split(':')
         this.config.restart = parts[0]
         pm2_id = parts[1]
-        if (debug) {
+        if (static_debug) {
           console.info(this.name + " pm2 id specified for restart=" + pm2_id)
         }
       }
-      if (debug)
+      if (static_debug)
         console.info(this.name + " restart parm ='" + this.config.restart + "'")
       // handle how we restart, if any
       switch (this.config.restart) {
@@ -252,7 +257,7 @@ module.exports = NodeHelper.create({
             __dirname.split(path.sep).slice(0, -2).join(path.sep) +
             "/node_modules/.bin/electron" +
             (os.platform() == "win32" ? ".cmd" : "");
-          if (debug) console.log("electron path=" + ep);
+          if (static_debug) console.log("electron path=" + ep);
           require("electron-reload")(oc, {
             electron: ep,
             argv: [
@@ -269,7 +274,7 @@ module.exports = NodeHelper.create({
             // if the pm2 process_env is set
             if (process.env.unique_id !== undefined) {
               // running under pm2
-              if (debug) console.log("getting pm2 process list");
+              if (static_debug) console.log("getting pm2 process list");
               exec("pm2 jlist", (error, stdout, stderr) => {
                 if (!error) {
                   let o = stdout.toString()
@@ -278,18 +283,18 @@ module.exports = NodeHelper.create({
                     // remove everything before process list
                     o = o.slice(o.indexOf('['))
                   }
-                  if (debug) {
+                  if (static_debug) {
                     console.log("json=" + o)
                   }
                   let output = JSON.parse(o);
-                  if (debug)
+                  if (static_debug)
                     console.log(
                       "processing pm2 jlist output, " + output.length + " entries"
                     );
                   output.forEach((managed_process) => {
                     if (managed_process.pm2_env.status === 'online') {
                       if (process.env.unique_id === managed_process.pm2_env.env.unique_id) {
-                        if (debug)
+                        if (static_debug)
                           console.info(
                             "found our pm2 entry, id=" + managed_process.pm_id
                           );
@@ -300,12 +305,12 @@ module.exports = NodeHelper.create({
                 }
               });
             } else {
-              if (debug)
+              if (static_debug)
                 console.info(this.name + " MagicMirror not running under pm2")
             }
           }
           else {
-            if (debug) {
+            if (static_debug) {
               console.info(this.name + " pm2 restart app id is ", pm2_id)
             }
           }
@@ -318,7 +323,7 @@ module.exports = NodeHelper.create({
       __dirname +
       (os.platform() == "win32" ? "\\test_convert.cmd" : "/test_convert.sh");
     this.command += this.config.force_update ? " override" : "";
-    if(debug){
+    if(static_debug){
       console.log("command =" + this.command);
       console.log("Starting module helper:" + this.name);
     }
@@ -327,16 +332,23 @@ module.exports = NodeHelper.create({
     this.extraRoutes();
     this.remote_start(this);
     let sort="date"  // default value set in modulename.js
+    let debug= false
     for(m of config.modules){
       if (m.module == this.name) {
-        if (m.config && m.config.ModuleSortOrder) {
-          if (m.config.ModuleSortOrder) // if it was specified
-            sort = m.config.ModuleSortOrder // use it
-          break
+        if (m.config){
+          if( m.config.ModuleSortOrder) {
+            if (m.config.ModuleSortOrder) // if it was specified
+             sort = m.config.ModuleSortOrder // use it
+	  }  
+	  if(m.config.debug){
+             debug=m.config.debug
+	  }
         }
+       break;
       }
     }
-    InstallerSetup(this.expressApp, this.io, NodeHelper, sort)
+    console.log("starting installer setup")
+    InstallerSetup(this.expressApp, this.io, NodeHelper, sort,debug )
   },
 
   // handle messages from our module// each notification indicates a different messages
@@ -363,7 +375,7 @@ module.exports = NodeHelper.create({
     let i = -1;
     for (let x of source) {
       if (x.module === m) {
-        if(debug)
+        if(static_debug)
           console.log("found module "+m+" in "+oc.split('/').slice(-1)+" search for index="+index+" has index="+x.index-1)
         // if we didn't care which module instance
         // return first
@@ -387,19 +399,19 @@ module.exports = NodeHelper.create({
   },
   reformat_array: function (data, self, key) {
     if (Array.isArray(data[key])) {
-      if (debug)
+      if (static_debug)
         console.log(
           "reformat_array data present =" +
             JSON.stringify(data[key], self.tohandler, 2)
         );
-      if (debug) console.log("reformat_array to object from array");
+      if (static_debug) console.log("reformat_array to object from array");
       let d = [];
-      if (debug) console.log("reformatting array of strings back to object");
+      if (static_debug) console.log("reformatting array of strings back to object");
       data[key].forEach((element) => {
         if (typeof element === "string") {
           let tt;
           if (element.startsWith("{") && element.endsWith("}")) {
-            if (debug)
+            if (static_debug)
               console.log(
                 "reformat_array, about to parse=" +
                   element.replace(/\r?\n|\r/gm, "")
@@ -408,19 +420,19 @@ module.exports = NodeHelper.create({
               element.replace(/\r?\n|\r/gm, ""),
               self.fromhandler
             );
-            if (debug) console.log("reformat_array, after parse=" + tt);
+            if (static_debug) console.log("reformat_array, after parse=" + tt);
           } else {
             tt = element;
-            if (debug) console.log("reformat_array, just copy string=" + tt);
+            if (static_debug) console.log("reformat_array, just copy string=" + tt);
           }
           d.push(tt);
-          if (debug)
+          if (static_debug)
             console.log(
               " item added to object=" + JSON.stringify(d, self.tohandler, 2)
             );
         } else {
           if (!Array.isArray(element)) {
-            if (debug)
+            if (static_debug)
               console.log(
                 "reformat_array, just copy object=" +
                   JSON.stringify(element, self.tohandler, 2)
@@ -429,25 +441,25 @@ module.exports = NodeHelper.create({
           }
         }
       });
-      if (debug)
+      if (static_debug)
         console.log(
           " new data contents=" + JSON.stringify(d, self.tohandler, 2)
         );
       data[key] = d;
-      if (debug)
+      if (static_debug)
         console.log(
           " new data contents=" + JSON.stringify(d, self.tohandler, 2)
         );
     } else if (!Array.isArray(data)) {
-      if (debug)
+      if (static_debug)
         console.log(
           "reformat_array data present =" +
             JSON.stringify(data, self.tohandler, 2)
         );
-      if (debug) console.log("reformat_array to array from object");
+      if (static_debug) console.log("reformat_array to array from object");
       let d = [];
       Object.keys(data).forEach((a) => {
-        if (debug) console.log("saving item=" + JSON.stringify(data[a]));
+        if (static_debug) console.log("saving item=" + JSON.stringify(data[a]));
         d.push(data[a]);
       });
       data = d;
@@ -455,23 +467,23 @@ module.exports = NodeHelper.create({
   },
 
   object_from_key: function (object, key, type) {
-    if (debug) console.log("key = " + key);
+    if (static_debug) console.log("key = " + key);
     if (key && key.includes(".")) {
       let r = key.split(".");
-      if (debug)
+      if (static_debug)
         console.log(
           "object from key after split(.)=" + JSON.stringify(r, null, 2)
         );
       let left = r.shift().replace(/' '/g, ".");
       let index = -1;
       let li = left.split("[");
-      if (debug)
+      if (static_debug)
         console.log(
           "object from key after left split([)=" + JSON.stringify(li, null, 2)
         );
       left = li[0];
       let obj = object[left];
-      if (debug)
+      if (static_debug)
         console.log(
           "object from key after indexing=" + JSON.stringify(obj, null, 2)
         );
@@ -479,7 +491,7 @@ module.exports = NodeHelper.create({
         index = parseInt(li[1]);
         obj = obj[index];
       }
-      if (debug) console.log("object[" + left + "]=" + JSON.stringify(obj));
+      if (static_debug) console.log("object[" + left + "]=" + JSON.stringify(obj));
       if (type === "array" || r.length > 1 || obj !== undefined) {
         if (obj != undefined) {
           return this.object_from_key(obj, r.join("."), type);
@@ -487,7 +499,7 @@ module.exports = NodeHelper.create({
       } else key = left;
     }
 
-    if (debug)
+    if (static_debug)
       console.log(type + " object from key=" + JSON.stringify(object[key]));
     //console.log("checking item "+key+" in "+JSON.stringify(object, ' ',2))
     if (object[key] === undefined)
@@ -505,13 +517,13 @@ module.exports = NodeHelper.create({
 
     let a = Object.keys(object.added).length;
     if (a > 0)
-      if (debug)
+      if (static_debug)
         console.log(
           "a=" + a + " " + JSON.stringify(Object.keys(object.added), " ", 2)
         );
     let d = Object.keys(object.deleted).length;
     if (d > 0) {
-      if (debug)
+      if (static_debug)
         console.log(
           "d=" + d + " " + JSON.stringify(Object.keys(object.deleted), " ", 2)
         );
@@ -521,11 +533,11 @@ module.exports = NodeHelper.create({
     }
     let u = Object.keys(object.updated).length;
     if (u > 0)
-      if (debug)
+      if (static_debug)
         console.log(
           "u=" + u + " " + JSON.stringify(Object.keys(object.updated), " ", 2)
         );
-    if (debug) console.log("a=" + a + " d=" + d + " u=" + u);
+    if (static_debug) console.log("a=" + a + " d=" + d + " u=" + u);
     return a + d + u === 0;
   },
   isNumeric: function (n) {
@@ -536,7 +548,7 @@ module.exports = NodeHelper.create({
   // return a list of flat variables
   // and subobject/variable name
   objectsAreSame: function (x, y) {
-    if (debug)
+    if (static_debug)
       console.log(
         "objectsAreSame x=" + JSON.stringify(x,this.tohandler, 2) + " y=" + JSON.stringify(y, this.tohandler, 2)
       );
@@ -546,7 +558,7 @@ module.exports = NodeHelper.create({
         typeof x[propertyName] === "object" &&
         typeof y[propertyName] === "object"
       ) {
-        if (debug) console.log("comparing objects=" + propertyName);
+        if (static_debug) console.log("comparing objects=" + propertyName);
         if(Array.isArray(x[propertyName]) && Array.isArray(y[propertyName])){
           if(JSON.stringify(x[propertyName])!==JSON.stringify(y[propertyName])){
             proplist.push(propertyName)
@@ -559,20 +571,20 @@ module.exports = NodeHelper.create({
           if (r.length) {
             t[propertyName] = r;
 
-            if (debug) console.log("object list=" + JSON.stringify(t, null, 2));
+            if (static_debug) console.log("object list=" + JSON.stringify(t, null, 2));
             proplist = proplist.concat(t);
-            if (debug)
+            if (static_debug)
               console.log(
                 "concat object list=" + JSON.stringify(proplist, null, 2)
               );
           }
         }
       } else if (x[propertyName] !== y[propertyName]) {
-        if (debug) console.log("comparing prop=" + propertyName);
+        if (static_debug) console.log("comparing prop=" + propertyName);
         proplist.push(propertyName);
       }
     }
-    if (debug)
+    if (static_debug)
       console.log("returning list=" + JSON.stringify(proplist, null, 2));
     return proplist;
   },
@@ -580,11 +592,11 @@ module.exports = NodeHelper.create({
   merge_nested: function (output, input, changed_vars) {
     changed_vars.forEach((sub_object) => {
       // loop thru array of objects
-      if (debug)
+      if (static_debug)
         console.log("changed object=" + JSON.stringify(sub_object, null, 2));
       Object.keys(sub_object).forEach((entry) => {
         // e = OS
-        if (debug)
+        if (static_debug)
           console.log(
             "changed object name=" +
               entry +
@@ -593,13 +605,13 @@ module.exports = NodeHelper.create({
           );
         if (output[entry] === undefined) output[entry] = {};
         _.assign(output[entry], _.pick(input[entry], sub_object[entry]));
-        if (debug) console.log(" merged =" + JSON.stringify(output, null, 2));
+        if (static_debug) console.log(" merged =" + JSON.stringify(output, null, 2));
         let r = sub_object[entry].filter((x) => {
-          if (debug) console.log("testing item in array=" + typeof x + " " + x);
+          if (static_debug) console.log("testing item in array=" + typeof x + " " + x);
           if (typeof x === "object") return true;
         });
         if (r.length) {
-          if (debug) console.log("have more to merge for sub_object");
+          if (static_debug) console.log("have more to merge for sub_object");
           this.merge_nested(output[entry], input[entry], r);
         }
       });
@@ -611,7 +623,7 @@ module.exports = NodeHelper.create({
   // so picking the keys for the config doesn't help, not present
   // and then merge those in.. ( clock, defaults, )
   mergeModule: function (module_entry, data, defaults) {
-    if (debug) console.log("merge data=" + JSON.stringify(data, this.tohandler, 2));
+    if (static_debug) console.log("merge data=" + JSON.stringify(data, this.tohandler, 2));
     let keys = _.keys(module_entry);
     if (!keys.includes("disabled")) keys.push("disabled");
     if (!keys.includes("label")) keys.push("label");
@@ -621,11 +633,11 @@ module.exports = NodeHelper.create({
     if (!keys.includes("animateIn")) keys.push("animateIn");
     if (!keys.includes("animateOut")) keys.push("animateOut");
     keys = _.without(keys, "config");
-    if(debug){
+    if(static_debug){
       console.log("merge keys for fields="+JSON.stringify(keys))
     }
     _.assign(module_entry, _.pick(data, keys));
-    if (debug)
+    if (static_debug)
       console.log(
         "config after assign=" +
           JSON.stringify(module_entry, null, 2) +
@@ -635,40 +647,40 @@ module.exports = NodeHelper.create({
     // if the module_entry config section exists
     if (module_entry["config"] !== undefined) {
       // loop thru all the items in the existing config
-      if (debug) console.log("checking for items in old config data, same as defaults");
+      if (static_debug) console.log("checking for items in old config data, same as defaults");
       // loop thru the config.js version of the module config
       Object.keys(data.config).forEach((key) => {
         // if that key isn't in the new data
-        if(debug){
+        if(static_debug){
           console.log("comparing module data with defaults for key="+key+ " new="+JSON.stringify(module_entry.config[key])+" default="+JSON.stringify(defaults[key]))
         }
         if (JSON.stringify(module_entry.config[key],this.tohandler) === JSON.stringify(defaults[key],this.tohandler)) {
-          if (debug)
+          if (static_debug)
             console.log("deleting item=" + key + " from old config data");
           delete module_entry.config[key];
         } else{
-          if(debug)
+          if(static_debug)
             console.log("data not equal for key="+key)
         }
       });
     }
     // compare the form data with the info from the defaults..
     let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
-    if(debug)
+    if(static_debug)
       console.log("keys different data vs defaults="+JSON.stringify(keydiff))
     if(module_entry.config !== undefined){
       let keydiff2=this.objectsAreSame(data.config,module_entry.config)
-      if(debug)
+      if(static_debug)
         console.log("keys different data vs prior config="+JSON.stringify(keydiff2))
       keydiff2.forEach(k=>{
         if(!keydiff.includes(k))
                 keydiff.push(k);
       })
     }
-    if (debug)
+    if (static_debug)
       console.log("keydiff after assign=" + JSON.stringify(keydiff, null, 2));
     if (keydiff.length) {
-      if (debug)
+      if (static_debug)
         console.log("keydiff in merge=" + JSON.stringify(keydiff, null, 2));
       if (module_entry.config === undefined) module_entry.config = {};
 
@@ -690,9 +702,9 @@ module.exports = NodeHelper.create({
   },
 
   fixobject_name: function (object, key, newname) {
-    if (debug) console.log("splitting key=" + key);
+    if (static_debug) console.log("splitting key=" + key);
     let x = key.split(".");
-    if (debug)
+    if (static_debug)
       console.log("processing mangled_names, part=" + JSON.stringify(x));
     if (x.length == 1) {
       object[newname] = object[x[0]];
@@ -724,7 +736,7 @@ module.exports = NodeHelper.create({
     return JSON.parse(JSON.stringify(input, self.tohandler), self.fromhandler);
   },
   getpair: function (datasource, key, self) {
-    if (debug) console.log("getpair key=" + key);
+    if (static_debug) console.log("getpair key=" + key);
     let left = key;
     if (key.includes(".")) {
       let v = key.split(".");
@@ -744,17 +756,17 @@ module.exports = NodeHelper.create({
       if (v.length) {
         if (datasource[left] === undefined)
           datasource[left] = self.clone({}, self);
-        if (debug) console.log("getpair remaining key=" + v.join("."));
+        if (static_debug) console.log("getpair remaining key=" + v.join("."));
         return self.getpair(datasource[left], v.join("."), self);
       }
     }
-    if(debug)
+    if(static_debug)
       console.log("left="+left+" datasource="+JSON.stringify(datasource,null,2))
     if (datasource[left] == undefined) datasource[left] = self.clone({}, self);
     return datasource[left];
   },
   setpair: function (datasource, key, self, value) {
-    if (debug) console.log("setpair key=" + key);
+    if (static_debug) console.log("setpair key=" + key);
     let left = key;
     if (key.includes(".")) {
       let v = key.split(".");
@@ -776,11 +788,11 @@ module.exports = NodeHelper.create({
       if (v.length) {
         if (datasource[left] === undefined)
           datasource[left] = self.clone({}, self);
-        if (debug) console.log("getpair remaining key=" + v.join("."));
+        if (static_debug) console.log("getpair remaining key=" + v.join("."));
         return self.setpair(datasource[left], v.join("."), self, value);
       }
     }
-    if (debug)
+    if (static_debug)
       console.log(
         "setpair setting value=" + JSON.stringify(value, self.tohandler, 2)
       );
@@ -803,7 +815,7 @@ module.exports = NodeHelper.create({
             module_jsonform_info_name.slice(1)
           )
         : path.join(__dirname, "..", module_name+"."+module_jsonform_info_name.slice(1));
-      if(debug)
+      if(static_debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
       // if the module doesn't supply a schema file
       if (!fs.existsSync(fn)) {
@@ -819,7 +831,7 @@ module.exports = NodeHelper.create({
         }
       }
     } else if(type=='converter'){
-      if(debug)
+      if(static_debug)
         console.log("1 checking for module converter for"+module_name);
     fn = isDefault
       ? path.join(
@@ -830,7 +842,7 @@ module.exports = NodeHelper.create({
           our_name+"."+module_jsonform_converter.slice(1)
         )
       : path.join(__dirname, "..", module_name,our_name+"."+module_jsonform_converter.slice(1));
-      if(debug)
+      if(static_debug)
         console.log("1 checking for module ="+module_name+" in "+fn);
     // if the module doesn't supply a schema file
     if (!fs.existsSync(fn)) {
@@ -840,7 +852,7 @@ module.exports = NodeHelper.create({
         //"../../MagicMirror/modules",
         module_name+module_jsonform_converter
       );
-      if(debug)
+      if(static_debug)
         console.log("2 checking for module ="+module_name+" in "+fn);
     //console.log("filename 2="+fn);
       // check to see if we have one
@@ -856,13 +868,13 @@ module.exports = NodeHelper.create({
   //
   process_submit: async function (data, self, socket) {
     let cfg = require(__dirname + "/defaults_"+oc.hashCode(our_port)+".js");
-    //if(debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
+    //if(static_debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
     // cleanup the arrays
 
 
-    if (debug) console.log("\nstart processing form submit\n");
+    if (static_debug) console.log("\nstart processing form submit\n");
 
-    if (debug)
+    if (static_debug)
       console.log("posted data=" + JSON.stringify(data, self.tohandler, 2));
     // waited long enough to have it created by batch script
     try {
@@ -871,7 +883,7 @@ module.exports = NodeHelper.create({
     catch(error){}
 
     if (1) {
-      if (debug)
+      if (static_debug)
         console.log(
           "potential empty objects=" +
             JSON.stringify(data.objects, self.tohandler, 2)
@@ -879,20 +891,20 @@ module.exports = NodeHelper.create({
       data.objects.forEach((p) => {
         let t = p;
         while (t.includes("..")) t = t.replace("..", ".");
-        if (debug) console.log("processing for " + p + " cleanup=" + t);
+        if (static_debug) console.log("processing for " + p + " cleanup=" + t);
 
         let v = t.split(".");
-        if (debug)
+        if (static_debug)
           console.log("processing for " + p + " parts=" + JSON.stringify(v));
         //   "MMM-AlexaControl.config.devices.devices",
 
         let o = self.object_from_key(data, t, "object");
-        if (debug) console.log("object=" + JSON.stringify(o, " ", 2));
+        if (static_debug) console.log("object=" + JSON.stringify(o, " ", 2));
         if (o && _.isEqual(o.object[o.key], { fribble: null })) {
-          if (debug) console.log("reset missing object");
+          if (static_debug) console.log("reset missing object");
           o.object[o.key] = {};
         }
-        if (debug) {
+        if (static_debug) {
           let rr = data[v[0]];
           console.log(
             "done 3 setting object=" +
@@ -903,10 +915,10 @@ module.exports = NodeHelper.create({
       });
       delete data.objects;
 
-      if (debug) console.log("restoring converted (obj->array) objects\n");
+      if (static_debug) console.log("restoring converted (obj->array) objects\n");
 
       data.convertedObjects.forEach((key) => {
-        if (debug) console.log("converted object found item for key=" + key);
+        if (static_debug) console.log("converted object found item for key=" + key);
         let obj = self.object_from_key(data, key, "object");
         // if we have data in the form
         // its in the wrong format, array instead of object
@@ -915,7 +927,7 @@ module.exports = NodeHelper.create({
           // could have been restored by the missing object function above
           //
           if (typeof obj.object === "array") {
-            if (debug) console.log("found item as array");
+            if (static_debug) console.log("found item as array");
             let result = {};
             // loop thru the elements of the array
             for (let i in obj.object) {
@@ -930,26 +942,26 @@ module.exports = NodeHelper.create({
           // didn't find any form data
           else {
             //  wasn't an array, so...
-            if (debug)
+            if (static_debug)
               console.log(
                 " found converted object for key=" + key + " but not an array\n"
               );
             if (_.isEqual(obj.object[obj.key], { fribble: null })) {
               // it was the lookup inserted dummy
-              if (debug)
+              if (static_debug)
                 console.log(
                   "converted object reset missing object key=" + key + "\n"
                 );
               obj.object[obj.key] = {};
             } else {
-              if (debug) console.log("converted object already restored");
+              if (static_debug) console.log("converted object already restored");
             }
           }
         }
       });
 
 
-      if (debug)
+      if (static_debug)
         console.log(
           "\npotential arrays=" + JSON.stringify(data.arrays, self.tohandler, 2)
         );
@@ -958,35 +970,35 @@ module.exports = NodeHelper.create({
       for (const p of data.arrays) {
         let t = p;
         while (t.includes("..")) t = t.replace("..", ".");
-        if (debug) console.log("processing for " + p + " cleanup=" + t);
+        if (static_debug) console.log("processing for " + p + " cleanup=" + t);
         let nested = false;
         if (p.endsWith("[]")) {
           nested = true;
           t = p.slice(0, -2);
         }
         let v = t.split(".");
-        if (debug)
+        if (static_debug)
           console.log("processing for " + p + " parts=" + JSON.stringify(v));
         //  MMM-GooglePhotos.config.albums"
         let rr = data[v[0]];
         let o = self.object_from_key(data, t, "array");
-        if (debug) console.log("array=" + JSON.stringify(o, self.tohandler, 2));
+        if (static_debug) console.log("array=" + JSON.stringify(o, self.tohandler, 2));
         // if these was no object found (the function inserted dummy data for us to find )
         // if we find it, the array was not returned from the form handler
         // this is standard web form technology that we have to recover from
         if (_.isEqual(o.object[o.key], ["fribble"])) {
-          if (debug) console.log("items equal key=" + o.key);
+          if (static_debug) console.log("items equal key=" + o.key);
           // check to see if the returned key is the end of the total key
           // if not, a middle part of the key (array embedding array) was also not returned
           if (!t.endsWith(o.key)) {
             // if the key is config
             if (o.key === "config") {
-              if (debug)
+              if (static_debug)
                 console.log(
                   "setting array=" + JSON.stringify(o.object) + " key=" + o.key
                 );
               o.object[o.key] = {};
-              if (debug)
+              if (static_debug)
                 console.log(
                   "done  setting array=" +
                     JSON.stringify(o.object) +
@@ -994,7 +1006,7 @@ module.exports = NodeHelper.create({
                     o.key
                 );
               o.object = o.object[o.key];
-              if (debug)
+              if (static_debug)
                 console.log(
                   "done 1 setting array=" +
                     JSON.stringify(o.object) +
@@ -1003,7 +1015,7 @@ module.exports = NodeHelper.create({
                 );
               // get last entry
               o.key = v.slice(-1);
-              if (debug)
+              if (static_debug)
                 console.log(
                   "done 2 setting array=" +
                     JSON.stringify(o.object) +
@@ -1021,14 +1033,14 @@ module.exports = NodeHelper.create({
           }
         } else {
           // was this a converted object?
-          if(debug) console.log("is this item="+p+" a converted to array? "+data.convertedObjects.includes(p))
+          if(static_debug) console.log("is this item="+p+" a converted to array? "+data.convertedObjects.includes(p))
           if(data.convertedObjects.includes(p)){
             // present but NOT an empty array
-            if (debug) console.log("reformat_array key=" + o.key);
+            if (static_debug) console.log("reformat_array key=" + o.key);
             self.reformat_array(o.object, self, o.key);
           }
         }
-        if (debug)
+        if (static_debug)
           console.log(
             "done 3 setting array=" +
               JSON.stringify(rr, self.tohandler, 2) +
@@ -1040,7 +1052,7 @@ module.exports = NodeHelper.create({
     }
     // cleanup the pairs
     if (1) {
-      if (debug)
+      if (static_debug)
         console.log(
           "potential pairs=\n" + JSON.stringify(data.pairs, self.tohandler, 2)
         );
@@ -1051,34 +1063,34 @@ module.exports = NodeHelper.create({
         let modified_value = {};
 
         let j = self.getpair(data, p, self);
-       // if(debug)
+       // if(static_debug)
        //   console.log("found data for key="+p+"="+JSON.stringify(data['calendar'],null,2))
-        if (debug)
+        if (static_debug)
           console.log("data 1=" + JSON.stringify(j, self.tohandler, 2));
 
         if (j === JSON.stringify({}, self.tohandler)) j = [];
 
-        if (debug)
+        if (static_debug)
           console.log("  data 2=" + JSON.stringify(j, self.tohandler, 2));
         // convert the array items to object items
         if (j.length) {
           for (const item of j) {
-            if(debug)
+            if(static_debug)
               console.log("processing pair item="+item);
             let property = item.split(":");
             if (property[1] == "true") property[1] = true;
             if (property[1] == "false") property[1] = false;
-            if(debug)
+            if(static_debug)
               console.log("pair property value="+property[1])
             //if (!Number.isNaN(property[1])){
-            //  if(debug) 
+            //  if(static_debug) 
             //    console.log("property="+property[1]+" is a number");
             //  property[1] = parseFloat(property[1]);
             //}
             modified_value[property[0]] = property[1];
           }
           j = self.setpair(data, p, self, modified_value);
-          if (debug)
+          if (static_debug)
             console.log(
               "pair reset=" + JSON.stringify(j, self.tohandler, 2) + "\n"
             );
@@ -1100,7 +1112,7 @@ module.exports = NodeHelper.create({
       let t1 = this.check_for_module_file(module_name, 'converter')
       if (t1) {
         this.module_scripts[module_name] = require(t1)
-        if (debug) {
+        if (static_debug) {
           console.log("functions exported=" + JSON.stringify(Object.keys(this.module_scripts[module_name])))
         }
       }
@@ -1129,7 +1141,7 @@ module.exports = NodeHelper.create({
     let mm_index = {};
 
     for (let module_name of Object.keys(data)) {
-      if(debug)
+      if(static_debug)
         console.log("processing data for module="+module_name)
       // fix this for multiple instances
       // don't copy config info
@@ -1160,21 +1172,21 @@ module.exports = NodeHelper.create({
         }
 
         // if a converter script was loaded for ths module
-        if(debug)
+        if(static_debug)
           console.log("checking for module converter script")
         if(this.module_scripts[module_name] !== undefined){
           // call it
           if(module_form_data && module_form_data.config){
-            if(debug)
+            if(static_debug)
               console.log("module form data for module="+module_name+"="+JSON.stringify(module_form_data,self.tohandler,2))
-            if(debug)
+            if(static_debug)
               console.log("calling converter for module="+module_name)
             module_form_data.config=this.module_scripts[module_name].converter(module_form_data.config,'toConfig')
           }
         }
         // default is what the form has
         merged_module = module_form_data;
-        if (debug){
+        if (static_debug){
           console.log(
             "checking for module=" +
               module_name +
@@ -1183,7 +1195,7 @@ module.exports = NodeHelper.create({
           );
         }
         // find the config.js entry, if present
-        if (debug){
+        if (static_debug){
           console.log(
             "going to get entry for " +
               module_name +
@@ -1203,13 +1215,13 @@ module.exports = NodeHelper.create({
           // name (data object key is present)
           // but no data..
           if (module_form_data === undefined){
-            if(debug)
+            if(static_debug)
               console.log("no form data found for module="+module_name+" using config info index="+mm_index[module_name] - 1)
             // copy config entry to form entry
             module_form_data = module_in_config;
 
           }
-          if (debug)
+          if (static_debug)
             console.log(
               "looking for modules=" +
                 module_name +" at index="+(mm_index[module_name])+
@@ -1220,7 +1232,7 @@ module.exports = NodeHelper.create({
           if (module_in_config.order === undefined) {
             if (module_form_data.order === undefined)
               module_form_data.order = "*";
-            if (debug)
+            if (static_debug)
               console.log(
                 "existing config does NOT have order set, copying from form =" +
                   module_form_data.order
@@ -1228,7 +1240,7 @@ module.exports = NodeHelper.create({
             module_in_config.order = module_form_data.order;
           }
           if (module_in_config.position === undefined) {
-            if (debug)
+            if (static_debug)
               console.log(
                 "existing config does NOT have position set, copying from form =" +
                   module_form_data.position
@@ -1249,7 +1261,7 @@ module.exports = NodeHelper.create({
           }
           merged_module.inconfig = "1";
 
-          if (debug)
+          if (static_debug)
             console.log(
               "merged " +
                 merged_module.module +
@@ -1257,7 +1269,7 @@ module.exports = NodeHelper.create({
                 JSON.stringify(merged_module, self.tohandler, 2)
             );
         } else {
-          if (debug)
+          if (static_debug)
             console.log(
               "module " + module_name + " not in "+oc.split('/').slice(-1)+", might be adding "
             );
@@ -1265,7 +1277,7 @@ module.exports = NodeHelper.create({
 
         // update the results
         if (merged_module) {
-          if (debug)
+          if (static_debug)
             console.log(
               "might have a module to add to new "+oc.split('/').slice(-1)+" =" +
                 merged_module.module
@@ -1276,7 +1288,7 @@ module.exports = NodeHelper.create({
             merged_module.inconfig === "1" ||
             merged_module.disabled === false
           ) {
-            if (debug)
+            if (static_debug)
               console.log(
                 "module was in config=" +
                   merged_module.inconfig +
@@ -1294,7 +1306,7 @@ module.exports = NodeHelper.create({
             let temp = { module: module_name };
             for (let module_property of Object.keys(merged_module)) {
               temp[module_property] = merged_module[module_property];
-              if (debug) console.log("copied for key=" + module_property+"=",temp[module_property]);
+              if (static_debug) console.log("copied for key=" + module_property+"=",temp[module_property]);
             }
 
             // don't crash for bad positions
@@ -1310,11 +1322,11 @@ module.exports = NodeHelper.create({
             }
 
             temp.position = temp.position.replace(" ", "_");
-			if(debug){
+			if(static_debug){
 				console.log("position='"+temp.position+"' layout table=",layout_order);
 			}
             layout_order[temp.position].push(temp);
-            if (debug)
+            if (static_debug)
               console.log(
                 "module=" +
                   merged_module.module +
@@ -1322,7 +1334,7 @@ module.exports = NodeHelper.create({
                   merged_module.position
               );
           } else {
-            if (debug)
+            if (static_debug)
               console.log(
                 "module " + module_name + " wasn't in config, skipping "
               );
@@ -1373,7 +1385,7 @@ module.exports = NodeHelper.create({
         // position not present is the same as none specified
         if (module.position === "none") delete module.position;
         // add module to config.js modules list
-        if (debug)
+        if (static_debug)
           console.log(
             "adding module " +
               module.module +
@@ -1389,13 +1401,13 @@ module.exports = NodeHelper.create({
       });
     });
 
-    if(debug)
+    if(static_debug)
       console.log("checking for substituted spread variables= "+JSON.stringify(data.substituted_variables,null,2))
     if(data.substituted_variables){
       data.substituted_variables.forEach(v =>{
-        if(debug)
+        if(static_debug)
           console.log("processing spread for module=",v.module," path=",v.path," variable=",v.variable)
-        if(debug)
+        if(static_debug)
           console.log(" module in form data=",r["config"]["modules"][v.module])
         for(let m of r["config"]["modules"]){
           // found the module
@@ -1404,7 +1416,7 @@ module.exports = NodeHelper.create({
             if(m.index== undefined || (m.index != undefined && m.index==v.index)){
               // start at the module level
               let c=m
-              if(debug){
+              if(static_debug){
                 if(m.index != undefined)
                   console.log("found matching index=", v.index, " for module=", m.module_name)
                 else
@@ -1416,9 +1428,9 @@ module.exports = NodeHelper.create({
               }
               // reset that variable to the spread operator variable
               c[v.path.slice(-1)]=[ "..."+v.variable ]
-	      if(debug)
+	      if(static_debug)
                 console.log(" path contents="+JSON.stringify(c,null,2))
-              if(debug)
+              if(static_debug)
                 console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
             }
           }
@@ -1447,7 +1459,7 @@ module.exports = NodeHelper.create({
     // get the line that has a quoted keyword on the left of colon
     // old = (.*[^:])\:.*
     xx.match(/(.*?)":/gm).forEach((match) => {
-      if (debug) console.log(" quote around leading symbol test=" + match);
+      if (static_debug) console.log(" quote around leading symbol test=" + match);
       // split and get the quoted keyword
       let t = match.split(":");
       // remove any leading spaces
@@ -1510,7 +1522,7 @@ module.exports = NodeHelper.create({
         //    expression = expression.slice(1, -1);
         //  }
 
-        if (debug)
+        if (static_debug)
           console.log("expression found =" + expression + " \nsaved=" + saved);
         expression = expression
           // and the escaped quote
@@ -1530,7 +1542,7 @@ module.exports = NodeHelper.create({
 
         let ne = [];
         let xy = expression.split("\n");
-        if (debug)
+        if (static_debug)
           console.log(" expression pre fixup=" + JSON.stringify(xy, "", 2));
         let x = xy.length;
         for (let i = 0; i < x; ) {
@@ -1544,7 +1556,7 @@ module.exports = NodeHelper.create({
           if (exp_line.startsWith("}")) {
             // get the spacing of the previous line (current length - trimmed length)
             let spacing = xy[i - 2].length - xy[i - 2].trimStart().length;
-            if (debug)
+            if (static_debug)
               console.log(
                 "spacing =" +
                   xy[i - 2].length +
@@ -1555,12 +1567,12 @@ module.exports = NodeHelper.create({
               );
 
             let f = xy[i - 2].slice(0, spacing) + "}";
-            if (debug)
+            if (static_debug)
               console.log("adding line back in at " + (i - 2) + " = " + f);
             ne.push(f);
             xy.splice(i - 1, 1, exp_line.slice(1));
             i--;
-            if (debug)
+            if (static_debug)
               console.log(" after insert =" + JSON.stringify(xy, "", 2));
             x = xy.length;
             continue;
@@ -1571,37 +1583,37 @@ module.exports = NodeHelper.create({
             }
           }
           //save the new line
-          if (debug) console.log("saving line=" + exp_line);
+          if (static_debug) console.log("saving line=" + exp_line);
           if (exp_line !== "undefined") ne.push(exp_line);
         }
-        if (debug)
+        if (static_debug)
           console.log(" expression post fixup=" + JSON.stringify(ne, "", 2));
         if (ne.slice(-1)[0].trim().endsWith('"')) {
           let e = ne.pop().trim().slice(0, -1);
-          if (debug) console.log(" ending expression item ='" + e + "'");
+          if (static_debug) console.log(" ending expression item ='" + e + "'");
           if (e.length) {
-            if (debug)
+            if (static_debug)
               console.log(" ending expression item added ='" + e + "',");
             ne.push(e);
           }
         }
         expression = ne.join("\n");
 
-        if (debug) console.log("expression saved =" + expression);
+        if (static_debug) console.log("expression saved =" + expression);
         // replace the original with the updated text
         xx = xx.replace(saved, expression);
       });
     }
     if(data.substituted_variables){
-      if(debug)
+      if(static_debug)
         console.log("have some substituted variables=",data.substituted_variables)
       data.substituted_variables.forEach(v=>{
-        if(debug){
+        if(static_debug){
           console.log("replacing ",'"...'+v.variable+'"', " with ",'...'+v.variable)
         }
         // should only occur once, but user may have used same set of variables in multiple places
         while(xx.includes('"...'+v.variable+'"')){
-          if(debug)
+          if(static_debug)
             console.log("found variable in data")
           xx=xx.replace('"...'+v.variable+'"', '...'+v.variable)
         }
@@ -1633,12 +1645,12 @@ module.exports = NodeHelper.create({
     let htmlfile_lines=fs.readFileSync(__dirname+"/templates/config.html").toString().split("\n");
     files.forEach(f=>{
       if(f.endsWith('.css')){
-        if(debug)
+        if(static_debug)
           console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</head>'))
         htmlfile_lines.splice(htmlfile_lines.indexOf('</head>'),0,'  <link rel="stylesheet" type="text/css" href="'+'schemas/'+f+'" />')
       }
       if(f.endsWith('.js')){
-        if(debug)
+        if(static_debug)
           console.log("splicing if for file ="+f+" at index="+htmlfile_lines.indexOf('</body>'))
          htmlfile_lines.splice(htmlfile_lines.indexOf('</body>'),0,'  <iframe id="viewer" class="ourframe hidden"></iframe>')
       }
@@ -1654,7 +1666,7 @@ module.exports = NodeHelper.create({
     // false for testing data handling
     if (doSave) {
 	    const logname=oc.split(path.sep).slice(-1)
-      if(debug)
+      if(static_debug)
         console.log("saving to new "+logname)
       // rename curent using ist last mod date as part of the extension name
       fs.copyFileSync(oc, oc + "." + d);
@@ -1667,17 +1679,17 @@ module.exports = NodeHelper.create({
           socket.emit("saved", logname+ " created successfully");
           // and restart with pm2. then
           setTimeout(() => {
-            //if(debug)
+            if(static_debug)
               console.log("self.config=",self.config)
             if (self.config.restart.startsWith("pm2") && pm2_id != -1) {
               socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "restarting.html")
-              if (debug) console.log("restarting using pm2, id=" + pm2_id);
+              if (static_debug) console.log("restarting using pm2, id=" + pm2_id);
               // exec pm2 restart with the name of the app
               exec("pm2 restart " + pm2_id);
             } else {
               socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "notrestarting.html")
             }
-          },2000)
+          },1500)
         }
       });
       xx=null
@@ -1696,7 +1708,7 @@ module.exports = NodeHelper.create({
     function getFiles(self) {
       let configPath = __dirname + path.sep+"schema3_"+oc.hashCode(our_port)+".json";
 
-      if (debug || 1) console.log("path=" + configPath);
+      if (static_debug) console.log("path=" + configPath);
 
       try {
         if (fs.existsSync(configPath)) {
@@ -1713,7 +1725,7 @@ module.exports = NodeHelper.create({
     }
 
     function handleConnection(self, socket, type) {
-      if (debug) console.log("connection started = " + type);
+      if (static_debug) console.log("connection started = " + type);
       //console.log("socket connected")
       socket.emit("connected");
 
@@ -1724,7 +1736,7 @@ module.exports = NodeHelper.create({
       });
 
       socket.on("cancel", () => {
-        if(debug)
+        if(static_debug)
           console.log("cancel requested")
         //console.log("cancel received, closing config page")
         fs.writeFileSync(__dirname+'/canceled', '1')
@@ -1734,7 +1746,7 @@ module.exports = NodeHelper.create({
       socket.on("getForm", () => {
         getFiles(self);
         //console.log("sending config to client "+JSON.stringify(this.config))
-        //if(debug) console.log("sending "+JSON.stringify(self.config.data))
+        //if(static_debug) console.log("sending "+JSON.stringify(self.config.data))
         socket.emit("json", "'" + self.config.data + "'");
       });
     }
@@ -1746,12 +1758,12 @@ module.exports = NodeHelper.create({
       console.log("heard hello from client")
     })
     this.io.of(socketIOPath).on("connection", (socket) => {
-      if(debug)
+      if(static_debug)
       console.log("connected")
       handleConnection(self, socket, "connect");
     }); // end - connection
     this.io.of(socketIOPath).on("reconnect", (socket) => {
-      if(debug)
+      if(static_debug)
       console.log("reconnected")
       handleConnection(self, socketm, "reconnect");
     });
@@ -1759,7 +1771,7 @@ module.exports = NodeHelper.create({
      * When a remote disconnects
      */
     this.io.of(socketIOPath).on("disconnect", () => {
-      if(debug)
+      if(static_debug)
       console.log("socket disconnected");
       //remote.emit("disconnected");
     }); // end - disconnect
