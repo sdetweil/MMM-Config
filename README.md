@@ -107,6 +107,8 @@ http://mmserver_ip:mm_port/installer
 ```
 ###
 
+
+
 #### it gets the list of modules from the 3rd party module list
 
 * the categories are sorted alphabetically, with the Outdated category moved to the bottom
@@ -186,3 +188,19 @@ note that these apply to ALL  modules,  and ALL unregistered URLs at the same ti
 so additional select clause elements would be required to target just some. 
 (like modules in a particular category)
 
+
+setup for running the installer in a docker container
+we need to add some properties to the container
+
+a port at 9000:9000
+for kHassel's docker container I added the following lines to magicmirror/run/compose.yaml
+
+    restart: unless-stopped
+	#
+	# added
+	# 
+    ports:
+      - "9000:9000"
+	#
+	#  end of added
+	#  
