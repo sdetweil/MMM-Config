@@ -117,6 +117,8 @@ http://mmserver_ip:mm_port/installer
 the installer page looks like this 
 
 ![base variables](./module_installer/images/installer_top.png)
+you can search for a module by name, case doesn't matter
+if found the page will be scrolled to that module entry, with the entry open
 and the bottom looks like this
 ![base variables](./module_installer/images/installer_bottom.png)
 
