@@ -12,7 +12,8 @@ const endBrace='}'
 let counter = 0;
 const remove_block_comments=true
 const module_define_name_special_char = "ς";
-const dummy=["_defaults: {","       },"]
+const dummy = ["_defaults: {", "       },"]
+const variable_use = ".config.";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
@@ -332,12 +333,14 @@ function process_main(lines, name) {
                 continue;
               }
             }
-          } else if(info.startsWith("config.")){
-	      let x = info.slice(0,-1)
-	      line=line.replace(x,'"---!'+x+'"')
-	      cache.push(line)
-	      continue
-	  } 
+          } else if (info.startsWith(variable_use)) {
+            let x1 = info.replace(/[^,\/]/g, '')
+            if (debug)
+                console.log("config replacing "+info +" with "+x1)
+              line=line.replace(x1,'"---!'+x1+'"')
+              cache.push(line)
+              continue
+          } 
         }
       }
       while ((index = line.indexOf(startChar, index + 1)) >= 0) {
@@ -416,7 +419,7 @@ function process_main(lines, name) {
   return cache;
 }
 function process_helper(defines) {
-  let variable_use = ".config.";
+  
   let index = 0;
   let value = "";
   let lines = getFileContents("node_helper.js");

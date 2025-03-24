@@ -5,7 +5,7 @@ const path = require("path");
 const os = require("os");
 const _ = require("lodash");
 
-var static_debug = false
+let static_debug = false
 
 const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
@@ -121,7 +121,7 @@ module.exports = NodeHelper.create({
     // get the environment var for config files
     let cf = process.env.MM_CONFIG_FILE
     if(!cf){
-	cf=default_config_name
+	    cf=default_config_name
     }
     // if set and it does not contain path separator, its only the filename, not the folder
     if(cf && !cf.includes(path.sep)){
@@ -236,7 +236,7 @@ module.exports = NodeHelper.create({
     // if restart is the old pm2: value, fix it
     if (this.config.restart) {
       if (this.config.debug){
-	static_debug=this.config.debug
+	      static_debug=this.config.debug
         console.log("restart property="+this.config.restart)
       }
       if (this.config.restart.toLowerCase().startsWith("pm2:")) {
