@@ -173,6 +173,10 @@
                 "name"
               ]
             },
+            "AdditionalInstancePort": {
+              "type":"number",
+              "default":9000
+            },
             "debug": {
               "type": "boolean"
             }
@@ -257,6 +261,11 @@
           "description":"installer list sort order, default 'date'"
         },
         {
+          "title": "AdditionalInstancePort",
+          "key": "MMM-Config.config.AdditionalInstancePort",
+          "description": "port number to be used for post module installer config"
+        },        
+        {
           "title": "debug",
           "key": "MMM-Config.config.debug",
           "description":"turn on debug during save"
@@ -277,6 +286,7 @@
       "force_update": true,
       "restart": "none",
       "ModuleSortOrder":"date",
+      "AdditionalInstancePort":9000,
       "debug": false
     }
   }

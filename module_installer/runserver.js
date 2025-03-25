@@ -7,11 +7,11 @@ const moment = require('moment-timezone')
 
 const source_name=__dirname+"/module_form_schema.json"
 
-const BASE_INSTANCE_PORT=9000
+let BASE_INSTANCE_PORT=9000
 let run_port = process.env.PORT || BASE_INSTANCE_PORT;
 let remote_io = null
   // if last parm is debug, others are down 1(adjustment)
-let local_debug = true
+let local_debug = false
 const parm_adjustment = (process.argv[process.argv.length - 1] == "debug" ? 1 : 0)
 const startMM=true
 const our_path=__dirname.split('/').slice(0,-2).join('/')
@@ -67,10 +67,12 @@ String.prototype.hashCode = function(port) {
 }
 
 // startup in async mode
-module.exports = async (expressApp, io, NodeHelper, sortOrder, debug) => {
-  local_debug = debug
-  remote_io=io
+module.exports = async (expressApp, io, NodeHelper, sortOrder, debug, config_port) => {
+  remote_io = io
+  BASE_INSTANCE_PORT = config_port
+  run_port = process.env.PORT || BASE_INSTANCE_PORT;
   buildFormData(NodeHelper, sortOrder)
+  local_debug = debug
   setupServer(expressApp, NodeHelper)
 }
 
@@ -471,7 +473,8 @@ function MagicMirrorWorkServerReady(socket, pid, port){
             // give the client MM config  server time to  put out the wait page
             setTimeout(()=>{
 	        //socket.emit('close')
-            	killWorkConfigServer(processList)
+              killWorkConfigServer(processList)
+              restartMagicMirror()
 	    },3000)
             /* no point us restarting MM, as the restart will be done by the config process save */
             //restartMagicMirror()
@@ -540,11 +543,13 @@ function killWorkConfigServer (list)  {
   });
 };
 
-function restartMagicMirror(){
-
-  if(in_docker_container){
+function restartMagicMirror() {
+  // force kill the base instance
+  if (in_docker_container) {
+    // container will restart
     process.kill(1)
   }
+  /*
   else{
     exec("pm2 jlist", (error, stdout, stderr) => {
       if (!error) {
@@ -583,5 +588,7 @@ function restartMagicMirror(){
       }
     });
   }
+  */
 }
+
 

@@ -11,7 +11,7 @@ const diff = require("deep-object-diff").diff;
 const detailedDiff = require("deep-object-diff").detailedDiff;
 const updatedDiff = require("deep-object-diff").updatedDiff;
 const socketIOPath="mConfig"
-
+let BASE_INSTANCE_PORT=9000
 const fs = require("fs");
 
 var our_port=0
@@ -154,7 +154,7 @@ module.exports = NodeHelper.create({
 //    console.log("usable port=",our_port)
     for(let m of config.modules){
       if(m.module === this.name){
-	if(m.config){
+	    if(m.config){
           static_debug=this.config.debug = m.config.debug || false
           this.config.force_update = m.config.force_update || true
           this.config.restart = m.config.restart || ""
@@ -162,7 +162,9 @@ module.exports = NodeHelper.create({
             this.config.showQR=m.config.showQR || false
             this.buildQR_URI()
           }
-        }
+        if(m.config.AdditionalInstancePort)
+          BASE_INSTANCE_PORT = m.config.AdditionalInstancePort
+      }
       break;
       }
     }
@@ -339,16 +341,17 @@ module.exports = NodeHelper.create({
           if( m.config.ModuleSortOrder) {
             if (m.config.ModuleSortOrder) // if it was specified
              sort = m.config.ModuleSortOrder // use it
-	  }  
-	  if(m.config.debug){
-             debug=m.config.debug
-	  }
+            }  
+            if(m.config.debug){
+                    debug=m.config.debug
+            }
         }
        break;
       }
     }
-    console.log("starting installer setup")
-    InstallerSetup(this.expressApp, this.io, NodeHelper, sort,debug )
+    if(debug)
+      console.log("starting installer setup")
+    InstallerSetup(this.expressApp, this.io, NodeHelper, sort, debug, BASE_INSTANCE_PORT )
   },
 
   // handle messages from our module// each notification indicates a different messages

@@ -15,7 +15,8 @@ Module.register("MMM-Config", {
     showQR: false,
     force_update: true,
     restart: "none",
-    ModuleSortOrder:"date",
+    ModuleSortOrder: "date",
+    AdditionalInstancePort: 9000,
     debug: false,
   },
 
