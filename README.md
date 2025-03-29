@@ -60,8 +60,6 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
-MMM-Config uses the [jsonform](https://github.com/jsonform/jsonform/wiki) library to construct, present and operate  the form
-
 ### The form looks like this
 
 Main form page. The form colors can be set in webform.css
@@ -190,7 +188,7 @@ so additional select clause elements would be required to target just some.
 (like modules in a particular category)
 
 
-setup for running the installer in a docker container
+# setup for running the installer in a docker container<br>
 we need to add some properties to the container
 
 this value matches the `AdditionalInstancePort` config variable above
