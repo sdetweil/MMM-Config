@@ -24,7 +24,8 @@ function detectBrowser() {
 
     let viewer = $('#viewer')
     let x=readme_url.split('/')
-    converter = new showdown.Converter({tables: true})
+    converter = new showdown.Converter({ tables: true })
+    readme_url = readme_url.replace("localhost", window.location.hostname)
     if(!readme_url.endsWith('.html') && !readme_url.includes('gitlab.com')){
       let response=await fetch(readme_url) //, { signal: AbortSignal.timeout(10000)} )// ,{ mode: 'no-cors'})
       let text = await response.text();

@@ -35,6 +35,9 @@
    /* all: revert2 */
 }
 
+.installer-cancel {
+  display:none;
+}
 
 
 div ~ fieldset >legend {

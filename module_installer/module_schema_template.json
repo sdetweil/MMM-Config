@@ -241,7 +241,8 @@
     {
       "type": "button",
       "title": "Cancel",
-      "onClick":"()=>{triggerCancel()}"
+      "onClick":"()=>{triggerCancel()}",
+      "htmlClass": "installer-cancel"
     },
     {
     "type":"array",

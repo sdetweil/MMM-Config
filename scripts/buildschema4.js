@@ -2002,7 +2002,7 @@ function processModule(schema, form, value, module_defines, module_name) {
       buttons[1].title = url_hash[module_name].readme_url
     }
     else {
-      buttons[1].title = "http://localhost:8090/modules/" + module_name + "/" + url_hash[module_name].readme_url.split('/').slice(-1)[0]
+      buttons[1].title = "http://localhost:xxxx/modules/" + module_name + "/" + url_hash[module_name].readme_url.split('/').slice(-1)[0]
     }
     module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
   } else

@@ -23,7 +23,8 @@ function detectBrowser() {
   const browserName = detectBrowser();
 
     let viewer = $('#viewer')
-    let x=readme_url.split('/')
+    let x = readme_url.split('/')
+    readme_url = readme_url.replace("localhost:xxxx", window.location.hostname+':'+window.location.port)
     converter = new showdown.Converter({tables: true})
     if(!readme_url.endsWith('.html')){
       let response=await fetch(readme_url ) //,{ mode: 'no-cors'})
