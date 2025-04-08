@@ -120,12 +120,15 @@ function readFile(fn) {
     fs.readFileSync(fn, "utf-8")
       .split(/\r?\n/)
       .forEach((line) => {
-        //if(debug) console.log("line="+ ++counter +line);
+        if(debug) console.log("line="+ ++counter +line);
         // and save the lines
         //if (debug) console.log("line length=" + line.length);
         // minified won't have comments
         // watch out for long lines with no useful (computer) info
+        comment_found=false
         let commentLocation = line.indexOf(inlineComment)
+        if(debug)
+          console.log("comment location="+commentLocation+" line length="+line.length)
         if((commentLocation>-1) && (notComment.includes(line[commentLocation-1])==false && commentLocation === line.lastIndexOf(inlineComment))){
             comment_found= true
             line=line.substring(0,commentLocation)
@@ -133,7 +136,9 @@ function readFile(fn) {
               console.log(" new line, comment removed="+line)
         }
         if (line.length) {
-          lines.push(line);
+          if(debug)
+            console.log("saving line="+line)
+          lines.push(line);        
           if (line.length > minimized_lines_check) processMinimized = comment_found?false:true;
         }
       });
@@ -146,8 +151,12 @@ function findDefaults(input){
     let line=input[xx]
     if(debug)
       console.log("processing line="+line)
-    let s = line.indexOf("defaults")
-    if(s>0){
+    let s = line.indexOf(start)
+    let c = line.indexOf(':', s + start.length)
+    if (s > 0 && c > s) {
+      if (debug)
+        console.log("start = "+line.slice(s)+" colon="+line.slice(c,c+1))
+    //if(s>0){
       let y = s
       if(debug)
         console.log("found defaults keyword at index "+ s)
@@ -232,7 +241,7 @@ function getFileContents(fn) {
 }
 function process_main(lines, name) {
   let started = false;
-  let start_string = "defaults:";
+  let start_string = "defaults";
   let indent = 0;
   let startChar = "{";
   let endChar = "}";
@@ -246,7 +255,7 @@ function process_main(lines, name) {
       // ignore it
       continue;
     // if this is the defaults definition line
-    if (!started && line.includes(start_string)) {
+    if (!started && line.includes(start_string) &&line.includes(':')) {
       // && !line.trim().startsWith('//')){
       // if the line has a brace, toss it
       if (line.startsWith("{")) line = line.slice(1);

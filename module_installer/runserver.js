@@ -17,7 +17,7 @@ const startMM=true
 const our_path=__dirname.split('/').slice(0,-2).join('/')
 
 const cf_name=process.env.MM_CONFIG_FILE?"process.env.MM_CONFIG_FILE":"config/config.js"
-const modules_url="https://kristjanesperanto.github.io/MagicMirror-3rd-Party-Modules/data/modules.json"
+const modules_url ="https://modules.magicmirror.builders/data/modules.json"
 const module_form_template=__dirname+"/module_schema_template.json"
 const module_selector_form=__dirname+"/module_selector_schema.json"
 const module_url_hash=__dirname+"/../module_url_hash.json"

@@ -11,7 +11,10 @@ let sort_type="date"
 
 module.exports= async (data,sorttype, debug)=>{
 
-	sort_type=sorttype	
+	sort_type = sorttype	
+	
+	//  force debug false
+	debug = false;
 	
 	let temp=__dirname.split(path.sep).slice(0,-2)
 	///home/sam/MagicMirror/modules/MMM-Config/module_installer
