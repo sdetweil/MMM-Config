@@ -99,6 +99,7 @@ var form = [
         type: "fieldset",
         title: "Base",
         expandable: true,
+        htmlClass:"Base",
         items: [
           // per base settings
         ]
@@ -107,6 +108,7 @@ var form = [
         type: "fieldset",
         title: "Modules (in config.js order)",
         expandable: true,
+        htmlClass:"moduleList",
         items: [
           // per module
         ]
@@ -1195,7 +1197,7 @@ empty_arrays.push("config.logLevel");
 //
 
 Object.keys(value).forEach((mv) => {
-  let extra = " module_entry";
+  let extra = " moduleEntry";
   if (Array.isArray(value[mv])) {
     let disabled = 0;
     let mheader;

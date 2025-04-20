@@ -163,6 +163,22 @@ then the MagicMirror process will be killed, causing the container to restart
 
 if none of those options work, then you will have to restart the MagicMirror instance manually 
 
+all css goes in the webform.css of the appropriate folder 
+MMM-Config/webform.css for configuration
+MMM-Config/module_installer/webform.css for module installation
+
+# styling the configuration page
+
+the css class names for the configuration page components are
+
+* * Base
+* * moduleList
+* * * moduleEntry
+* * * * m_moduleName
+* * * * * module_enabled or module_disabled
+* * * * moduleConfig 
+* * * * * repo_button
+
 
 # styling the installer page
 
