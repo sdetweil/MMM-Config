@@ -165,8 +165,8 @@ if none of those options work, then you will have to restart the MagicMirror ins
 
 # customizing the styling
 
-all css goes in the local.css of the appropriate folder 
-MMM-Config/local.css for configuration
+all css goes in the local.css of the appropriate folder <br>
+MMM-Config/local.css for configuration<br>
 MMM-Config/module_installer/local.css for module installation
 
 # styling the configuration page
