@@ -12,7 +12,7 @@ if [ ! $(echo $config_name | grep '/') ]; then
 fi
 config_lastchange_file=config_lastchange_$identifier
 modules_lastchange_file=modules_lastchange_$identifier
-del canceled 2>/dev/null
+rm canceled 2>/dev/null
 # if this is a mac
 if [ $(uname -s) == 'Darwin' ]; then
 	d=$( cd "$(dirname "$0")" ; pwd -P )
