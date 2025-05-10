@@ -71,14 +71,24 @@ module.exports = async (expressApp, io, NodeHelper, sortOrder, debug, config_por
   remote_io = io
   BASE_INSTANCE_PORT = config_port
   run_port = process.env.PORT || BASE_INSTANCE_PORT;
-  buildFormData(NodeHelper, sortOrder)
+  // check to see if url hash exists, and is complete
+  fs.stat(module_url_hash, (err, stats) => {
+    //console.log("module hash stat rc="+err)
+    if (!err){  // found it, background process not processing
+      if(stats.size>200000){  // if large, should be done processing
+        //console.log("module hash stat size="+stats.size)
+        buildFormData(sortOrder) // so we can check and update
+      }
+    }
+  });
+
   local_debug = debug
-  setupServer(expressApp, NodeHelper)
+  setupServer(expressApp)
 }
 
 // Setup our web form server page html loaded here
 // and socket io server for form data (used by form_client.js)
-async function setupServer(expressApp, NodeHelper, sortOrder){
+async function setupServer(expressApp, sortOrder){
   // setup the installer url
   expressApp.get("/installer", (req, res) => {
     // redirect to config form
@@ -123,27 +133,31 @@ async function setupServer(expressApp, NodeHelper, sortOrder){
   // do after the data is refreshed
   setTimeout(()=>{
     setInterval(()=>{
-      buildFormData(NodeHelper, sortOrder)
+      buildFormData(sortOrder)
       },
       12*60*60*1000 // 12 hours in ms
       )
-      buildFormData(NodeHelper, sortOrder);  // fetch the data again now (to get syncronized)
+      buildFormData(sortOrder);  // fetch the data again now (to get syncronized)
     }, then.diff(now)
   )
 }
 
-async function buildFormData(NodeHelper, sortOrder){
+async function buildFormData(/*NodeHelper,*/ sortOrder){
   // get the latest data from the 3rd party repo
+  //console.log("entered buildformdata")
   const response = await fetch(modules_url);
   if (!response.ok) {
     const message = `An error occured: ${response.status}`;
     throw new Error(message);
   }
+  //console.log("fetch conmpleted")
   // we need the json
   const responseData = await response.json();
+  //console.log("have form data l="+responseData.length)
 
   // format in category and in category sorted as requested (date or time)
-  let data = await formatter(responseData, sortOrder, local_debug)
+  let data = await formatter(responseData, sortOrder, true /*local_debug*/)
+  //console.log("back from formatter")
   // make the form for the installer page
   let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
   // save it for page load
@@ -591,4 +605,7 @@ function restartMagicMirror() {
   */
 }
 
-
+if(process.argv[1].endsWith("runserver.js")){
+  console.log("process args", process.argv)
+  setTimeout(async ()=>{console.log("calling build for data"); await buildFormData(process.argv[process.argv.length - 1] == "date" ? "date" : "time")},1)
+}

@@ -51,6 +51,9 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+if not exist module_url_hash.json (
+	copy templates\module_url_hash.json >nul
+)
 del CSS.js 2>nul
 rem check if the list of animations has an export statement
 rem if not its downlevel, so copy and add it

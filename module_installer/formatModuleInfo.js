@@ -11,6 +11,7 @@ let sort_type="date"
 
 module.exports= async (data,sorttype, debug)=>{
 
+	//console.log("in formatter")
 	sort_type = sorttype	
 	
 	//  force debug false

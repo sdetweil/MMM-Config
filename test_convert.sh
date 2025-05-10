@@ -51,6 +51,9 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	if [ ! -e config.html ]; then
 		cp templates/config.html .
 	fi
+	if [ ! -e module_url_hash.json ]; then 
+	    cp templates/module_url_hash.json .
+	fi	
 	# check if list of animations has the export we need
 	# if not copy and add the export
 	rm animateCSS.js 2>/dev/null
