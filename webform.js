@@ -56,8 +56,11 @@ JSONForm.fieldTypes['pair'] = {
       node.name=""
       if(Array.isArray(node.value) || typeof node.value =='string'){
         key=  data.initvalue.split(':')
+        let entry= key[1]
         data.from = key[0]
-        data.to   = key[1]
+        // watch out for data with embedded ':' https://...
+        key.shift()
+        data.to   = key.length==1?entry:key.join(':')
       } else {
         key = Object.keys(node.value)
       	data.from = key[0]

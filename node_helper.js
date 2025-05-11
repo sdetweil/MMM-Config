@@ -1081,6 +1081,11 @@ module.exports = NodeHelper.create({
             if(static_debug)
               console.log("processing pair item="+item);
             let property = item.split(":");
+            // watch out for pair property that contains ':' like htts://
+            // if there are more than 2 items in the post split array, join the second on
+            if(property.length>2){
+              property[1]=property.slice(1).join(':')
+            }
             if (property[1] == "true") property[1] = true;
             if (property[1] == "false") property[1] = false;
             if(static_debug)
