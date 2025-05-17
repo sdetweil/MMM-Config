@@ -9,7 +9,7 @@
   },
   "repository":"https://github.com/sdetweil/MMM-Config",
   "author": "Sam Detweiler",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "child_process": "^1.0.2",
     "deep-object-diff": "^1.1.0",
