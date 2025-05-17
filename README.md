@@ -63,7 +63,7 @@ The ':'  in the time is changed to '.' as Windows will not allow a filename with
 ### The form looks like this
 
 Main form page. The form colors can be set in webform.css
-![main page](./doc_images/MMM-Config_base.png)
+![main page](./doc_images/MMM-Config_example_base.png)
 
 The base expanded
 ![main page](./doc_images/MMM-Config_form.png)
