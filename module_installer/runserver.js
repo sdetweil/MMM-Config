@@ -24,7 +24,8 @@ const module_url_hash=__dirname+"/../module_url_hash.json"
 const modules_location=__dirname+"/../../../modules"
 const formTail = ", \"installable\":[]\n}}"
 const formatter=require(__dirname+'/'+'formatModuleInfo.js')
-const refresh_time_hour=5
+const refresh_time_hour=7
+const next_update_delay=24*60*60*1000
 
 const socketIOPath="/mInstaller"
 
@@ -119,26 +120,33 @@ async function setupServer(expressApp, sortOrder){
   const now = new moment().tz("Europe/Berlin")  // timezone the list builder is run in
   let then=now.clone()
 
+  // changed to only one time per day
   if(now.hour()<(refresh_time_hour)){                   //    16>4
     then= then.startOf('day').add(refresh_time_hour,'h');
-  } else if(now.hour()<(refresh_time_hour+12)){          //    16<16
-    then= then.startOf('day').add(refresh_time_hour+12,'h'); //16:00
-  } else { //if(now.hour()>=(refresh_time_hour+12){
+  } 
+  //else if(now.hour()<(refresh_time_hour+12)){          //    16<16
+  //  then= then.startOf('day').add(refresh_time_hour+12,'h'); //16:00
+  //}
+  else { //if(now.hour()>=(refresh_time_hour+12){
     then = then.add(1,'d').startOf('day').add(refresh_time_hour,'h') // tomorrow 04:00
   }
 
   if(local_debug)
     console.log("will pull config data at "+then.format("HH:mm:ss")+" in "+ then.diff(now)+" ms")
-  // set next refresh time at 1pm/am , then 12hours between,
-  // do after the data is refreshed
-  setTimeout(()=>{
-    setInterval(()=>{
-      buildFormData(sortOrder)
-      },
-      12*60*60*1000 // 12 hours in ms
+  // set next refresh time then distance between updates,
+
+  setTimeout(
+    // refresh the data once, and start the iteration for updates
+    ()=>{
+      // do after the data is refreshed
+      setInterval(()=>{
+        buildFormData(sortOrder)
+        },
+        next_update_delay // 24 hours in ms
       )
       buildFormData(sortOrder);  // fetch the data again now (to get syncronized)
-    }, then.diff(now)
+    }, 
+    then.diff(now)
   )
 }
 
