@@ -170,7 +170,7 @@ $(function () {
 
   const activesocket = io("/mInstaller"
     , {
-    reconnectionDelayMax: 10000
+    reconnectionDelayMax: 20000
   });
   // global socket events
   activesocket.on("connected", function () {

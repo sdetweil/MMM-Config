@@ -93,6 +93,10 @@ module.exports = NodeHelper.create({
       //console.log("in buildQR_URI");
       this.hostname = //os.hostname();
       this.getIPAddress()
+      // we might be running in docker container and can't see the real host name
+      // use the environment variable if set
+      if(process.env.HOST_HOSTNAME)
+         this.hostname=process.env.HOST_HOSTNAME;
 
       this.config.url =
         "http://" +

@@ -38,40 +38,12 @@
                           "type": "string",
                           "title":"name"
                         },
-                        "category": {
-                          "type": "string",
-                          "title":"category"
-                        },
                         "url": {
                           "type": "string",
                           "title":"url"
                         },
-                        "id": {
-                          "type": "string"
-                        },
-                        "maintainer": {
-                          "type": "string"
-                        },
-                        "maintainerURL": {
-                          "type": "string"
-                        },
                         "description": {
                           "type": "string"
-                        },
-                        "issues": {
-                          "type": "boolean"
-                        },
-                        "stars": {
-                          "type": "integer"
-                        },
-                        "license": {
-                          "type": "string"
-                        },
-                        "image": {
-                          "type": "string"
-                        },
-                        "defaultSortWeight": {
-                          "type": "integer"
                         },
                         "lastCommit": {
                           "type": "string"

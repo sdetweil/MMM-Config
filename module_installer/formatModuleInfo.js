@@ -72,7 +72,11 @@ module.exports= async (data,sorttype, debug)=>{
 			// make it an empty array
 			categories[module.category] = []
 		// put the module in its category
-		categories[module.category].push(module) 	
+		// only selected fields, keep json file as small as practical
+		let newm = Object.fromEntries(Object.entries(module).filter(([key]) => ["name","url", "description","lastCommit" ].includes(key)))
+		//console.log("module=",module, "new module entry=", newm)
+		categories[module.category].push(newm) 	
+		module=newm
 		if (debug)
 			console.log("checking installed for module=" + module.name + " at path=" + MM_modules_Path + '/' + module.name)		
 		try {
