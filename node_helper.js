@@ -1639,20 +1639,27 @@ module.exports = NodeHelper.create({
     var mfiles= []
     // loop thru the modules list
     r.config.modules.forEach(m =>{
-      // if not disabled
-	  // default folder present
-	  let default_folder=""
-      if((m.disabled==false && !defaultModules.includes(m.module)) || defaultModules.includes(m.module)) {
-		if(defaultModules.includes(m.module))
-			default_folder="default/"
-        // get a list of any extension files in the module folder
-        mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+default_folder+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
-        // if we found some
-        if(mfiles.length)
-          // add them to the global list
-          files.concat(mfiles)
+      if(static_debug){
+        console.log("checking "+m.module+" for extensions="+this.name+'_extension.')
       }
-    })
+      // if not disabled
+  	  // default folder present
+  	  let default_folder=""
+        if((m.disabled==false && !defaultModules.includes(m.module)) || defaultModules.includes(m.module)) {
+  		    if(defaultModules.includes(m.module))
+  			   default_folder="default/"
+          // get a list of any extension files in the module folder
+          mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+default_folder+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
+          if(static_debug){
+            console.log("found ",mfiles," extensions")
+          }
+          // if we found some
+          if(mfiles.length)
+            // add them to the global list
+            files.concat(mfiles)
+        }
+      }
+    )
 
     let htmlfile_lines=fs.readFileSync(__dirname+"/templates/config.html").toString().split("\n");
     files.forEach(f=>{
