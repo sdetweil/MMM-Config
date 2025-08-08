@@ -18,8 +18,18 @@ if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
 
-let defines = process_main(filelines, path.parse(process.argv[2]).name);
+
+let modulename = path.parse(process.argv[2]).name
+if(modulename.startsWith("Frontend")){   // built fron typescript
+  if(process.argv.length > 3 && process.argv[3] !== "debug"){ // if the actual module name was specified
+    modulename = process.argv[3]  // use the passed in Module name
+  }
+}
+
+let defines = process_main(filelines, modulename);
 if (debug) console.log("defines=" + JSON.stringify(defines, " ", 2));
+
+
 
 if(defines.length==0){
   dummy.forEach((l,i)=>{

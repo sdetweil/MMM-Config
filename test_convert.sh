@@ -91,8 +91,12 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 
 		#echo looking for "$nm.js"
 		if [ -e "$module/$nm".js ]; then
-		   node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
-		   ls $module/MMM-Config_extension.* 2>/dev/null >>extension_list
+		  if [ -e "$module/src/frontend/Frontend.ts" ]; then
+		  	node $d/scripts/dumpdefaults.js "$module/src/frontend/Frontend.ts" $nm >>$defaults_file
+		  else
+		      node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
+		  fi
+		  ls $module/MMM-Config_extension.* 2>/dev/null >>extension_list
 		else
 			#echo "// file "$nm.js" does NOT exist"
 			:

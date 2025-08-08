@@ -217,8 +217,13 @@ Setlocal EnableDelayedExpansion
 		)
 		rem if the module js exists
 		IF EXIST "..\%mf%\%m%\%m%.js" (
-			rem dump it to defauls
-			node %d%scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
+			rem dump it to defaults
+			IF EXIST "..\%mf%\%m%\src\frontend\Frontend.ts" (
+				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\src\frontend\Frontend.ts" %m% >>%2
+			)
+			ELSE (
+				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
+			)
 			rem check for any extensions
 			dir /b "..\%mf%\%m%\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
