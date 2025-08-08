@@ -220,8 +220,7 @@ Setlocal EnableDelayedExpansion
 			rem dump it to defaults
 			IF EXIST "..\%mf%\%m%\src\frontend\Frontend.ts" (
 				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\src\frontend\Frontend.ts" %m% >>%2
-			)
-			ELSE (
+			) ELSE (
 				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
 			)
 			rem check for any extensions
