@@ -121,11 +121,11 @@ module.exports= async (data,sorttype, debug)=>{
 			}
 		}
 		if (use_promise) {
-			// if we called the fixer its promise as added to the list
-			// if we have our batch
-			// or we hit the end and there are some
+			// if we called the fixer its promise was added to the list
 			if(debug)
 			  console.log("index="+index)
+			// if we have our batch (max_promises in size)
+			// or we hit the end of the modules list and there are some promises outstanding (list length >0)
 			if ((promise_list.length == max_promises) || (promise_list.length > 0 && index == numb_module_entries)) {
 				if(debug)
 					console.log("awaiting")
@@ -139,7 +139,7 @@ module.exports= async (data,sorttype, debug)=>{
 						if(debug)
 							console.log("setting readme_url for module " + info.name + " url=" + info.moduleinfo.readme_url)
 						// if there is a radme_url provided
-						if (info.moduleinfo.readme_url)
+						if (info.moduleinfo.readme_url && info.category)
 							// loop thru the modules in the category for this module
 							for (m of categories[info.category]) {
 								// if this module foune
