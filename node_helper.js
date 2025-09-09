@@ -4,6 +4,10 @@ const { spawn, exec } = require("child_process");
 const path = require("path");
 const os = require("os");
 const _ = require("lodash");
+const serveIndex = require('serve-index');
+const DynamicMiddleware = require('dynamic-middleware');
+let dynamicServeIndex = {};
+const express = require('express')
 
 let static_debug = false
 
@@ -196,7 +200,7 @@ module.exports = NodeHelper.create({
   },
   // add express routes to allow invoking the form
   extraRoutes: function () {
-    this.expressApp.get("/modules/MMM-Config/review", (req, res) => {
+    this.expressApp.get("/modules/"+this.name+"/review", (req, res) => {
       // redirect to config form
       res.redirect(
         //this.config.url +
@@ -210,12 +214,59 @@ module.exports = NodeHelper.create({
         "/modules/" + this.name + "/config.html"
       );
     });
-    this.expressApp.get("/configure", (req, res) => {
+    /*this.expressApp.get("/configure", (req, res) => {
       // redirect to config form
       res.redirect(
         //this.config.url +
         "/modules/" + this.name + "/config.html" // ?port=" + socket_io_port+"&date="+(new Date()).getMilliseconds()
       );
+    }) */
+    this.expressApp.get("/modules/"+this.name+"/browse", (req, res) => {
+      // connect to the
+      if(static_debug)
+        console.log("received browse request=", req.query, req.query.modulename)
+      if(req.query.modulename){
+        let modulename=req.query.modulename
+        if(static_debug){
+          console.log("browse module name="+modulename)
+        }
+        if(modulename){
+          try {
+            if(static_debug)
+              console.log("route path ="+"/modules/"+modulename)
+            let op=path.join(__dirname,"/../",modulename)
+            dynamicServeIndex[modulename] = DynamicMiddleware.create(serveIndex(op))
+            // Use the dynamic middleware handler in your app
+            this.expressApp.use("/modules/"+modulename, dynamicServeIndex[modulename].handler());
+          }
+          catch(error){
+            console.log(error.stack)
+          }
+        }
+      } else {
+        if(static_debug)
+          console.log("modulename not found", req)
+      }
+      res.send("0")
+    })
+    this.expressApp.get("/modules/"+this.name+"/unbrowse", (req, res) => {
+      // connect to the
+      //if(debug)
+        console.log("received browse request")
+      if(req.query.modulename){
+        let modulename=req.query.modulename
+        if(modulename){
+          if(dynamicServeIndex[modulename]){
+            dynamicServeIndex[modulename].disable();
+            dynamicServeIndex[modulename]=null;
+          }
+        }
+      }  else {
+        //if(debug){
+          console.log("modulename not found", req)
+        //}
+      }
+      res.send("0")
     });    
   },
   getIPAddress(){
@@ -562,6 +613,7 @@ module.exports = NodeHelper.create({
     var proplist = [];
     for (var propertyName in y) {
       if (
+        x !== null &&
         typeof x[propertyName] === "object" &&
         typeof y[propertyName] === "object"
       ) {
@@ -586,7 +638,7 @@ module.exports = NodeHelper.create({
               );
           }
         }
-      } else if (x[propertyName] !== y[propertyName]) {
+      } else if (x===null || x[propertyName] !== y[propertyName]) {
         if (static_debug) console.log("comparing prop=" + propertyName);
         proplist.push(propertyName);
       }
