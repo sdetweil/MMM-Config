@@ -51,9 +51,20 @@ rem we may need to add module extsions info to it
 if not exist config.html (
 	copy templates\config.html >nul
 )
+set copyfile=0
+set fs=0
 if not exist module_url_hash.json (
-	copy templates\module_url_hash.json >nul
+	set copyfile=1
+) else (
+    for %%I in (module_url_hash.json) do set fs=%%~zI
+	if %fs% lss 1000 (
+	   set copyfile=1
+	)
 )
+if !copyfile! equ 1 (
+  copy templates\module_url_hash.json >nul
+)
+
 del CSS.js 2>nul
 rem check if the list of animations has an export statement
 rem if not its downlevel, so copy and add it
@@ -226,5 +237,5 @@ Setlocal EnableDelayedExpansion
 			rem check for any extensions
 			dir /b "..\%mf%\%m%\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
-  goto :eof
+    rem :eof
 :done
