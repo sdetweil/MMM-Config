@@ -163,8 +163,12 @@ async function buildFormData(/*NodeHelper,*/ sortOrder){
   const responseData = await response.json();
   //console.log("have form data l="+responseData.length)
 
+  // Extract modules array from the new API structure
+  const modulesArray = responseData.modules || responseData;
+  //console.log("have modules data l="+modulesArray.length)
+
   // format in category and in category sorted as requested (date or time)
-  let data = await formatter(responseData, sortOrder, true /*local_debug*/)
+  let data = await formatter(modulesArray, sortOrder, true /*local_debug*/)
   //console.log("back from formatter")
   // make the form for the installer page
   let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
