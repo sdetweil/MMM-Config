@@ -51,7 +51,8 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	if [ ! -e config.html ]; then
 		cp templates/config.html .
 	fi
-	if [ ! -e module_url_hash.json ]; then 
+	fs=$(wc -c module_url_hash.json | cut -d' ' -f1)
+	if [ ! -e "module_url_hash.json"  -o  $fs -lt 1000 ]; then
 	    cp templates/module_url_hash.json .
 	fi	
 	# check if list of animations has the export we need
