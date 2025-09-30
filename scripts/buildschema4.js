@@ -1680,9 +1680,11 @@ function copyConfig(defines, schema, form) {
     properties: {}
   };
   schema["config"]["properties"] = {};
+  if(!Object.keys(defines.config).includes("userAgent"))
+    defines.config["userAgent"]=""
   // copy the current non modules stuff from config.js
   for (const setting of Object.keys(defines.config)) {
-    if (setting === "modules") break;
+    if (setting === "modules") continue;
     let dtype;
     let t = typeof defines.config[setting];
     if (t === "object") {
@@ -1737,6 +1739,9 @@ function copyConfig(defines, schema, form) {
           break;
         case "units":
           as = { type: "string", title: setting, enum: ["imperial", "metric"] };
+          break;
+        case "userAgent":
+          as = { type: "string", title: setting};
           break;
         case "serverOnly":
           as = {
@@ -1816,6 +1821,8 @@ function copyConfig(defines, schema, form) {
             type: "checkboxes"
           });
         } else {
+          if(debug)
+            console.log("saving for config." + setting)
           form[0].items[0].items.push("config." + setting);
         }
     }
@@ -2169,6 +2176,7 @@ function processModule(schema, form, value, module_defines, module_name) {
 
 function process_config_values(moduleValues){
   const module_values = clone(moduleValues)
+
   Object.keys(module_values.config).forEach(p => {
 	if(typeof  module_values.config[p] === "string"){
 	    if(debug)
@@ -2180,7 +2188,7 @@ function process_config_values(moduleValues){
 	      if(debug)
 	         console.log("using current config value  for parm="+item+" value="+defines.config[item]);
 	      module_values.config[p]=defines.config[item]
-	}
+	    }
     }
   })
   if(debug)
