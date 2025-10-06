@@ -11,11 +11,10 @@ let sort_type="date"
 
 module.exports= async (data,sorttype, debug)=>{
 
-	//console.log("in formatter")
 	sort_type = sorttype	
 	
 	//  force debug false
-	debug = false;
+	//debug = true;
 	
 	let temp=__dirname.split(path.sep).slice(0,-2)
 	///home/sam/MagicMirror/modules/MMM-Config/module_installer
@@ -73,7 +72,7 @@ module.exports= async (data,sorttype, debug)=>{
 			categories[module.category] = []
 		// put the module in its category
 		// only selected fields, keep json file as small as practical
-		let newm = Object.fromEntries(Object.entries(module).filter(([key]) => ["name","url", "description","lastCommit" ].includes(key)))
+		let newm = Object.fromEntries(Object.entries(module).filter(([key]) => ["name","url", "description","lastCommit","category" ].includes(key)))
 		//console.log("module=",module, "new module entry=", newm)
 		categories[module.category].push(newm) 	
 		module=newm
@@ -104,7 +103,7 @@ module.exports= async (data,sorttype, debug)=>{
 				if (use_promise) {
 					if(debug)
 					    console.log("adding to the list for module="+module.name)
-					// call the url fixer.. not to many at a time
+					// call the url fixer.. not too many at a time
 					promise_list.push(fixer( module.name, hash[module.name], module.category, debug))
 				}
 				//we should get the read me_url here
@@ -137,22 +136,29 @@ module.exports= async (data,sorttype, debug)=>{
 					if (result.status === "fulfilled") {
 						let info = result.value	
 						if(debug)
-							console.log("setting readme_url for module " + info.name + " url=" + info.moduleinfo.readme_url)
+							console.log("setting readme_url for module " + info.name + " url=" + info.moduleinfo.readme_url+ " category="+info.category)
 						// if there is a radme_url provided
-						if (info.moduleinfo.readme_url && info.category)
+						if (info.moduleinfo.readme_url && info.category){
 							// loop thru the modules in the category for this module
 							for (m of categories[info.category]) {
 								// if this module foune
 								if (m.name === info.name) {
 									// update its readme_url
+									if(debug)
+										console.log("found module="+info.name+" in category="+info.category)
 									m.readme_url = info.moduleinfo.readme_url
 									break
 								}
 							}
+						}
 						hash[info.name] = info.moduleinfo
+					} else {
+						if(debug){
+							console.log("results.status="+result.status )
+						}
+
 					}
 				})
-
 			}
 		}
 	}
