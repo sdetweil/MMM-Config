@@ -460,6 +460,26 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     let jsonform_info = require(fn);  // is a json file, so importable
     if(debug)
       console.log("loaded schema ="+JSON.stringify(jsonform_info,tohandler))
+
+    for(let i in jsonform_info.form ){
+      const item = jsonform_info.form[i]
+      // find the module config form section
+      if(item.title==='config' && item.type==='fieldset'){
+        if(debug)
+            console.log("found config fieldset")
+        if(!item.htmlClass){
+          item.htmlClass="moduleConfig"
+          let x = clone(openUrlForm_template)
+          let fnlist =fs.readdirSync(__dirname+"/../../"+module_name).filter(fn => fn.toLowerCase().includes('readme.'));
+          x[1].title = `http://localhost:xxxx/modules/${module_name}/${fnlist[0]}`
+          jsonform_info.form[i].items.splice(0,0,...x)
+          if(debug)
+            console.log("item form after splice="+JSON.stringify(jsonform_info.form[i]))
+        }
+        break;
+      }
+    }
+
     // indicate we found schema
     schema_present[module_name] = true;
 
@@ -585,6 +605,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
           parents_parent +
           ";var allchecked=parent.find(\"input[name$='disabled']:checked\").length;var count=parent.find(\"input[name$='disabled']\").length;if(selection===true && allchecked!==count){selection=false};setc(parent,selection);}";
       }
+
       mform.items = jsonform_info.form;
 
       form[0].items[1].items.push(mform);
@@ -2003,10 +2024,10 @@ function processModule(schema, form, value, module_defines, module_name) {
   }
   if(debug)
       console.log("looking in url hash="+module_name+" hash="+(url_hash?"true":"false"))
+  let buttons = clone(openUrlForm_template)
   if (url_hash && url_hash[module_name]) {
     if (debug)
       console.log("found module in url hash=" + module_name, url_hash[module_name])
-    let buttons = clone(openUrlForm_template)
     if (url_hash[module_name].readme_url.endsWith('.html')){
       buttons[1].title = url_hash[module_name].readme_url
     }
@@ -2014,9 +2035,14 @@ function processModule(schema, form, value, module_defines, module_name) {
       buttons[1].title = "http://localhost:xxxx/modules/" + module_name + "/" + url_hash[module_name].readme_url.split('/').slice(-1)[0]
     }
     module_form_items.push({ type: "fieldset", title: "config",htmlClass:"moduleConfig", items: buttons }); // was section
-  } else
-  module_form_items.push({ type: "fieldset", title: "config", items: [] }); // was section
-
+  } else {
+      if(debug)
+        console.log("not in url_hash, but has readme")
+      const filenames = fs.readdirSync(__dirname+"/../../"+module_name);
+      const rmfn= filenames.filter(n=> n.toLowerCase().startsWith("readme."))
+      buttons[1].title = "http://localhost:xxxx/modules/" + module_name + "/" + rmfn
+      module_form_items.push({ type: "fieldset", title: "config", htmlClass:"moduleConfig", items: buttons }); // was section
+  }
   if(debug)
     console.log("mform.items"+JSON.stringify(module_form_items,null,2))
   let ptr = -1;
