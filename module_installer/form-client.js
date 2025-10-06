@@ -1,6 +1,6 @@
 async function process_readme(readme_url, pos){
 
-const manipulateSource = false
+const manipulateSource = true
 
 function detectBrowser() {
   const userAgent = navigator.userAgent;
@@ -59,11 +59,12 @@ function detectBrowser() {
 
     } else {
       if(manipulateSource){
-        let response=await fetch(readme_url, { mode: 'no-cors'})
+        let response=await fetch("/cors?url="+readme_url) //, { mode: 'no-cors'}
         let text = await response.text();
         html      = converter.makeHtml(text).toString()
         window.sHTML = html;
         viewer.attr('src', 'javascript:parent.sHTML')
+        viewer.attr('style',"background-color:white")
       } else {
         //if(readme_url.includes("gitlab.com"))
         //  viewer.attr('src', readme_url)
@@ -142,29 +143,33 @@ $(function () {
   }
 
   function parseData(data) {
-    return JSON.parse(
-      data,
+    if(!data){
 
-      function (key, value) {
-        if (typeof value === "string") {
-          // only handle specified fields in jsonform
-          switch (key) {
-            case "onChange":
-            case "onClick":
-            case "onKeyUp":
-            case "onInput":
-              // get the function from the string
-              // parens mean don't EXECUTE the function, just get its value
-              value = eval("(" + value + ")");
-              break;
-            //	default:
-            //		if ( (value.startsWith("(") || value.startsWith("function(")) 	&& value.endsWith("}"))
-            //			value = eval("(" + value + ")");
+    } else {
+      return JSON.parse(
+        data,
+
+        function (key, value) {
+          if (typeof value === "string") {
+            // only handle specified fields in jsonform
+            switch (key) {
+              case "onChange":
+              case "onClick":
+              case "onKeyUp":
+              case "onInput":
+                // get the function from the string
+                // parens mean don't EXECUTE the function, just get its value
+                value = eval("(" + value + ")");
+                break;
+              //	default:
+              //		if ( (value.startsWith("(") || value.startsWith("function(")) 	&& value.endsWith("}"))
+              //			value = eval("(" + value + ")");
+            }
           }
+          return value;
         }
-        return value;
-      }
-    );
+      );
+    }
   }
   // socket
 
@@ -218,100 +223,102 @@ $(function () {
     usercanceled= false
     //data.configJSON =  data
     let data = parseData(incoming_json.slice(1, -1));
-    // free the memory
-    incoming_json = null;
-    let pairs = data.pairs;
-    let arrays = data.arrays;
-    let objects = data.objects;
-    let mangled_names = data.mangled_names;
-    let convertedObjects = data.convertedObjects;
-    let scriptConverted = data.scriptConvertedObjects
-    let substituted_variables=null
-    if(data.substituted_variables)
-      substituted_variables = data.substituted_variables
+    if(data){
+      // free the memory
+      incoming_json = null;
+      let pairs = data.pairs;
+      let arrays = data.arrays;
+      let objects = data.objects;
+      let mangled_names = data.mangled_names;
+      let convertedObjects = data.convertedObjects;
+      let scriptConverted = data.scriptConvertedObjects
+      let substituted_variables=null
+      if(data.substituted_variables)
+        substituted_variables = data.substituted_variables
 
-    $("#outmessage").text("");
-    try {
-      data.onSubmitValid = function (values) {
-        // restore the fixup data from the incoming
-        values["pairs"] = pairs;
-        values["arrays"] = arrays;
-        values["objects"] = objects;
-        values["mangled_names"] = mangled_names;
-        values["convertedObjects"] = convertedObjects;
-        values["scriptConvertedObjects"]=scriptConverted
-        if(substituted_variables)
-          values["substituted_variables"] = substituted_variables
+      $("#outmessage").text("");
+      try {
+        data.onSubmitValid = function (values) {
+          // restore the fixup data from the incoming
+          values["pairs"] = pairs;
+          values["arrays"] = arrays;
+          values["objects"] = objects;
+          values["mangled_names"] = mangled_names;
+          values["convertedObjects"] = convertedObjects;
+          values["scriptConvertedObjects"]=scriptConverted
+          if(substituted_variables)
+            values["substituted_variables"] = substituted_variables
 
-        activesocket.emit("saveConfig", values);
-        $("#outmessage").html(
-          "<p><strong>your selected modules are being installed</strong></p>"
+          activesocket.emit("saveConfig", values);
+          $("#outmessage").html(
+            "<p><strong>your selected modules are being installed</strong></p>"
+          );
+        };
+        data.onSubmit = function (errors, values) {
+          if (errors) {
+            console.log("Validation errors 1", errors, values);
+            let buildInner = "";
+            errors.forEach(function (errItem) {
+              let errSchemaUri = errItem.schemaUri
+                .replace(/.+\/properties\//, "")
+                .replace("/", " >> ");
+              buildInner +=
+                `<p><strong style="font-color:red">Error: ` +
+                errItem.message +
+                "</strong></br>Location: " +
+                errSchemaUri +
+                "</p>";
+            });
+            $("#outMsg").html(buildInner);
+            console.log("Validation errors 2", values);
+            return false;
+          }
+          return true;
+        };
+
+        // replace any form from last connection
+        $("#result").html('<form id="result-form" class="form-vertical"></form>');
+        // insert the new form
+        $("#result-form").jsonForm(data);
+        // trigger the custom event for any extension that needs to manipulate its part of the form
+        document.dispatchEvent(event)
+        // delete entry
+        $(
+          "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-deletelast "
+        ).click((event) => {
+          let m = $(event.target)
+            .closest(".module_entry")
+            .children("legend")
+            .text();
+          $("[value='" + m + "']")
+            .closest(".possibly-hidden-tab")
+            .find("._jsonform-array-deleteitem")
+            .trigger("click");
+        });
+
+        // add entry
+        $(
+          "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-addmore "
+        ).click((event) => {
+          let m = $(event.target)
+            .closest(".module_entry")
+            .children("legend")
+            .text();
+          $("[value='" + m + "']")
+            .closest(".possibly-hidden-tab")
+            .find("._jsonform-array-addmore")
+            .trigger("click");
+        });
+      } catch (e) {
+        $("#result").html(
+          "<pre>Entered content is not yet a valid" +
+            " JSON Form object.\n\nThe JSON Form library returned:\n" +
+            e.stack +
+            "</pre>"
         );
-      };
-      data.onSubmit = function (errors, values) {
-        if (errors) {
-          console.log("Validation errors 1", errors, values);
-          let buildInner = "";
-          errors.forEach(function (errItem) {
-            let errSchemaUri = errItem.schemaUri
-              .replace(/.+\/properties\//, "")
-              .replace("/", " >> ");
-            buildInner +=
-              `<p><strong style="font-color:red">Error: ` +
-              errItem.message +
-              "</strong></br>Location: " +
-              errSchemaUri +
-              "</p>";
-          });
-          $("#outMsg").html(buildInner);
-          console.log("Validation errors 2", values);
-          return false;
-        }
-        return true;
-      };
-
-      // replace any form from last connection
-      $("#result").html('<form id="result-form" class="form-vertical"></form>');
-      // insert the new form
-      $("#result-form").jsonForm(data);
-      // trigger the custom event for any extension that needs to manipulate its part of the form
-      document.dispatchEvent(event)
-      // delete entry
-      $(
-        "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-deletelast "
-      ).click((event) => {
-        let m = $(event.target)
-          .closest(".module_entry")
-          .children("legend")
-          .text();
-        $("[value='" + m + "']")
-          .closest(".possibly-hidden-tab")
-          .find("._jsonform-array-deleteitem")
-          .trigger("click");
-      });
-
-      // add entry
-      $(
-        "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-addmore "
-      ).click((event) => {
-        let m = $(event.target)
-          .closest(".module_entry")
-          .children("legend")
-          .text();
-        $("[value='" + m + "']")
-          .closest(".possibly-hidden-tab")
-          .find("._jsonform-array-addmore")
-          .trigger("click");
-      });
-    } catch (e) {
-      $("#result").html(
-        "<pre>Entered content is not yet a valid" +
-          " JSON Form object.\n\nThe JSON Form library returned:\n" +
-          e.stack +
-          "</pre>"
-      );
-      console.error("error stack", e.stack);
-      return;
+        console.error("error stack", e.stack);
+        return;
+      }
     }
   });
 

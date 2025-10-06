@@ -25,16 +25,18 @@ function detectBrowser() {
     let viewer = $('#viewer')
     let x = readme_url.split('/')
     readme_url = readme_url.replace("localhost:xxxx", window.location.hostname+':'+window.location.port)
+    let baseurl = readme_url.split('/').slice(0,-1).join('/')+'/'
     converter = new showdown.Converter({tables: true})
     if(!readme_url.endsWith('.html')){
       let response=await fetch(readme_url ) //,{ mode: 'no-cors'})
       let text = await response.text();
       //console.log("readme="+text)
+      var u = window.location.href;
+      var home = u.split('/').slice(0, -2)
       if (readme_url.startsWith("http://")) {
-        var u = window.location.href;
-        var home = u.split('/').slice(0, -2)
         home.push(x[4])
         text = text.replace(/\]\(https:/g, "!!!!!#")
+        text = text.replace(/\(\//g,'(')
         if(text.indexOf("t](s"))
           text = text.replace(/t\]\(s/g, "t](" + home.join('/') + '/s')
         else 
@@ -55,20 +57,33 @@ function detectBrowser() {
           text = text.replace(/="/ / g, "=\"" + `https://raw.githubusercontent.com`)
         }
       }
-      html      = converter.makeHtml(text).toString();
+      let html      = converter.makeHtml(text).toString();
       if(!html.startsWith("<html><head><body>")){
-        html ='<html><head><link rel="stylesheet" type="text/css" href="viewer.css"/></head><body>' +html+'"</body></html>'
+        html ='<html><head><base href="'+baseurl+'"><link rel="stylesheet" type="text/css" href="viewer.css"/></head><body>' +html+'"</body></html>'
       }
       window.sHTML = html;
       viewer.attr('src', 'javascript:parent.sHTML')
+      viewer.attr('style',"background-color:white")
 
     } else {
       if(manipulateSource){
-        let response=await fetch(readme_url, { mode: 'no-cors'})
+        let response=await fetch("/cors?url="+readme_url) // readme_url, { mode: 'no-cors'})
         let text = await response.text();
-        html      = converter.makeHtml(text).toString()
-        window.sHTML = html;
+        text = text.toString()
+        if(text.indexOf("html>")<0){
+          html      = converter.makeHtml(text).toString()
+          window.sHTML = html;
+        } else {
+          let i= text.indexOf("</head>")
+          if(i>0){
+            let string_array=text.split('')
+            string_array.splice(i-1,0,'<link rel="stylesheet" type="text/css" href="viewer.css"/>')
+            text= string_array.join('')
+          }
+          window.sHTML = text
+        }
         viewer.attr('src', 'javascript:parent.sHTML')
+        viewer.attr('style',"background-color:white")
       } else {
         viewer.attr('src', "/cors?url="+readme_url)
       }
