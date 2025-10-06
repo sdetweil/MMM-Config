@@ -34,7 +34,7 @@ var processList=[]
 let in_docker_container = false
 
 // the generated module list form
-let formdata
+let formdata=null
 
 const Configurator_in_config_file = false
 
@@ -151,34 +151,15 @@ async function setupServer(expressApp, sortOrder){
 }
 
 async function buildFormData(/*NodeHelper,*/ sortOrder){
+  // used to do this inline, but it blocked MM startup,
+  // takes minutes to sync the initial module list
   // get the latest data from the 3rd party repo
-  //console.log("entered buildformdata")
-  const response = await fetch(modules_url);
-  if (!response.ok) {
-    const message = `An error occured: ${response.status}`;
-    throw new Error(message);
-  }
-  //console.log("fetch conmpleted")
-  // we need the json
-  const responseData = await response.json();
-  //console.log("have form data l="+responseData.length)
-
-  // Extract modules array from the new API structure
-  const modulesArray = responseData.modules || responseData;
-
-  // format in category and in category sorted as requested (date or time)
-  let data = await formatter(modulesArray, sortOrder, true /*local_debug*/)
-  //console.log("back from formatter")
-  // make the form for the installer page
-  let newformdata=fs.readFileSync(module_form_template)+'"categories":'+JSON.stringify(data.categories,null,2)+formTail
-  // save it for page load
-  formdata=newformdata
-  // write it out for next time start
-  // write it out to be loaded by installer page
-  fs.writeFileSync(module_selector_form, newformdata)
-  // write out the updated url hash (adds/deletes done twice a day) 
-  fs.writeFileSync(module_url_hash, JSON.stringify(data.hash, null, 2))
-  // async, return something
+  // execute the 3rd party module jsonform creator in the background
+  const cmdstring="node "+__dirname+"/formatter.js "+sortOrder
+  //console.log("cmdstring="+cmdstring+" cwd="+process.cwd())
+  exec(cmdstring, { cwd: __dirname })
+  // indicate we are working on new data
+  formdata=null;
   return true
 }
 
@@ -222,14 +203,24 @@ function handleConnection(socket, type) {
         console.log("cancel requested")
       console.log("cancel received, closing installer")
       socket.emit("close")
-     // setTimeout(()=>{process.exit(1)}, 3000)
     }
   });
 
   // when the page askes for form
   socket.on("getForm", () => {
     if(local_debug)
-  	  console.log("form requested")
+  	  console.log("installer form requested")
+    // if we haven't loaded the 3rd party modules form for installer
+    if(!formdata){
+      // if the file exists
+       if(fs.statSync(module_selector_form))
+         // load it as text
+	       formdata=fs.readFileSync(module_selector_form, "utf8");
+       else
+         // for didn't exist, don't send junk
+         // user will have to hit refresh to load the page html which will request again
+         return
+    }
     // send it via socket io, string data
     socket.emit("json", "'" + formdata + "'");
   });
