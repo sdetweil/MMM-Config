@@ -84,7 +84,7 @@ for kHassel's docker container I added the following lines to magicmirror/run/co
 ### to open the <h4>configuration page form</h4> in some browser, use the url  <h4>http://MM_IP_Address:MM_Port/configure</h4>
     note the requirement for config address and ipWhitelist above on the parms section
 
-### to open the <h4>module installer page form</h4>, in some browser, use the url  <h4>http://MM_IP_Address:MM_Port/installer</h4>
+### to open the <h4>module installer page form</h4> in some browser, use the url  <h4>http://MM_IP_Address:MM_Port/installer</h4>  
     note the requirement for config address and ipWhitelist above on the parms section
 
 ### The form looks like this
