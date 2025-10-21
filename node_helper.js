@@ -391,17 +391,17 @@ module.exports = NodeHelper.create({
     let sort="date"  // default value set in modulename.js
     let debug= false
     for(m of config.modules){
-      if (m.module == this.name) {
+      if (m.module === this.name) {
         if (m.config){
           if( m.config.ModuleSortOrder) {
-            if (m.config.ModuleSortOrder) // if it was specified
-             sort = m.config.ModuleSortOrder // use it
+            if (m.config.ModuleSortOrder)    // if it was specified
+              sort = m.config.ModuleSortOrder // use it
             }  
             if(m.config.debug){
-                    debug=m.config.debug
+              debug=m.config.debug
             }
         }
-       break;
+        break;
       }
     }
     if(debug)

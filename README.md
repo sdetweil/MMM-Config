@@ -60,6 +60,14 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
+# usage
+
+### to open the <h4>configuration page form</h4> in some browser, use the url  http://MM_IP_Address:MM_Port/configure
+    note the requirement for config address and ipWhitelist above on the parms section
+
+### to open the <h4>module installer page form</h4>, in some browser, use the url  http://MM_IP_Address:MM_Port/installer
+    note the requirement for config address and ipWhitelist above on the parms section
+
 ### The form looks like this
 
 Main form page. The form colors can be set in webform.css
