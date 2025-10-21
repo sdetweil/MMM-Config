@@ -60,12 +60,31 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
+# setup for running the installer in a docker container<br>
+we need to add some properties to the container
+
+this value matches the `AdditionalInstancePort` config variable above
+
+a port at 9000:9000
+for kHassel's docker container I added the following lines to magicmirror/run/compose.yaml
+
+    restart: unless-stopped
+	#
+	# added
+	# 
+    ports:
+      - "9000:9000"
+	#
+	#  end of added
+	#  
+
+
 # usage
 
-### to open the <h4>configuration page form</h4> in some browser, use the url  http://MM_IP_Address:MM_Port/configure
+### to open the <h4>configuration page form</h4> in some browser, use the url  <h4>http://MM_IP_Address:MM_Port/configure</h4>
     note the requirement for config address and ipWhitelist above on the parms section
 
-### to open the <h4>module installer page form</h4>, in some browser, use the url  http://MM_IP_Address:MM_Port/installer
+### to open the <h4>module installer page form</h4>, in some browser, use the url  <h4>http://MM_IP_Address:MM_Port/installer</h4>
     note the requirement for config address and ipWhitelist above on the parms section
 
 ### The form looks like this
@@ -213,20 +232,3 @@ so additional select clause elements would be required to target just some.
 (like modules in a particular category)
 
 
-# setup for running the installer in a docker container<br>
-we need to add some properties to the container
-
-this value matches the `AdditionalInstancePort` config variable above
-
-a port at 9000:9000
-for kHassel's docker container I added the following lines to magicmirror/run/compose.yaml
-
-    restart: unless-stopped
-	#
-	# added
-	# 
-    ports:
-      - "9000:9000"
-	#
-	#  end of added
-	#  
