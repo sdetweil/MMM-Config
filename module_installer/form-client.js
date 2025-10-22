@@ -50,7 +50,8 @@ function detectBrowser() {
           text = text.replace(/\]\(\//g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
         } else
         if (text.match(/!\[.*[^\(]\(/)) {
-          text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
+          if(!text.match(/!\[.*[^\(]\(http/))
+            text = text.replace(/\]\(/g, "](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/`)
         } else
         if (text.indexOf("t](s")) {
           text = text.replace(/\]\(s/g, "t](" + `https://raw.githubusercontent.com/${user}/${repo}/${branch}/s`)
