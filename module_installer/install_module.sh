@@ -20,44 +20,62 @@ check_update_dependencies() {
     # if the node_helper exists
     if [ -e $mod ]; then
 		# get the require statetents from the node helper
-		requires=($(egrep -v "^(//|/\*| \*)" $mod | grep -e "require("  | awk -F '[()]' '{print $2}' | grep -v "\.js" | tr -d '"' | tr -d "'"))
-		# loop thru the requires
-		for require in "${requires[@]}"
-		do
-			# check it against the list of known lib removals
-			case " $known_list " in (*" $require "*) :;; (*) false;; esac
-			# if found in the list
-			if [ $? == 0 ]; then
-				# if no package.json, we would have to create one
-				#cd $mod
-				if [ ! -e $keyfile ]; then
-					echo -e ' \n\t ' $keyfile not found for module $mod for library $require >> $logfile
-					#if [ $doinstalls == $true ]; then
-						#echo adding package.json for module $mod | tee -a $logfile
-						npm init -y >>$logfile
-					#else
-					#	echo -e ' \n\t\t 'bypass adding package.json for module $mod, doing test run | tee -a $logfile
-					#fi
-				fi
-				# if package.json exists, could have been just added
-				if [ -e $keyfile ]; then
-					# check for this library in the package.json
-					pk=$(grep $require $keyfile)
-					# if not present, need to do install
-					if [ "$pk." == "." ]; then
-						echo -e " \n\t require for \e[91m$require\e[0m in module \e[33m$mod\e[0m not found in $keyfile" | tee -a $logfile
-						if [ $doinstalls == $true ]; then
-							echo installing $require for module $mod | tee -a $logfile
-							if [ $require == "node-fetch" ]; then
-										require="$require@2"
+		requires=($(egrep -v "^(//|/\*| \*)" $mod | grep -e "require("  | awk -F '[()]' '{print $2}' | grep -v "\.js" | grep -v -e node_helper -e moment -e logger | tr -d '"' | tr -d "'"))
+		# check if we found any requires for outside  modules
+		if [ ${#requires[@]} -gt 0 ]; then
+			if [ ! -e $keyfile ]; then
+				echo -e ' \n\t ' $keyfile not found for module $mod for library $require >> $logfile
+				#if [ $doinstalls == $true ]; then
+					#echo adding package.json for module $mod | tee -a $logfile
+					npm init -y >>$logfile
+				#else
+				#	echo -e ' \n\t\t 'bypass adding package.json for module $mod, doing test run | tee -a $logfile
+				#fi
+			fi
+			# loop thru the requires
+			for require in "${requires[@]}"
+			do
+				# check it against the list of known lib removals
+				case " $known_list " in (*" $require "*) :;; (*) false;; esac
+				# if found in the list
+				if [ $? == 0 ]; then
+					# if package.json exists, could have been just added
+					if [ -e $keyfile ]; then
+						# check for this library in the package.json
+						pk=$(grep $require\" $keyfile)
+						# if not present, need to do install
+						if [ "$pk." == "." ]; then
+							echo -e " \n\t require for \e[91m$require\e[0m in module \e[33m$mod\e[0m not found in $keyfile" | tee -a $logfile
+							if [ $doinstalls == $true ]; then
+								echo installing $require for module $mod | tee -a $logfile
+								if [ $require == "node-fetch" ]; then
+											require="$require@2"
+								fi
+								npm install $require $JustProd --save --omit=dev 2>&1 >>$logfile
 							fi
-							npm install $require $JustProd --save --omit=dev 2>&1 >>$logfile
+						fi
+					fi
+					#cd - >/dev/null
+				else
+					# not in the known list
+					if [ -e $keyfile ]; then
+						# check for this library in the package.json
+						pk=$(grep $require\" $keyfile)
+						# if not present, need to do install
+						if [ "$pk." == "." ]; then
+							echo -e " \n\t require for \e[91m$require\e[0m in module \e[33m$mod\e[0m not found in $keyfile" | tee -a $logfile
+							if [ $doinstalls == $true ]; then
+								echo installing $require for module $mod | tee -a $logfile
+								if [ $require == "node-fetch" ]; then
+											require="$require@2"
+								fi
+								npm install $require $JustProd --save --omit=dev 2>&1 >>$logfile
+							fi
 						fi
 					fi
 				fi
-				#cd - >/dev/null
-			fi
-		done
+			done
+		fi
 	fi
 
 }
