@@ -431,6 +431,8 @@ module.exports = NodeHelper.create({
   getConfigModule: function (m, source, index) {
     // module name is not a direct key
     let i = -1;
+    if(static_debug)
+          console.log("looking for  module "+m+" in "+JSON.stringify(source,null,2)+" with possible index="+index)
     for (let x of source) {
       if (x.module === m) {
         if(static_debug)

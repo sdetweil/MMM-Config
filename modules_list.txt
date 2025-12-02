@@ -5,3 +5,4 @@ alert
 compliments
 weather
 newsfeed
+MMM-CalendarExt3
