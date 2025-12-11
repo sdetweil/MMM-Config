@@ -7,6 +7,7 @@ const _ = require("lodash");
 const serveIndex = require('serve-index');
 const DynamicMiddleware = require('dynamic-middleware');
 let dynamicServeIndex = {};
+let in_docker_container = false;
 const express = require('express')
 
 let static_debug = false
@@ -308,7 +309,15 @@ module.exports = NodeHelper.create({
         console.info(this.name + " restart parm ='" + this.config.restart + "'")
       // handle how we restart, if any
       switch (this.config.restart) {
-        case "static":
+		case "docker":
+			  // check to see if we are running in docker container
+				try {
+				  if(fs.statSync('/.dockerenv'))
+				    in_docker_container = true
+				}
+				catch(error){}  
+			  break;
+		  case "static":
           // setup the handler
           let ep =
             __dirname.split(path.sep).slice(0, -2).join(path.sep) +
@@ -1759,6 +1768,8 @@ module.exports = NodeHelper.create({
               if (static_debug) console.log("restarting using pm2, id=" + pm2_id);
               // exec pm2 restart with the name of the app
               exec("pm2 restart " + pm2_id);
+			} else if(self.config.restart.toLowerCase() ==="docker" && in_docker_container)
+				process.kill(1)
             } else {
               socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "notrestarting.html")
             }
