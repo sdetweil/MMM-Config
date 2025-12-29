@@ -1768,8 +1768,8 @@ module.exports = NodeHelper.create({
               if (static_debug) console.log("restarting using pm2, id=" + pm2_id);
               // exec pm2 restart with the name of the app
               exec("pm2 restart " + pm2_id);
-			} else if(self.config.restart.toLowerCase() ==="docker" && in_docker_container)
-				process.kill(1)
+			      } else if(self.config.restart.toLowerCase() ==="docker" && in_docker_container){
+				      process.kill(1)
             } else {
               socket.emit("openurl", "http://localhost:" + our_port + "/" + modules_folder + "/" + this.name + "/" + "notrestarting.html")
             }
