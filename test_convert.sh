@@ -3,6 +3,12 @@
 identifier=$MM_identifier
 # get the configured modules location or use the default
 modules_location=${MM_MODULES_DIR:-modules}
+default_modules_location='../../modules/default'
+default_name_offset=5
+if [ ! -d $default_modules_location ]; then
+	default_modules_location='../../defaultmodules'
+	default_name_offset=4
+fi
 # get the config file name, or use the default
 config_name=${MM_CONFIG_FILE:-config/config.js}
 # if the config name is JUST the name (no folder)
@@ -71,7 +77,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	# get the list of installed modules, including defaults
 	NL=$'\n'
 	list=$(find -L .. -maxdepth 1 -type d | grep -v default | awk -F/ '{print substr($0,index($0,$5))}' )
-	list1=$(find -L ../../modules/default -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
+	list1=$(find -L $default_modules_location -maxdepth 1 -type d |  awk  '{print substr($0,index($0,$5))}')
 	listf="$list${NL}$list1"
 	IFS=$'\n'
 
@@ -83,7 +89,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 		nm=$module
 		if [[ "$nm" =~ "/" ]]; then
 			if [[ "$nm" =~ "default" ]]; then
-				nm=$(echo "$nm"| awk -F/ '{ print $5}')
+				nm=$(echo "$nm"| awk -F/ -v voff="$default_name_offset" '{ print $voff }')
 			else
 				nm=$(echo "$nm"| awk -F/ '{ print $2}')
 			fi

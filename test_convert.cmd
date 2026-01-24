@@ -8,7 +8,6 @@ rem
 
 set base=MagicMirror
 set d=%~dp0
-
 rem set the identifier in case there are multiple instances
 set identifier=%MM_identifier%
 
@@ -16,6 +15,12 @@ rem  get the configured modules location or use the default
 set modules_location=%MM_MODULES_DIR%
 if "!modules_location!"=="" set modules_location=modules
 rem echo modules_dir=!modules_location!
+set default_modules_location=..\..\modules\default
+set default_name_offset=5
+if NOT exist !default_modules_location! (
+	set default_modules_location=..\..\defaultmodules
+	set default_name_offset=4
+)
 rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%
 if "!config_name!"=="" set config_name=/config/config.js
@@ -106,7 +111,7 @@ rem
    rem we are in the modules folder so just back up one to get the list , make sure to ignore default it, default module dir is 'modules\default'
    for /f "tokens=1 delims=\ usebackq" %%i in (`dir  .. /b/ad ^| find /v "default"`) do @echo %%i >>somefile
    rem get all the default modules
-   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  ..\..\modules\default /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo ..\modules\default\%%i>>somefile
+   for /f "tokens=1 delims=\ usebackq" %%i in (`dir  !default_modules_location! /b/ad  ^| find /V ".git" ^| find /V "node_modules"`) do @echo !default_modules_location!\%%i>>somefile
    rem make a sorted unique list
    type somefile | powershell -nop "$input | sort -unique >somefile2.txt"
    rem delete the work file
@@ -215,27 +220,30 @@ goto :eof
 Setlocal EnableDelayedExpansion
 		set m=%1
 		set m=!m:~1,-1!
-		set mf=..\!modules_location!
+		set mf=..\..\!modules_location!
 		rem parse to find if default module, will be a noop if not default, non-default variables set on entry
 		for /f "tokens=1-5 delims=\ usebackq" %%a in (`echo !m!^| find "default"`) do (
-		   set mf=..\modules\default
-			set m=%%d
+		   set mf=!default_modules_location!
+		    if !default_name_offset! equ 4 (
+			 set m=%%d
+			) else (
+			 set m=%%e			 
+			)
 		)
 		rem get rid of any trailing spaces
-		for /f "usebackq tokens=1 delims= " %%B in ('!m!') do (
-			set m=%%B
-			rem echo."%m%"
+		for /f "usebackq tokens=1*" %%B in ('!m!') do (
+		 	set m=%%B
 		)
 		rem if the module js exists
-		IF EXIST "..\%mf%\%m%\%m%.js" (
+		IF EXIST "!mf!\!%m!\!m!.js" (
 			rem dump it to defaults
-			IF EXIST "..\%mf%\%m%\src\frontend\Frontend.ts" (
-				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\src\frontend\Frontend.ts" %m% >>%2
+			IF EXIST "!mf!\!m!\src\frontend\Frontend.ts" (
+				node %d%scripts\dumpdefaults.js "!mf!\!m!\src\frontend\Frontend.ts" !m! >>%2
 			) ELSE (
-				node %d%scripts\dumpdefaults.js "..\%mf%\%m%\%m%.js" >>%2
+				node %d%scripts\dumpdefaults.js "!mf!\!m!\!m!.js" >>%2
 			)
 			rem check for any extensions
-			dir /b "..\%mf%\%m%\MMM-Config_extension.*" 2>nul >>"extension_list"
+			dir /b "!mf!\!m!\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
     rem :eof
 :done

@@ -169,8 +169,13 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
       "../modules_list.txt"
     );
 }
-// get the default modules list from the MM core 
-const defaultModules = require("../../../modules/default/defaultmodules.js");
+// get the default modules list from the MM core , watch out for folder location change
+let default_modules_path="../../../modules/default"
+if (!fs.existsSync(path.join(__dirname, default_modules_path))) {
+  default_modules_path="../../../defaultmodules"
+}
+
+const defaultModules = require(path.join(default_modules_path,"defaultmodules.js"));
 if (debug)
   console.log(
     "default modules list=" + JSON.stringify(defaultModules, null, 2)
@@ -1356,8 +1361,7 @@ function check_for_module_file(module_name,type) {
     let schemapath= isDefault
       ? path.join(
           __dirname,
-          "../../../modules",
-          "default",
+          default_modules_path,
           module_name
         )
       : path.join(__dirname, "../../", module_name );
