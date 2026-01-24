@@ -162,7 +162,8 @@
               "enum":[
                 "none",
                 "pm2",
-                "static"
+                "static",
+                "docker"
               ],
               "default":"none"
             },
