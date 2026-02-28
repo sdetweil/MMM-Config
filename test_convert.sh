@@ -1,5 +1,6 @@
 #!/bin/bash 
 # convert modules to info for remote UI
+cd "$(dirname "$0")"
 identifier=$MM_identifier
 # get the configured modules location or use the default
 modules_location=${MM_MODULES_DIR:-modules}
@@ -21,7 +22,7 @@ modules_lastchange_file=modules_lastchange_$identifier
 rm canceled 2>/dev/null
 # if this is a mac
 if [ $(uname -s) == 'Darwin' ]; then
-	d=$( cd "$(dirname "$0")" ; pwd -P )
+	d=$(  pwd -P )
 	mod_lastchange=$(GetFileInfo -m $d/../../$modules_location | tr / - | awk '{print $1  " "  $2}')
 	config_lastchange=$(GetFileInfo -m $d/../../$config_name | tr / - | awk '{print $1  " "  $2}')
 else # not mac
@@ -57,7 +58,7 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	if [ ! -e config.html ]; then
 		cp templates/config.html .
 	fi
-	fs=$(wc -c module_url_hash.json | cut -d' ' -f1)
+	fs=$(wc -c module_url_hash.json | awk '{print $1}')
 	if [ ! -e "module_url_hash.json"  -o  $fs -lt 1000 ]; then
 	    cp templates/module_url_hash.json .
 	fi	
