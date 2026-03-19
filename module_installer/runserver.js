@@ -2,6 +2,7 @@ const { exec, execSync } = require("child_process");
 const path=require('path')
 const os= require('os')
 const fs = require('fs')
+const chokidar =require('chokidar');
 const which= require("which")
 const moment = require('moment-timezone')
 
@@ -200,9 +201,9 @@ function handleConnection(socket, type) {
   socket.on("cancel", () => {
     if(cancount++==0){
       if(local_debug)
-        console.log("cancel requested")
+        console.log("cancel requested installer")
       console.log("cancel received, closing installer")
-      socket.emit("close")
+      //socket.emit("close")
     }
   });
 
@@ -370,7 +371,8 @@ async function launchServer(worklist, socket){
           detached: true, // Make the child process independent from the parent
           stdio: 'inherit', // was 'ignore' // Prevent child process from inheriting parent's stdio
           cwd: __dirname.split('/').slice(0,-3).join('/'),
-          env:env
+          env: env,          
+          maxBuffer: 1024 * 1024 * 5 ,
         },
        (error, stdout, stderr)=>{
           if(local_debug){
@@ -479,24 +481,35 @@ function MagicMirrorWorkServerReady(socket, pid, port){
 
       // if the server is set to auto restart due to config file change
       // we will die and this code will never be executed
-      let count =0
-      fs.watch(__dirname+"/../../../"+cf_name,async (eventType, filename) => {
+    let count = 0
+      if (local_debug) {
+        console.log("watching for config file "+__dirname+"/../../../" + cf_name+" to be changed");
+      }
+      chokidar.watch(__dirname+"/../../../" + cf_name).on('change', (eventType, filename) => {
+      //fs.watch(__dirname + "/../../../" + cf_name, async (eventType, filename) => {
+        if (local_debug) {
+          console.log(`watch event = ${eventType}`);
+        }
         if (eventType === 'change') {
           if(local_debug)
             console.log(`File ${filename} has been changed`);
           // watch out we could get called multiple times
           if(count++ == 0){
             // give the client MM config  server time to  put out the wait page
-            setTimeout(()=>{
-	        //socket.emit('close')
+            setTimeout(() => {
+              if (local_debug)
+                console.log(`triggering restart`);
               killWorkConfigServer(processList)
               restartMagicMirror()
-	    },3000)
+	          },3000)
             /* no point us restarting MM, as the restart will be done by the config process save */
             //restartMagicMirror()
           }
         }
       })
+      if (local_debug) {
+        console.log("done watching for config change");  
+      }
 
 }
 function getWorkConfigServerProcessList(pid){
@@ -544,7 +557,9 @@ function getWorkConfigServerProcessList(pid){
   return list
 }
 function killWorkConfigServer (list)  {
-
+  if (local_debug) {
+    console.log("looking for processes to kill= ",list)
+  }
   list.forEach(childPid => {
       if(local_debug)
         console.log("killing child pid=",childPid)

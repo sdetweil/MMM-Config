@@ -51,7 +51,13 @@ try {
 }
 
 // get the default modules list from the MM core
-const defaultModules = require("../../modules/default/defaultmodules.js");
+let defaultModules = ''
+try {
+    defaultModules = require("../../defaultmodules/defaultmodules.js");
+}
+catch {
+    defaultModules = require("../../modules/default/defaultmodules.js");
+}
 const module_jsonform_converter = "_converter.js"
 
 const our_name = __dirname.split(path.sep).slice(-1)[0]  // slice returns an array
@@ -1815,7 +1821,8 @@ module.exports = NodeHelper.create({
 
       socket.on("saveConfig", (data) => {
         // used to save the form JSON
-
+        if (static_debug)
+          console.log("submit event")
         self.process_submit(data, self, socket);
       });
 
@@ -1824,7 +1831,7 @@ module.exports = NodeHelper.create({
           console.log("cancel requested")
         //console.log("cancel received, closing config page")
         fs.writeFileSync(__dirname+'/canceled', '1')
-        socket.emit("close")
+        //socket.emit("close")
       });
 
       socket.on("getForm", () => {
