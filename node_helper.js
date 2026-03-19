@@ -52,8 +52,10 @@ try {
 
 // get the default modules list from the MM core
 let defaultModules = ''
+let default_path='/../default';
 try {
-    defaultModules = require("../../defaultmodules/defaultmodules.js");
+  defaultModules = require("../../defaultmodules/defaultmodules.js");
+  default_path = '/../../defaultmodules';
 }
 catch {
     defaultModules = require("../../modules/default/defaultmodules.js");
@@ -884,8 +886,7 @@ module.exports = NodeHelper.create({
       fn = isDefault
         ? path.join(
             __dirname,
-            "..",
-            "default",
+            default_path,
             our_name +
             "."+
             module_jsonform_info_name.slice(1)
@@ -912,8 +913,7 @@ module.exports = NodeHelper.create({
     fn = isDefault
       ? path.join(
           __dirname,
-          "..",
-          "default",
+          default_path,
           module_name,
           our_name+"."+module_jsonform_converter.slice(1)
         )
@@ -1713,12 +1713,12 @@ module.exports = NodeHelper.create({
       }
       // if not disabled
   	  // default folder present
-  	  let default_folder=""
+  	  let default_folder="/../"
         if((m.disabled==false && !defaultModules.includes(m.module)) || defaultModules.includes(m.module)) {
   		    if(defaultModules.includes(m.module))
-  			   default_folder="default/"
-          // get a list of any extension files in the module folder
-          mfiles = mfiles.concat(fs.readdirSync(__dirname+"/../"+default_folder+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
+  			   default_folder=default_path+"/"
+           // get a list of any extension files in the module folder
+           mfiles = mfiles.concat(fs.readdirSync(__dirname+default_folder+m.module).filter(fn => fn.startsWith(this.name+'_extension.')));
           if(static_debug){
             console.log("found ",mfiles," extensions")
           }
