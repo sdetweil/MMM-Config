@@ -19,6 +19,8 @@ const socketIOPath="mConfig"
 let BASE_INSTANCE_PORT=9000
 const fs = require("fs");
 
+let cfg = null;
+
 var our_port=0
 
 const default_config_name=path.sep+"config"+path.sep+"config.js"
@@ -186,6 +188,19 @@ module.exports = NodeHelper.create({
       }
     }
 
+    // setup hash table my module in config
+    cfg = require(__dirname + "/defaults_" + oc.hashCode(our_port) + ".js");
+    cfg.moduleList = {}
+    for (let module_entry of cfg.config.modules) {
+      let module_name = module_entry.module
+      if (!cfg.moduleList[module_name]) {
+        cfg.moduleList[module_name] = []
+      }
+      if (module_entry.index!=undefined)
+        cfg.moduleList[module_name].splice(module_entry.index, 0, module_entry)
+      else
+        cfg.moduleList[module_name].push(module_entry)
+    }
     this.startit()
   },
   // MM calls start
@@ -258,9 +273,10 @@ module.exports = NodeHelper.create({
       }
       res.send("0")
     })
+    
     this.expressApp.get("/modules/"+this.name+"/unbrowse", (req, res) => {
       // connect to the
-      //if(debug)
+      if(static_debug)
         console.log("received browse request")
       if(req.query.modulename){
         let modulename=req.query.modulename
@@ -271,9 +287,9 @@ module.exports = NodeHelper.create({
           }
         }
       }  else {
-        //if(debug){
+        if(static_debug){
           console.log("modulename not found", req)
-        //}
+        }
       }
       res.send("0")
     });    
@@ -421,7 +437,7 @@ module.exports = NodeHelper.create({
         break;
       }
     }
-    if(debug)
+    if(static_debug)
       console.log("starting installer setup")
     InstallerSetup(this.expressApp, this.io, NodeHelper, sort, debug, BASE_INSTANCE_PORT )
   },
@@ -443,9 +459,34 @@ module.exports = NodeHelper.create({
       }
     }
   },
-
-  // get the module properties from the config.js entry
   getConfigModule: function (m, source, index) {
+    if (static_debug)
+      console.log("looking for  module " + m + " in " + JSON.stringify(cfg.moduleList, null, 2) + " with possible index=" + index)
+    if (Object.keys(cfg.moduleList).indexOf(m) != -1) {
+      if(static_debug)
+        console.log("have instances of "+m)
+      let modules = cfg.moduleList[m]
+      if (index != -2 && modules.length < index && modules[index]) {
+        if (static_debug)
+          console.log("found instance of " + m + " with index property set")
+        return modules[index];
+      }
+      for (module of modules) {
+        if (module.index === undefined) {
+          if (static_debug)
+            console.log("found instance of "+m+" without index property set")
+          return module
+        } else {
+          if (module.index == index)
+            return module
+        }
+      }
+    }
+    return null
+
+  },
+  // get the module properties from the config.js entry
+  getConfigModule_old: function (m, source, index) {
     // module name is not a direct key
     let i = -1;
     if(static_debug)
@@ -605,7 +646,8 @@ module.exports = NodeHelper.create({
           "d=" + d + " " + JSON.stringify(Object.keys(object.deleted), " ", 2)
         );
       Object.keys(object.deleted).forEach((k) => {
-        console.log("d=" + k + " " + JSON.stringify(object.deleted[k], " ", 2));
+        if(static_debug)
+          console.log("d=" + k + " " + JSON.stringify(object.deleted[k], " ", 2));
       });
     }
     let u = Object.keys(object.updated).length;
@@ -617,6 +659,8 @@ module.exports = NodeHelper.create({
     if (static_debug) console.log("a=" + a + " d=" + d + " u=" + u);
     return a + d + u === 0;
   },
+
+
   isNumeric: function (n) {
     return !isNaN(parseFloat(n)) && isFinite(parseInt(n));
   },
@@ -632,7 +676,7 @@ module.exports = NodeHelper.create({
     var proplist = [];
     for (var propertyName in y) {
       if (
-        x !== null &&
+        x !== null && 
         typeof x[propertyName] === "object" &&
         typeof y[propertyName] === "object"
       ) {
@@ -657,7 +701,7 @@ module.exports = NodeHelper.create({
               );
           }
         }
-      } else if (x===null || x[propertyName] !== y[propertyName]) {
+      } else if (x===null || (x[propertyName] !== y[propertyName] && (x[propertyName] !== undefined && x[propertyName]!== null) && !x[propertyName].toString().startsWith("---!"))) {
         if (static_debug) console.log("comparing prop=" + propertyName);
         proplist.push(propertyName);
       }
@@ -732,7 +776,7 @@ module.exports = NodeHelper.create({
         if(static_debug){
           console.log("comparing module data with defaults for key="+key+ " new="+JSON.stringify(module_entry.config[key])+" default="+JSON.stringify(defaults[key]))
         }
-        if (JSON.stringify(module_entry.config[key],this.tohandler) === JSON.stringify(defaults[key],this.tohandler)) {
+        if (JSON.stringify(module_entry.config[key], this.tohandler) === JSON.stringify(defaults[key], this.tohandler) || (defaults[key] && defaults[key].toString().startsWith("---!"))) {
           if (static_debug)
             console.log("deleting item=" + key + " from old config data");
           delete module_entry.config[key];
@@ -743,16 +787,19 @@ module.exports = NodeHelper.create({
       });
     }
     // compare the form data with the info from the defaults..
-    let keydiff = this.objectsAreSame(defaults, data.config); // this is deep compare
+    let keydiff = this.objectsAreSame(defaults,data.config); // this is deep compare
     if(static_debug)
       console.log("keys different data vs defaults="+JSON.stringify(keydiff))
     if(module_entry.config !== undefined){
       let keydiff2=this.objectsAreSame(data.config,module_entry.config)
       if(static_debug)
-        console.log("keys different data vs prior config="+JSON.stringify(keydiff2))
-      keydiff2.forEach(k=>{
-        if(!keydiff.includes(k))
-                keydiff.push(k);
+        console.log("keys different data vs prior config=" + JSON.stringify(keydiff2))
+      const mkeys = Object.keys(module_entry.config)
+      keydiff2.forEach(k => {
+        if (mkeys.includes(k)){
+          if (!keydiff.includes(k))
+            keydiff.push(k);
+        }
       })
     }
     if (static_debug)
@@ -943,8 +990,8 @@ module.exports = NodeHelper.create({
   // handle form submission from web browser
   //
   process_submit: async function (data, self, socket) {
-    let cfg = require(__dirname + "/defaults_"+oc.hashCode(our_port)+".js");
-    //if(static_debug) console.log(" loaded module info="+JSON.stringify(cfg,self.tohandler,2))
+
+ 
     // cleanup the arrays
 
 
@@ -1201,7 +1248,8 @@ module.exports = NodeHelper.create({
 
     delete data.scriptConvertedObjects
 
-
+    if (static_debug)
+      console.log('finished form data cleanup')
 
     // setup the final data to write out
     let r = {};
@@ -1223,7 +1271,7 @@ module.exports = NodeHelper.create({
 
     for (let module_name of Object.keys(data)) {
       if(static_debug)
-        console.log("processing data for module="+module_name)
+        console.log("processing form data for module="+module_name)
       // fix this for multiple instances
       // don't copy config info
       switch (module_name) {
@@ -1249,7 +1297,7 @@ module.exports = NodeHelper.create({
           default:
             // get the data and increment the counter.
             // remember that.. will have to adjust later
-            module_form_data = data[module_name][mm_index[module_name]++];
+            module_form_data = data[module_name][mm_index[module_name]];
         }
 
         // if a converter script was loaded for ths module
@@ -1287,7 +1335,7 @@ module.exports = NodeHelper.create({
         let module_in_config = self.getConfigModule(
           module_name,
           cfg.config.modules,
-          (mm_index[module_name] -1) // have to adjust index
+          (mm_index[module_name]) // have to adjust index , was -1
         );
         // if present, merge from the form
         if (module_in_config) {
@@ -1304,7 +1352,7 @@ module.exports = NodeHelper.create({
           }
           if (static_debug)
             console.log(
-              "looking for modules=" +
+              "looking for module=" +
                 module_name +" at index="+(mm_index[module_name])+
                 " in "+oc.split('/').slice(-1)+" , have config data=" +
                 JSON.stringify(module_in_config, self.tohandler, 2)
@@ -1403,9 +1451,9 @@ module.exports = NodeHelper.create({
             }
 
             temp.position = temp.position.replace(" ", "_");
-			if(static_debug){
-				console.log("position='"+temp.position+"' layout table=",layout_order);
-			}
+            if(static_debug){
+              console.log("position='"+temp.position+"' layout table=",layout_order);
+            }
             layout_order[temp.position].push(temp);
             if (static_debug)
               console.log(
@@ -1423,9 +1471,12 @@ module.exports = NodeHelper.create({
         }
         if (
           mm_index[module_name] === -1 ||
-          mm_index[module_name] > data[module_name].length
+          // notice increment here before testing against data size
+          ++mm_index[module_name] >= data[module_name].length
         )
           break;
+        // increment the index count 
+        // mm_index[module_name]++
         // otherwise loop back to top
       } // end of while
     }
@@ -1509,10 +1560,10 @@ module.exports = NodeHelper.create({
               }
               // reset that variable to the spread operator variable
               c[v.path.slice(-1)]=[ "..."+v.variable ]
-	      if(static_debug)
-                console.log(" path contents="+JSON.stringify(c,null,2))
-              if(static_debug)
-                console.log("final after substituted replaced="+JSON.stringify(m,null, 2))
+              if (static_debug) {
+                console.log(" path contents=" + JSON.stringify(c, null, 2))                
+                console.log("final after substituted replaced=" + JSON.stringify(m, null, 2))
+              }
             }
           }
         }
@@ -1850,12 +1901,12 @@ module.exports = NodeHelper.create({
     })
     this.io.of(socketIOPath).on("connection", (socket) => {
       if(static_debug)
-      console.log("connected")
+        console.log("connected")
       handleConnection(self, socket, "connect");
     }); // end - connection
     this.io.of(socketIOPath).on("reconnect", (socket) => {
       if(static_debug)
-      console.log("reconnected")
+        console.log("reconnected")
       handleConnection(self, socketm, "reconnect");
     });
     /**
@@ -1863,7 +1914,7 @@ module.exports = NodeHelper.create({
      */
     this.io.of(socketIOPath).on("disconnect", () => {
       if(static_debug)
-      console.log("socket disconnected");
+        console.log("socket disconnected");
       //remote.emit("disconnected");
     }); // end - disconnect
   } // end - start,
