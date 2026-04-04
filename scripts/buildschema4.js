@@ -171,7 +171,7 @@ if (fs.existsSync(path.join(__dirname, "../modules_list.txt"))) {
 }
 // get the default modules list from the MM core , watch out for folder location change
 let default_modules_path="../../../modules/default"
-if (!fs.existsSync(path.join(__dirname, default_modules_path))) {
+if (!fs.existsSync(path.join(__dirname, default_modules_path,'clock'))) {
   default_modules_path="../../../defaultmodules"
 }
 
