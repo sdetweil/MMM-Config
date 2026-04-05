@@ -188,19 +188,25 @@ module.exports = NodeHelper.create({
       }
     }
 
-    // setup hash table my module in config
-    cfg = require(__dirname + "/defaults_" + oc.hashCode(our_port) + ".js");
-    cfg.moduleList = {}
-    for (let module_entry of cfg.config.modules) {
-      let module_name = module_entry.module
-      if (!cfg.moduleList[module_name]) {
-        cfg.moduleList[module_name] = []
-      }
-      if (module_entry.index!=undefined)
-        cfg.moduleList[module_name].splice(module_entry.index, 0, module_entry)
-      else
-        cfg.moduleList[module_name].push(module_entry)
-    }
+    // setup hash table by module in config
+    let handle=setInterval(()=>{
+            try {
+	    cfg = require(__dirname + "/defaults_" + oc.hashCode(our_port) + ".js");
+	    clearInterval(handle);
+	    cfg.moduleList = {}
+	    for (let module_entry of cfg.config.modules) {
+	      let module_name = module_entry.module
+	      if (!cfg.moduleList[module_name]) {
+	        cfg.moduleList[module_name] = []
+	      }
+	      if (module_entry.index!=undefined)
+	        cfg.moduleList[module_name].splice(module_entry.index, 0, module_entry)
+	      else
+        	cfg.moduleList[module_name].push(module_entry)
+    	    }
+	    }
+            catch(error){}
+    }, 3000)
     this.startit()
   },
   // MM calls start
