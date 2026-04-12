@@ -15,11 +15,11 @@ rem  get the configured modules location or use the default
 set modules_location=%MM_MODULES_DIR%
 if "!modules_location!"=="" set modules_location=modules
 rem echo modules_dir=!modules_location!
-set default_modules_location=..\..\modules\default
-set default_name_offset=5
+set default_modules_location=..\..\modules\defaultmodules
+set default_name_offset=4
 if NOT exist !default_modules_location! (
-	set default_modules_location=..\..\defaultmodules
-	set default_name_offset=4
+	set default_modules_location=..\..\default
+	set default_name_offset=5
 )
 rem get the config file name, or use the default
 set config_name=%MM_CONFIG_FILE%

@@ -4,11 +4,11 @@ cd "$(dirname "$0")"
 identifier=$MM_identifier
 # get the configured modules location or use the default
 modules_location=${MM_MODULES_DIR:-modules}
-default_modules_location='../../modules/default'
-default_name_offset=5
+default_modules_location='../../modules/defaultmodules'
+default_name_offset=4
 if [ ! -d $default_modules_location ]; then
-	default_modules_location='../../defaultmodules'
-	default_name_offset=4
+	default_modules_location='../../default'
+	default_name_offset=5
 fi
 # get the config file name, or use the default
 config_name=${MM_CONFIG_FILE:-config/config.js}
