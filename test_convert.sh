@@ -4,10 +4,10 @@ cd "$(dirname "$0")"
 identifier=$MM_identifier
 # get the configured modules location or use the default
 modules_location=${MM_MODULES_DIR:-modules}
-default_modules_location='../../modules/defaultmodules'
+default_modules_location='../../defaultmodules'
 default_name_offset=4
 if [ ! -d $default_modules_location ]; then
-	default_modules_location='../../default'
+	default_modules_location='../modules/default'
 	default_name_offset=5
 fi
 # get the config file name, or use the default
@@ -99,12 +99,14 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 
 		#echo looking for "$nm.js"
 		if [ -e "$module/$nm".js ]; then
-		  if [ -e "$module/src/frontend/Frontend.ts" ]; then
-		  	node $d/scripts/dumpdefaults.js "$module/src/frontend/Frontend.ts" $nm >>$defaults_file
-		  else
-		      node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
+		  # make sure this is a module file and not some other file with the same name
+		  if [ $(grep "Module.register" "$module/$nm".js | wc -l) -gt 0 ]; then 			if [ -e "$module/src/frontend/Frontend.ts" ]; then
+				node $d/scripts/dumpdefaults.js "$module/src/frontend/Frontend.ts" $nm >>$defaults_file
+			else
+				node $d/scripts/dumpdefaults.js "$module/$nm.js" >>$defaults_file
+			fi
+			ls $module/MMM-Config_extension.* 2>/dev/null >>extension_list
 		  fi
-		  ls $module/MMM-Config_extension.* 2>/dev/null >>extension_list
 		else
 			#echo "// file "$nm.js" does NOT exist"
 			:

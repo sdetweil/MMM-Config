@@ -117,7 +117,7 @@ rem
    rem delete the work file
    del somefile 2>nul
    rem delete the output to start fresh
-   del defines.js 2>nul
+   del %defaults_file% 2>nul
    rem add the js header needed
    echo var config = require^('../../!config_name:\=/!'^) >%defaults_file%
    echo var defined_config = {  >>%defaults_file%
@@ -236,14 +236,24 @@ Setlocal EnableDelayedExpansion
 		)
 		rem if the module js exists
 		IF EXIST "!mf!\!%m!\!m!.js" (
-			rem dump it to defaults
-			IF EXIST "!mf!\!m!\src\frontend\Frontend.ts" (
-				node %d%scripts\dumpdefaults.js "!mf!\!m!\src\frontend\Frontend.ts" !m! >>%2
-			) ELSE (
-				node %d%scripts\dumpdefaults.js "!mf!\!m!\!m!.js" >>%2
+			rem check for the module register function call
+		    findstr /c:"Module.register(" "!mf!\!m!\!m!.js" >sts
+			rem get the size of the output, errorlevel doesn't work
+			for %%I in (sts) do (set fs=%%~zI)
+			rem delete the temp file
+			del sts
+			rem is f the file size was NOT 0, then we found the module.register in the file, its a module
+			if !fs! NEQ 0 (
+				rem if present then its a module
+				rem dump it to defaults
+				IF EXIST "!mf!\!m!\src\frontend\Frontend.ts" (
+					node %d%scripts\dumpdefaults.js "!mf!\!m!\src\frontend\Frontend.ts" !m! >>%2
+				) ELSE (
+					node %d%scripts\dumpdefaults.js "!mf!\!m!\!m!.js" >>%2
+				)
+				rem check for any extensions
+				dir /b "!mf!\!m!\MMM-Config_extension.*" 2>nul >>"extension_list"
 			)
-			rem check for any extensions
-			dir /b "!mf!\!m!\MMM-Config_extension.*" 2>nul >>"extension_list"
 		)
     rem :eof
 :done
