@@ -1,6 +1,20 @@
+$(document).on('form_loaded', function () {
+
+  /* setup onclick handlers for the delete and deletecurrent buttons
+    add is handled by and onchange handler in the schema */
+  let x=$('.corsType select').val()
+  if(x === 'allowWhitelist')
+     $('.corsDomainList').css('display','block')
+  }
+)
+
+
 async function process_readme(readme_url, pos){
 
 const manipulateSource = false
+
+
+
 
 function detectBrowser() {
   const userAgent = navigator.userAgent;

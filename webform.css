@@ -138,3 +138,7 @@ input1[type="checkbox"] {
     top:0%;
     left:0%;
 }
+
+.corsDomainList { 
+   display:none;
+}

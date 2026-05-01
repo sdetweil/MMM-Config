@@ -60,8 +60,6 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
-# setup for running the installer in a docker container<br>
-we need to add some properties to the container
 
 this value matches the `AdditionalInstancePort` config variable above
 
@@ -146,6 +144,15 @@ Modules expanded
 ![base variables](./doc_images/MMM-Config_modules.png)
 
 ![base variables](./doc_images/MMM-Config_module_expanded.png)
+
+## Note: to display the module readme for the default modules (calendar, weather etc), MMM-Config uses the MMM cors function to access the docs website..
+
+in version 2.36 and later, this cors function is disabled by default.. to make the readme's work you need to enable the cors function AND add the docs website like this 
+```
+         cors: "allowWhitelist",
+         corsDomainWhitelist: ["docs.magicmirror.builders"]
+```
+you can add other destination server domain names to this array list 
 
 ### The Module Positions section
 

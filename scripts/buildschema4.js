@@ -1215,6 +1215,7 @@ Object.keys(pairVariables).forEach((m) => {
 
 empty_arrays.push("config.ipWhitelist");
 empty_arrays.push("config.logLevel");
+empty_arrays.push("config.corsDomainWhitelist")
 
 //
 // set the enabled style for the modules
@@ -1724,7 +1725,8 @@ function copyConfig(defines, schema, form) {
               enum: ["INFO", "LOG", "WARN", "ERROR", "DEBUG"]
             }
           };
-        } else {
+        } 
+        else {
           t = "array";
           dtype = "string";
           if (defines.config[setting].length) {
@@ -1733,7 +1735,7 @@ function copyConfig(defines, schema, form) {
           }
           schema["config"]["properties"][setting] = {
             type: t,
-            title: setting,
+            title: setting,            
             items: { type: dtype }
           };
         }
@@ -1775,6 +1777,19 @@ function copyConfig(defines, schema, form) {
             enum: ["false", "true", "local"]
           };
           break;
+        case "cors":
+          as = {
+            type: "string",
+            title: setting,            
+            enum: [ "disabled", "allowAll", "allowWhitelist"],
+          }  
+          break;
+        case "corsDomainWhitelist":  
+          as = {
+            type: "array",
+            title: setting
+          } 
+          break;
         case "logLevel":
           as = {
             type: "array",
@@ -1791,17 +1806,32 @@ function copyConfig(defines, schema, form) {
     }
     switch (t) {
       case "array":
-        form[0].items[0].items.push({
-          type: "array",
-          deleteCurrent: false,
-          title: setting,
-          items: [
-            {
-              key: "config." + setting + "[]",
-              title: setting + " {{idx}}"
-            }
-          ]
-        });
+        if(setting === "corsDomainWhitelist"){
+          form[0].items[0].items.push({
+            type: "array",
+            deleteCurrent: false,
+            htmlClass:"corsDomainList",
+            title: setting,
+            items: [
+              {
+                key: "config." + setting + "[]",
+                title: setting + " {{idx}}"
+              }
+            ]
+          });
+        } else {
+          form[0].items[0].items.push({
+            type: "array",
+            deleteCurrent: false,
+            title: setting,
+            items: [
+              {
+                key: "config." + setting + "[]",
+                title: setting + " {{idx}}"
+              }
+            ]
+          });
+        }
 
         break;
       case "object":
@@ -1844,6 +1874,12 @@ function copyConfig(defines, schema, form) {
           form[0].items[0].items.push({
             key: "config." + setting,
             type: "checkboxes"
+          });
+        } else if(setting === "cors"){
+          form[0].items[0].items.push({
+            key: "config." + setting,
+            "htmlClass":"corsType", 
+            "onChange": "(evt,node)=>{let value=evt.target.value;var parentElement=$(evt.target).closest('fieldset'); let element=parentElement.find('.corsDomainList'); element.css('display',value=='allowWhitelist'?'block':'none')}"
           });
         } else {
           if(debug)
