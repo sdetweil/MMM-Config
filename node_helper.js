@@ -1335,7 +1335,7 @@ module.exports = NodeHelper.create({
             "going to get entry for " +
               module_name +
               " from "+oc.split('/').slice(-1)+" with index=" +
-              (mm_index[module_name]-1)
+              (mm_index[module_name])
           );
         }
         let module_in_config = self.getConfigModule(
