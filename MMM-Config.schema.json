@@ -252,7 +252,7 @@
             "none": "no restart after save",
             "pm2": "use pm2 to restart, will autodetect which pm2 instance to restart",
             "static": "MagicMirror started with npm start, may cause flaky windows",
-            "docker":" not yet implemented, same as none"
+            "docker":"docker, container will be restarted"
           },
           "description":"if and how to restart MagicMirror after the config file is saved"
         },
