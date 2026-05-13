@@ -287,8 +287,10 @@ $(function () {
         $("#result").html('<form id="result-form" class="form-vertical"></form>');
         // insert the new form
         $("#result-form").jsonForm(data);
+        var redraw = $("#result-form")[0].offsetHeight;
         // trigger the custom event for any extension that needs to manipulate its part of the form
         document.dispatchEvent(event)
+        redraw = 0;
         // delete entry
         $(
           "fieldset.module_entry > div > div > div > div > ul ~ span > ._jsonform-array-deletelast "
