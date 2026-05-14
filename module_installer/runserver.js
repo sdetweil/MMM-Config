@@ -224,6 +224,7 @@ function handleConnection(socket, type) {
     }
     // send it via socket io, string data
     socket.emit("json", "'" + formdata + "'");
+    formdata = null;
   });
 }
 
