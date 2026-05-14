@@ -43,7 +43,7 @@ and a module installer is provided as well , see [Module Installer](#minstaller)
 | `force_update` | OPTIONAL | false | Each time MM is started a scan is done of changed items, config.js and the modules folder. If either changed since last startup, then a new form is generated. If no changes, then the existing form is reused. Set to true `forces` a new form to be built on every MM startup |
 | `ModuleSortOrder` | OPTIONAL | `date`	| this is used by the installer to organize the modules  in the installer list , either  by last update date or by `name`
 | `AdditionalInstancePort` | OPTIONAL <br>see the docker setup info below| 9000 | this is the port that will be used for the module installer config instance
-| `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If not 'none' (default), on save of config.js, MM will be restarted to use that new config file | managed_process.pm2_env
+| `restart` | OPTIONAL | none, static,  pm2, pm2:name/number, docker | If NOT 'none' (default), on save of config.js, MM will be restarted to use that new config file | managed_process.pm2_env
 
 if you have multiple instances of MagicMirror running under pm2, and you want restart on save, look at the pm2 status output and get the unique name or number of the app, 
 for example
