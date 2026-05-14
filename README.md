@@ -60,11 +60,14 @@ The saved config.js filename will look like this `config.js.2021-05-04T10.01.27`
 
 The ':'  in the time is changed to '.' as Windows will not allow a filename with ':'.
 
+### docker container setup
+
+add a port at 9000:9000
+for kHassel's docker container 
 
 this value matches the `AdditionalInstancePort` config variable above
 
-a port at 9000:9000
-for kHassel's docker container I added the following lines to magicmirror/run/compose.yaml
+I added the following lines to magicmirror/run/compose.yaml
 
     restart: xxx  whatever its set to
 	#
