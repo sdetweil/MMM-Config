@@ -102,7 +102,7 @@ module.exports = NodeHelper.create({
   module_scripts: {},
   imageurl: null,
   
-  requiresVersion: "2.28.0",
+  requiresVersion: "2.36.0",
 
   buildQR_URI(){
       //console.log("in buildQR_URI");
