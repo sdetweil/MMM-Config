@@ -1,5 +1,10 @@
 const path = require("path");
-const defines = require(process.argv[2]);
+const definesPath = path.resolve(process.argv[2] || "");
+if (!process.argv[2] || !/\.(js|json)$/i.test(definesPath) || !require("fs").existsSync(definesPath)) {
+  console.error("Invalid or missing defines file argument");
+  process.exit(1);
+}
+const defines = require(definesPath);
 // change to debugging if using vscode debugger
 const debugging = false;
 const merge = require("lodash").merge;
@@ -25,7 +30,7 @@ if (process.argv.length > 3 && process.argv[3] === "saveform") {
     if(debug ){
       console.log("setting saveform="+process.argv[4])
     }
-    save_module_form = process.argv[4];
+    save_module_form = path.basename(process.argv[4]);
     if (process.argv.length > 5 && process.argv[5] === "debug") {
        //console.log("setting debug = true")
         debug = true
@@ -414,6 +419,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
     .slice(0, module_definition.lastIndexOf("_"))
     .replace(/_/g, "-")
     .replace(new RegExp("\\" + module_define_name_special_char, "g"), "_");
+  module_name = path.basename(module_name);
 
   if (debug)
     console.log(
@@ -581,7 +587,7 @@ Object.keys(defines.defined_config).forEach((module_definition) => {
       });
       mform.items = JSON.parse(
         JSON.stringify(mform.items, tohandler).replace(
-          new RegExp('"'+module_name + "\\.", "g"),
+          new RegExp('"'+module_name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "\\.", "g"),
           '"'+module_name + "[]."
         ),
         fromhandler
