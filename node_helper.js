@@ -101,7 +101,7 @@ module.exports = NodeHelper.create({
   config: {debug:false},
   module_scripts: {},
   imageurl: null,
-  
+
   requiresVersion: "2.36.0",
 
   buildQR_URI(){
@@ -112,14 +112,9 @@ module.exports = NodeHelper.create({
       // use the environment variable if set
       if(process.env.HOST_HOSTNAME)
          this.hostname=process.env.HOST_HOSTNAME;
-      else{ 
-	 try { 
-	    if(fs.statSync('/.dockerenv'))
-	       this.hostname = process.env.HOST_IP;
-	 }
-	 catch(error){
-	 }
-      }
+      else if(fs.existsSync('/.dockerenv'))
+         this.hostname = process.env.HOST_IP;
+
       this.config.url =
         "http://" +
         (config.address == "0.0.0.0"
@@ -286,7 +281,7 @@ module.exports = NodeHelper.create({
       }
       res.send("0")
     })
-    
+
     this.expressApp.get("/modules/"+this.name+"/unbrowse", (req, res) => {
       // connect to the
       if(static_debug)
@@ -305,7 +300,7 @@ module.exports = NodeHelper.create({
         }
       }
       res.send("0")
-    });    
+    });
   },
   getIPAddress(){
     const nets = os.networkInterfaces();
@@ -346,15 +341,12 @@ module.exports = NodeHelper.create({
         console.info(this.name + " restart parm ='" + this.config.restart + "'")
       // handle how we restart, if any
       switch (this.config.restart) {
-		case "docker":
-			  // check to see if we are running in docker container
-				try {
-				  if(fs.statSync('/.dockerenv'))
-				    in_docker_container = true
-				}
-				catch(error){}  
-			  break;
-		  case "static":
+        case "docker":
+            // check to see if we are running in docker container
+            if (fs.existsSync('/.dockerenv'))
+            in_docker_container = true;
+            break;
+        case "static":
           // setup the handler
           let ep =
             __dirname.split(path.sep).slice(0, -2).join(path.sep) +
@@ -442,7 +434,7 @@ module.exports = NodeHelper.create({
           if( m.config.ModuleSortOrder) {
             if (m.config.ModuleSortOrder)    // if it was specified
               sort = m.config.ModuleSortOrder // use it
-            }  
+            }
             if(m.config.debug){
               debug=m.config.debug
             }
@@ -689,7 +681,7 @@ module.exports = NodeHelper.create({
     var proplist = [];
     for (var propertyName in y) {
       if (
-        x !== null && 
+        x !== null &&
         typeof x[propertyName] === "object" &&
         typeof y[propertyName] === "object"
       ) {
@@ -1004,7 +996,7 @@ module.exports = NodeHelper.create({
   //
   process_submit: async function (data, self, socket) {
 
- 
+
     // cleanup the arrays
 
 
@@ -1224,7 +1216,7 @@ module.exports = NodeHelper.create({
             if(static_debug)
               console.log("pair property value="+property[1])
             //if (!Number.isNaN(property[1])){
-            //  if(static_debug) 
+            //  if(static_debug)
             //    console.log("property="+property[1]+" is a number");
             //  property[1] = parseFloat(property[1]);
             //}
@@ -1492,7 +1484,7 @@ module.exports = NodeHelper.create({
           ++mm_index[module_name] >= data[module_name].length
         )
           break;
-        // increment the index count 
+        // increment the index count
         // mm_index[module_name]++
         // otherwise loop back to top
       } // end of while
@@ -1578,7 +1570,7 @@ module.exports = NodeHelper.create({
               // reset that variable to the spread operator variable
               c[v.path.slice(-1)]=[ "..."+v.variable ]
               if (static_debug) {
-                console.log(" path contents=" + JSON.stringify(c, null, 2))                
+                console.log(" path contents=" + JSON.stringify(c, null, 2))
                 console.log("final after substituted replaced=" + JSON.stringify(m, null, 2))
               }
             }
