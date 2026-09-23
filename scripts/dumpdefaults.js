@@ -148,7 +148,7 @@ function readFile(fn) {
         if (line.length) {
           if(debug)
             console.log("saving line="+line)
-          lines.push(line);        
+          lines.push(line);
           if (line.length > minimized_lines_check) processMinimized = comment_found?false:true;
         }
       });
@@ -354,14 +354,17 @@ function process_main(lines, name) {
                 continue;
               }
             }
-          } else if (info.startsWith("config.")) {
+          } else if (
+            info.startsWith("config.") ||
+            info.startsWith("globalThis.config.")
+          ) {
             let x1 = info.replace(',', '').replace('/','').trim()
               if (debug)
                 console.log("config replacing "+info +" with "+x1)
               line=line.replace(x1,'"---!'+x1+'"')
               cache.push(line)
               continue
-          } 
+          }
         }
       }
       while ((index = line.indexOf(startChar, index + 1)) >= 0) {
@@ -440,7 +443,7 @@ function process_main(lines, name) {
   return cache;
 }
 function process_helper(defines) {
-  
+
   let index = 0;
   let value = "";
   let lines = getFileContents("node_helper.js");
