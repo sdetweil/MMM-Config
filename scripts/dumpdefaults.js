@@ -208,7 +208,9 @@ function processMinified(lines) {
     xlines=findDefaults(lines)
     if(debug)
       console.log("returned from processing minfied="+JSON.stringify(xlines))
-    return xlines
+    if (xlines !== undefined)
+      return xlines;
+    return lines;
     // process it
     let newlines = [];
     // loop thru the lines
