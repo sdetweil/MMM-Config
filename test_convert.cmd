@@ -1,4 +1,4 @@
-@echo off
+rem @echo off
 
 setlocal EnableDelayedExpansion
 
@@ -73,10 +73,10 @@ if !copyfile! equ 1 (
 del CSS.js 2>nul
 rem check if the list of animations has an export statement
 rem if not its downlevel, so copy and add it
-findstr  "export" ..\..\js\animateCSS.js >nul
+findstr  ".export" ..\..\js\animateCSS.js >nul
 if %errorlevel% equ 1 (
-	copy ..\..\js\animateCSS.js  >nul
-	echo|set /p="if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> animateCSS.js
+	rem copy ..\..\js\animateCSS.js  >nul
+	powershell -NoProfile -Command "$lines = Get-Content -Path ..\..\js\animateCSS.js;$count = $lines.Count;	$(if ($count -gt 6) { $lines[0..($count - 7)] }) + 'if (typeof window === ''undefined'') module.exports = { AnimateCSSIn, AnimateCSSOut };' | Set-Content -Path .\animateCSS.js"
 )
 rem empty the work directory
 del /q workdir\*!identifier!.* 2>nul
