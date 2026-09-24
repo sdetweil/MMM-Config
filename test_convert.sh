@@ -64,10 +64,16 @@ if [ "$mod_lastsaved". != "$mod_lastchange". -o $schema_file_exists -eq 0 ]; the
 	fi	
 	# check if list of animations has the export we need
 	# if not copy and add the export
-	rm animateCSS.js 2>/dev/null
-	if [ $(grep export ../../js/animateCSS.js | wc -l) -eq 0 ]; then
-		cp ../../js/animateCSS.js . >/dev/null
-		echo "if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> ./animateCSS.js
+	rm ./animateCSS.js 2>/dev/null
+	# if we don't find the old module export
+	if [ $(grep ".export" ../../js/animateCSS.js | wc -l) -eq 0 ]; then
+		# but we do find the new ES module export
+		if [ $(grep "export {" ../../js/animateCSS.js | wc -l) -gt 0 ]; then
+		  # discard it (output to our new file)
+		  head -n -6 ../../js/animateCSS.js >./animateCSS.js
+		  # append the old module exports for require to work
+		  echo "if (typeof window === 'undefined') module.exports = { AnimateCSSIn, AnimateCSSOut };" >> ./animateCSS.js
+		fi
 	fi
 	# empty the work directory
 	rm  workdir/*${identifier}.* 2>/dev/null

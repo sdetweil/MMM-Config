@@ -13,7 +13,7 @@ let counter = 0;
 const remove_block_comments=true
 const module_define_name_special_char = "ς";
 const dummy = ["_defaults: {", "       },"]
-const variable_use = "config.";
+const variable_use = "globalThis.config.";
 if (process.argv.length > 3 && process.argv[3] === "debug") debug = true;
 let filelines = getFileContents(process.argv[2]);
 if (debug) console.log("there are " + filelines.length + " lines");
@@ -352,7 +352,7 @@ function process_main(lines, name) {
                 continue;
               }
             }
-          } else if (info.startsWith("config.")) {
+          } else if (info.startsWith(variable_use)) {
             let x1 = info.replace(',', '').replace('/','').trim()
               if (debug)
                 console.log("config replacing "+info +" with "+x1)
