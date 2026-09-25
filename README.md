@@ -30,6 +30,21 @@ and a module installer is provided as well , see [Module Installer](#minstaller)
 			}
 		},
     ```
+## to update
+ run 
+ ```
+    git pull
+ ```
+in the MMM-Config folder under MagicMirror/modules
+
+occasionally you have to update some dependencies, I try never to do that but sometimes get forced
+if that happens the update sequence is
+```
+git pull
+npm install
+```
+
+you could use the 2 command approach all the time with no risks. 
 
 ## Config Options (you can set/change all of these options in the form )
 
